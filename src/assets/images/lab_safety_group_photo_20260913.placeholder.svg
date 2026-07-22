@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">实验室安全教育活动合影占位图</title>
+  <desc id="desc">实验楼前八名穿校服的高中生合影，周寻在右后方背深蓝色书包，书包上有黄色圆形挂件。</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#bdd5e2"/><stop offset="1" stop-color="#e8edf0"/></linearGradient>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#d6d2c8"/><stop offset="1" stop-color="#aaa99f"/></linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <rect y="180" width="1600" height="510" fill="url(#wall)"/>
+  <g fill="#486574"><rect x="90" y="250" width="240" height="180"/><rect x="390" y="250" width="240" height="180"/><rect x="970" y="250" width="240" height="180"/><rect x="1270" y="250" width="240" height="180"/></g>
+  <g fill="#d9e5e9"><path d="M110 270h200v140H110zM410 270h200v140H410zM990 270h200v140H990zM1290 270h200v140h-200z"/></g>
+  <rect x="665" y="285" width="270" height="405" fill="#697981"/><rect x="735" y="360" width="130" height="330" fill="#273d47"/>
+  <rect y="690" width="1600" height="210" fill="#87927f"/>
+  <g stroke="#394b59" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <g transform="translate(265 455)"><circle cx="0" cy="0" r="43" fill="#d8ad91" stroke="none"/><path d="M-54 72L0 45l54 27 9 180H-63z" fill="#eef3f5"/><path d="M-45 90L0 135l45-45" fill="none"/><path d="M-28 252l-12 120M28 252l12 120"/></g>
+    <g transform="translate(455 435)"><circle cx="0" cy="0" r="43" fill="#d6aa8d" stroke="none"/><path d="M-54 72L0 45l54 27 9 180H-63z" fill="#e7eff2"/><path d="M-45 90L0 135l45-45" fill="none"/><path d="M-28 252l-12 120M28 252l12 120"/></g>
+    <g transform="translate(645 465)"><circle cx="0" cy="0" r="43" fill="#d7ab8d" stroke="none"/><path d="M-54 72L0 45l54 27 9 180H-63z" fill="#eef3f5"/><path d="M-45 90L0 135l45-45" fill="none"/><path d="M-28 252l-12 120M28 252l12 120"/></g>
+    <g transform="translate(835 445)"><circle cx="0" cy="0" r="43" fill="#d9ae92" stroke="none"/><path d="M-54 72L0 45l54 27 9 180H-63z" fill="#e7eff2"/><path d="M-45 90L0 135l45-45" fill="none"/><path d="M-28 252l-12 120M28 252l12 120"/></g>
+    <g transform="translate(1025 462)"><circle cx="0" cy="0" r="43" fill="#d4a689" stroke="none"/><path d="M-54 72L0 45l54 27 9 180H-63z" fill="#eef3f5"/><path d="M-45 90L0 135l45-45" fill="none"/><path d="M-28 252l-12 120M28 252l12 120"/></g>
+    <g transform="translate(1220 425)"><circle cx="0" cy="0" r="43" fill="#d8ac8e" stroke="none"/><path d="M-54 72L0 45l54 27 9 180H-63z" fill="#e7eff2"/><path d="M-45 90L0 135l45-45" fill="none"/><path d="M-28 252l-12 120M28 252l12 120"/><path d="M50 75c75 25 83 102 68 180l-76-8z" fill="#173f67"/><circle cx="112" cy="236" r="16" fill="#f1c739" stroke="#b18d16" stroke-width="5"/></g>
+    <g transform="translate(1375 470)"><circle cx="0" cy="0" r="43" fill="#d6a98b" stroke="none"/><path d="M-54 72L0 45l54 27 9 180H-63z" fill="#eef3f5"/><path d="M-45 90L0 135l45-45" fill="none"/><path d="M-28 252l-12 120M28 252l12 120"/></g>
+    <g transform="translate(105 475)"><circle cx="0" cy="0" r="43" fill="#d7aa8c" stroke="none"/><path d="M-54 72L0 45l54 27 9 180H-63z" fill="#e7eff2"/><path d="M-45 90L0 135l45-45" fill="none"/><path d="M-28 252l-12 120M28 252l12 120"/></g>
+  </g>
+</svg>
