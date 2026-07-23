@@ -1,5 +1,21 @@
 # 部署说明
 
+## 公开测试环境
+
+Cloudflare Pages 的生产或预览环境可按需要设置：
+
+| 环境变量 | 公开测试值 | 正式发布值 |
+| --- | --- | --- |
+| `VITE_ENABLE_TEST_TOOLS` | `true` | 删除或设为 `false` |
+
+修改变量后必须触发一次重新部署。普通访问地址不会显示测试入口；只有测试工具已编入产物且 URL 带 `?testmode=1` 时才启用，例如：
+
+```text
+https://<project-name>.pages.dev/?testmode=1
+```
+
+测试状态只保存在当前标签页的 `sessionStorage`，不会写入游戏存档。测试者可从控制台主动退出；正式构建即使访问同一查询参数，也不会加载测试控制台代码。
+
 本项目是无后端的 Vite 静态站点。生产构建输出到 `dist/`，存档保存在访问者浏览器的 `localStorage` 中，不需要数据库、服务器函数或运行时环境变量。
 
 ## Cloudflare Pages 部署流程

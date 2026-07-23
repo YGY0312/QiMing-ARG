@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useGame, PROTOTYPE_VERSION } from '../game/GameContext'
 import { SCHOOL_HOME_URL, SHENZHI_ANOMALY_URL, SHENZHI_STUDENT_ANOMALY_URL } from '../game/constants'
 import { SchoolSite } from '../sites/school/SchoolSite'
@@ -7,10 +7,6 @@ import { UnknownSiteError } from './UnknownSiteError'
 import { InvestigationLog } from '../game/InvestigationLog'
 import { ChapterEnding, ChapterTwoEnding } from '../game/ChapterEnding'
 import { EvidenceSidebar } from '../game/EvidenceSidebar'
-
-const DevDebugPanel = import.meta.env.DEV
-  ? lazy(() => import('../game/DebugPanel').then((module) => ({ default: module.DebugPanel })))
-  : null
 
 export function BrowserShell() {
   const {
@@ -86,7 +82,6 @@ export function BrowserShell() {
       {logOpen && <InvestigationLog onClose={() => setLogOpen(false)} />}
       {state.chapterEndingVisible && <ChapterEnding />}
       {state.chapterTwoEndingVisible && <ChapterTwoEnding />}
-      {DevDebugPanel && <Suspense fallback={null}><DevDebugPanel /></Suspense>}
     </main>
   )
 }

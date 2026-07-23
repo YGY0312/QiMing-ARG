@@ -1,4 +1,6 @@
-export const PROTOTYPE_VERSION = '第二章开发版 0.5.0'
+import { APP_VERSION_LABEL } from '../config/app'
+
+export const PROTOTYPE_VERSION = APP_VERSION_LABEL
 export const SCHOOL_HOME_URL = 'www.qiming-high.edu.cn/'
 export const SHENZHI_ANOMALY_URL = 'www.qiming-high.edu.cn/student/shenzhi'
 export const SHENZHI_STUDENT_ANOMALY_URL = 'stu.qiming-high.edu.cn/student/2024010318'

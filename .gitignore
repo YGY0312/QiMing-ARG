@@ -1,5 +1,13 @@
-node_modules
-dist
-.env.local
+node_modules/
+dist/
+dist-test/
+.pnpm-store/
+coverage/
 *.log
+.env
+.env.local
+.env.*.local
 .DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json

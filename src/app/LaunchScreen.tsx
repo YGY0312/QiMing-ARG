@@ -1,4 +1,5 @@
 import { PROTOTYPE_VERSION, useGame } from '../game/GameContext'
+import { PROJECT_CREATOR } from '../config/app'
 
 export function LaunchScreen() {
   const { state, startGame, resetGame } = useGame()
@@ -33,6 +34,11 @@ export function LaunchScreen() {
         <div className="launch-meta">
           <span>建议使用电脑端浏览器并佩戴耳机</span>
           <span>当前版本：{PROTOTYPE_VERSION}</span>
+        </div>
+        <div className="launch-credits">
+          <span>策划、设计与制作：{PROJECT_CREATOR}</span>
+          <span>开发辅助：OpenAI Codex、ChatGPT</span>
+          <span>公开测试版</span>
         </div>
       </section>
       <p className="fiction-note">本作中的学校、人物与网站均为虚构</p>
