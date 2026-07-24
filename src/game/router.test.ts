@@ -34,6 +34,12 @@ describe('游戏内地址解析', () => {
   it('第三章官网与学生系统页面有稳定路由', () => {
     expect(parseGameUrl('www.qiming-high.edu.cn/services/laboratory').componentKey).toBe('school-lab-management')
     expect(parseGameUrl('www.qiming-high.edu.cn/services/laboratory/duty-june-2026').componentKey).toBe('school-duty-schedule')
+    expect(parseGameUrl('www.qiming-high.edu.cn/services/laboratory/duty-log').componentKey).toBe('school-duty-log')
+    expect(parseGameUrl('www.qiming-high.edu.cn/services/information-center').componentKey).toBe('school-information-center')
+    expect(parseGameUrl('www.qiming-high.edu.cn/services/information-center/maintenance').componentKey).toBe('school-maintenance-ticket')
     expect(parseGameUrl('stu.qiming-high.edu.cn/lab-access-records').componentKey).toBe('student-lab-access-records')
+    expect(parseGameUrl('stu.qiming-high.edu.cn/lab-reservations').componentKey).toBe('student-lab-reservations')
+    expect(parseGameUrl('stu.qiming-high.edu.cn/equipment-loans').componentKey).toBe('student-equipment-loans')
+    expect(parseGameUrl('stu.qiming-high.edu.cn/camera-exceptions').componentKey).toBe('student-camera-exceptions')
   })
 })

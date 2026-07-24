@@ -23,8 +23,13 @@ export const virtualFiles: Record<string, VirtualFileDefinition> = {
   'guyan-note': { id: 'guyan-note', name: '顾言不认识她？.txt', kind: 'text', source: '周寻个人文件', content: '顾言说他不认识沈栀。\n\n五月实验分组表里，他们在同一组。\n\n群成员记录里，顾言是管理员。\n\n', onOpenClueId: 'guyan_denial' },
   'lab-group-sheet': { id: 'lab-group-sheet', name: '实验器材整理活动分组表.pdf', kind: 'table', source: '实验中心资料', headers: ['组别', '时间', '地点', '成员'], rows: [['第4组','2026-06-16 19:30—21:00','旧实验楼三层广播设备室','顾言、沈栀、何岚、唐棠']], reveal: { key: 'lab-group-four-detail', label: '查看第4组详情', clueId: 'shenzhi_old_building_group' } },
   'last-record-0616': { id: 'last-record-0616', name: '最后记录_0616.txt', kind: 'text', source: '周寻个人文件', content: '沈栀不是正常转学。\n\n6月16日晚，她进入了旧实验楼。\n\n6月17日，她的学籍变更已经生效。\n\n退学申请文件是在之后创建的。\n\n门禁系统里有她的进入记录。\n\n没有查到离开记录。\n\n下一步：找当晚的值班记录。', onOpenClueId: 'shenzhi_last_record' },
-  'investigation-backup-02': simple('investigation-backup-02', '调查备份_02.txt', 'text', '周寻个人文件', '6月16日晚。\n\n她进入旧实验楼。\n\n但没有离开。\n\n入口不是重点。\n\n重点是：\n\n那一晚谁看到了她。\n\n下一步：寻找旧实验楼值班记录。'),
-  'investigation-backup-02-final': simple('investigation-backup-02-final', '调查备份_02.txt', 'text', '周寻个人文件', '我找到值班记录了。\n\n沈栀不是自己离开的。\n\n有人在22点以后处理了记录。\n\n但是奇怪的是。\n\n处理记录的人，\n\n不是普通教师。\n\noperator:\n\nADMIN_03'),
+  'lab-reservation-0616': { id: 'lab-reservation-0616', name: '实验室使用申请记录.xlsx', kind: 'table', source: '周寻个人调查资料', headers: ['申请日期', '使用日期', '地点', '用途', '申请人', '审批状态', '审批部门'], rows: [['2026-06-15', '2026-06-16', '旧实验楼 A-302', '资料整理', '沈栀', '通过', '信息中心']] },
+  'equipment-loan-0616': simple('equipment-loan-0616', '实验室设备借用记录.txt', 'text', '周寻个人调查资料', '日期：2026-06-16\n\n借用人：沈栀\n\n设备：\n便携摄像设备\n存储卡\n数据线\n\n状态：未归还'),
+  'duty-log-0616': simple('duty-log-0616', '实验楼值班日志.txt', 'text', '实验中心值班记录', '2026-06-16\n\n19:10\n旧实验楼开放。\n\n19:21\n发现学生进入A区。\n\n21:45\n收到系统维护通知。\n\n22:30\n执行系统同步。\n\n23:00\n值班结束。'),
+  'camera-exception-0616': simple('camera-exception-0616', '监控存储异常记录.txt', 'text', '周寻个人调查资料', '设备：旧实验楼东门摄像头\n\n日期：2026-06-16\n\n异常时间：22:25-22:40\n\n异常类型：数据覆盖\n\n处理状态：已恢复'),
+  'maintenance-ticket-sys-0616': simple('maintenance-ticket-sys-0616', '系统维护记录_SYS-0616.txt', 'text', '信息中心维护记录', '编号：SYS-0616\n\n时间：2026-06-16 22:20\n\n类型：数据同步维护\n\n影响范围：学生信息系统\n\n执行部门：信息中心'),
+  'investigation-backup-02': simple('investigation-backup-02', '调查备份_02.txt', 'text', '周寻个人文件', '我找到了一些东西。\n\n6月16日晚，\n\n沈栀提前申请进入旧实验楼。\n\n她不是临时过去。\n\n她在那里寻找某个东西。\n\n继续查访问记录。'),
+  'investigation-backup-02-final': simple('investigation-backup-02-final', '调查备份_02.txt', 'text', '周寻个人文件', '我还原了6月16日晚。\n\n沈栀19:21进入旧实验楼A区。\n\n她提前申请了实验室，\n\n借用了设备。\n\n22点以后，\n\n有人处理了现场记录。\n\n监控被覆盖。\n\n门禁记录被修改。\n\n执行操作的不是普通教师。\n\n系统只留下：\n\nADMIN_03\n\n但我还不知道这个账号是谁。'),
 }
 
 export function getVirtualFile(id: string | null): VirtualFileDefinition | null { return id ? virtualFiles[id] ?? null : null }

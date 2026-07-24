@@ -8,7 +8,8 @@ export const chapterTwoClueIds: ChapterTwoClueId[] = [
 ]
 
 export const chapterThreeClueIds: ChapterThreeClueId[] = [
-  'old_building_duty_record', 'old_building_access_log', 'admin_permission_trace', 'system_upgrade_notice',
+  'old_building_duty_record', 'old_building_access_log', 'old_building_reservation', 'equipment_missing_record',
+  'duty_log_record', 'camera_exception_record', 'system_maintenance_ticket', 'admin_permission_trace', 'system_upgrade_notice',
 ]
 
 export const clueDefinitions: Record<ClueId, ClueDefinition> = {
@@ -38,6 +39,11 @@ export const clueDefinitions: Record<ClueId, ClueDefinition> = {
 
   old_building_duty_record: { id: 'old_building_duty_record', title: '旧实验楼值班记录', source: '学校官网实验室管理', description: '官网值班安排显示6月16日晚旧实验楼有教师值班。', category: '旧实验楼', isKeyClue: true, sidebarFacts: ['2026-06-16晚', '旧实验楼值班教师：陈启明'] },
   old_building_access_log: { id: 'old_building_access_log', title: '实验楼异常访问记录', source: '周寻账号调查资料', description: '查询结果显示沈栀进入后，A-302门禁出现异常，并在22:30解除。', category: '系统记录', isKeyClue: true, sidebarFacts: ['19:21 沈栀进入旧实验楼', '19:45 A-302门禁异常', '22:30 异常解除'] },
+  old_building_reservation: { id: 'old_building_reservation', title: '旧实验楼使用申请', source: '周寻账号调查资料', description: '申请记录显示沈栀在事发前一天申请使用旧实验楼A-302，并获得信息中心审批。', category: '旧实验楼', isKeyClue: true, sidebarFacts: ['申请日期：2026-06-15', '使用日期：2026-06-16', '地点：旧实验楼 A-302', '审批部门：信息中心'] },
+  equipment_missing_record: { id: 'equipment_missing_record', title: '未归还的调查设备', source: '周寻账号调查资料', description: '沈栀在进入旧实验楼前借用了摄像与存储设备，记录状态为未归还。', category: '旧实验楼', isKeyClue: true, sidebarFacts: ['借用人：沈栀', '便携摄像设备、存储卡、数据线', '状态：未归还'] },
+  duty_log_record: { id: 'duty_log_record', title: '实验楼值班日志', source: '学校官网实验室管理', description: '值班日志将学生进入、系统维护通知和22:30系统同步记录在同一晚。', category: '旧实验楼', isKeyClue: true, sidebarFacts: ['19:21 发现学生进入A区', '21:45 收到系统维护通知', '22:30 执行系统同步'] },
+  camera_exception_record: { id: 'camera_exception_record', title: '监控存储异常', source: '周寻账号调查资料', description: '旧实验楼东门摄像头在22:25至22:40发生数据覆盖，之后被标记为已恢复。', category: '系统记录', isKeyClue: true, sidebarFacts: ['设备：旧实验楼东门摄像头', '异常时间：22:25—22:40', '异常类型：数据覆盖'] },
+  system_maintenance_ticket: { id: 'system_maintenance_ticket', title: '系统维护工单', source: '学校官网信息中心', description: '信息中心工单显示6月16日22:20执行了学生信息系统数据同步维护。', category: '系统记录', isKeyClue: true, sidebarFacts: ['工单：SYS-0616', '时间：2026-06-16 22:20', '类型：数据同步维护'] },
   admin_permission_trace: { id: 'admin_permission_trace', title: '管理员权限痕迹', source: '实验楼异常访问记录详情', description: '22:30的异常解除记录来自管理员权限，但没有留下具体账号。', category: '系统记录', isKeyClue: true, sidebarFacts: ['22:30操作来源：管理员权限', '具体账号：未记录'] },
   system_upgrade_notice: { id: 'system_upgrade_notice', title: '校园安全系统升级', source: '学校官网校园新闻', description: '信息中心在事件发生两天后完成了校园安全系统升级。', category: '公开资料', isKeyClue: true, sidebarFacts: ['系统升级完成日期：2026-06-18', '负责部门：信息中心'] },
 }
@@ -63,7 +69,10 @@ export const storyEventRequirements: Record<StoryEventId, ClueId[]> = {
   chapter_two_final_file_unlocked: ['seat_chart_shenzhi', 'hidden_grade_row', 'shenzhi_essay', 'shenzhi_dropout_backdated', 'shenzhi_old_building_group', 'shenzhi_exit_missing'],
   chapter_two_completed: ['shenzhi_last_record'],
   chapter_three_started: [],
-  chapter_three_final_unlocked: ['old_building_duty_record', 'old_building_access_log', 'admin_permission_trace', 'system_upgrade_notice'],
+  chapter_three_final_unlocked: [
+    'old_building_duty_record', 'old_building_access_log', 'old_building_reservation', 'equipment_missing_record',
+    'duty_log_record', 'camera_exception_record', 'system_maintenance_ticket', 'admin_permission_trace', 'system_upgrade_notice',
+  ],
 }
 
 export const shenzhiCacheEvidenceIds: ClueId[] = ['class_size_mismatch', 'seat_chart_shenzhi', 'hidden_grade_row', 'shenzhi_essay', 'shenzhi_removed_from_group']

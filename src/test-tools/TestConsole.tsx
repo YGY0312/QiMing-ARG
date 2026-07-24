@@ -32,8 +32,8 @@ export function TestConsole({ onExitTestMode }: Props) {
   const [description, setDescription] = useState('')
 
   const discoveredCount = Object.values(state.clues).filter((clue) => clue.discovered).length
-  const chapterLabel = state.revealedFileSections.includes('chapter-three-final-read') ? '第三章调查完成'
-    : state.triggeredEvents.includes('chapter_three_started') ? '第三章调查中'
+  const chapterLabel = state.revealedFileSections.includes('chapter-three-final-read') ? '第三章《值班记录》调查完成'
+    : state.triggeredEvents.includes('chapter_three_started') ? '第三章《值班记录》调查中'
       : state.chapterTwoCompleted ? '第二章已完成'
         : state.chapterTwoStarted ? '第二章调查中'
           : state.chapterOneCompleted ? '第一章已完成'

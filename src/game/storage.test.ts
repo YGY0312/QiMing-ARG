@@ -87,7 +87,24 @@ describe('v5 本地存档', () => {
     const migrated = migrateSave(oldV5)
     expect(migrated).toMatchObject({ schemaVersion: 5, chapterTwoCompleted: true })
     expect(migrated?.clues.old_building_duty_record.discovered).toBe(false)
+    expect(migrated?.clues.old_building_reservation.discovered).toBe(false)
+    expect(migrated?.clues.equipment_missing_record.discovered).toBe(false)
+    expect(migrated?.clues.duty_log_record.discovered).toBe(false)
+    expect(migrated?.clues.camera_exception_record.discovered).toBe(false)
+    expect(migrated?.clues.system_maintenance_ticket.discovered).toBe(false)
     expect(migrated?.clues.system_upgrade_notice.discovered).toBe(false)
+  })
+
+  it('旧 v5 已解锁第三章最终备份的存档保持完成状态', () => {
+    const state = makeState()
+    state.chapterTwoStarted = true
+    state.chapterTwoCompleted = true
+    state.triggeredEvents = ['chapter_one_completed', 'chapter_two_started', 'chapter_two_completed', 'chapter_three_started', 'chapter_three_final_unlocked']
+    state.unlockedFileIds = ['investigation-backup-02', 'investigation-backup-02-final']
+    const migrated = migrateSave(createSave(state))
+    expect(migrated?.schemaVersion).toBe(5)
+    expect(migrated?.triggeredEvents).toContain('chapter_three_final_unlocked')
+    expect(migrated?.unlockedFileIds).toContain('investigation-backup-02-final')
   })
 
   it('损坏数据安全回退', () => {

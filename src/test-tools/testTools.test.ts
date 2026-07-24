@@ -2,6 +2,10 @@ import { APP_VERSION, PROJECT_CREATOR, SAVE_SCHEMA_VERSION } from '../config/app
 import { createFeedbackText, importSaveText } from './testTools'
 
 describe('公开测试辅助工具', () => {
+  it('反馈模板使用v0.4.1版本号', () => {
+    expect(APP_VERSION).toBe('v0.4.1')
+  })
+
   it('拒绝损坏或无效存档，不产生覆盖结果', () => {
     expect(importSaveText('{bad json')).toMatchObject({ ok: false })
     expect(importSaveText('{}')).toMatchObject({ ok: false })

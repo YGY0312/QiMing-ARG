@@ -42,11 +42,12 @@ describe('第三章页面与账号权限', () => {
     const backupRow = screen.getByText('调查备份_02.txt').closest('.story-download')
     expect(backupRow).not.toBeNull()
     await user.click(within(backupRow as HTMLElement).getByRole('button', { name: '打开' }))
-    expect(screen.getByText(/重点是：/)).toBeInTheDocument()
-    expect(screen.getByText(/那一晚谁看到了她/)).toBeInTheDocument()
+    expect(screen.getByText(/我找到了一些东西/)).toBeInTheDocument()
+    expect(screen.getByText(/沈栀提前申请进入旧实验楼/)).toBeInTheDocument()
+    expect(screen.getByText(/继续查访问记录/)).toBeInTheDocument()
   })
 
-  it('四项线索完成后同一备份02显示最终记录', async () => {
+  it('全部线索完成后同一备份02显示最终记录', async () => {
     const user = userEvent.setup()
     const url = 'stu.qiming-high.edu.cn/downloads'
     const state = chapterThreeState('zhou_xun', url)
@@ -57,17 +58,33 @@ describe('第三章页面与账号权限', () => {
     const backupRow = screen.getByText('调查备份_02.txt').closest('.story-download')
     await user.click(within(backupRow as HTMLElement).getByRole('button', { name: '打开' }))
     expect(screen.getByText(/ADMIN_03/)).toBeInTheDocument()
-    expect(screen.getByText(/不是普通教师/)).toBeInTheDocument()
+    expect(screen.getByText(/我还原了6月16日晚/)).toBeInTheDocument()
+    expect(screen.getByText(/但我还不知道这个账号是谁/)).toBeInTheDocument()
   })
 
-  it('林默账号无法查看周寻的实验楼访问调查资料', () => {
-    const url = 'stu.qiming-high.edu.cn/lab-access-records'
+  it.each([
+    ['stu.qiming-high.edu.cn/lab-reservations', '实验室使用申请记录.xlsx'],
+    ['stu.qiming-high.edu.cn/equipment-loans', '实验室设备借用记录.txt'],
+    ['stu.qiming-high.edu.cn/lab-access-records', '实验楼异常访问记录.txt'],
+    ['stu.qiming-high.edu.cn/camera-exceptions', '监控存储异常记录.txt'],
+  ])('林默账号无法查看周寻私人调查资料：%s', (url, privateTitle) => {
     const state = chapterThreeState('lin_mo', url)
     discover(state, 'old_building_duty_record')
     writeSave(state)
     render(<GameProvider><StudentSite route={parseGameUrl(url)} onNavigate={() => undefined} /></GameProvider>)
     expect(screen.getByText('当前账号无权查看周寻的私人调查资料。')).toBeInTheDocument()
-    expect(screen.queryByText('实验楼异常访问记录.txt')).not.toBeInTheDocument()
+    expect(screen.queryByText(privateTitle)).not.toBeInTheDocument()
+  })
+
+  it('学生缓存损坏提示使用关联记录文案', () => {
+    const url = 'stu.qiming-high.edu.cn/downloads'
+    writeSave(chapterThreeState('zhou_xun', url))
+    render(<GameProvider><StudentSite route={parseGameUrl(url)} onNavigate={() => undefined} /></GameProvider>)
+    const cacheRow = screen.getByText('学生缓存_2024010318.dat').closest('.story-download')
+    expect(cacheRow).toHaveTextContent('文件损坏')
+    expect(cacheRow).toHaveTextContent('部分数据无法恢复')
+    expect(cacheRow).toHaveTextContent('需要更多关联记录')
+    expect(cacheRow).not.toHaveTextContent('需要更多交互证据')
   })
 
   it('官网主动查询6月16日值班安排后记录值班线索', async () => {
@@ -95,6 +112,68 @@ describe('第三章页面与账号权限', () => {
     await user.click(screen.getByRole('button', { name: '查看操作来源' }))
     expect(screen.getByText('权限：管理员')).toBeInTheDocument()
     expect(screen.getByText('未显示')).toBeInTheDocument()
+  })
+
+  it('周寻主动查询实验室申请并发现提前安排', async () => {
+    const user = userEvent.setup()
+    const url = 'stu.qiming-high.edu.cn/lab-reservations'
+    const state = chapterThreeState('zhou_xun', url)
+    discover(state, 'old_building_duty_record')
+    writeSave(state)
+    render(<GameProvider><StudentSite route={parseGameUrl(url)} onNavigate={() => undefined} /></GameProvider>)
+    await user.type(screen.getByLabelText('实验室使用日期'), '2026-06-16')
+    await user.click(screen.getByRole('button', { name: '查询申请' }))
+    expect(screen.getByText('旧实验楼 A-302')).toBeInTheDocument()
+    expect(screen.getByText('已记录：沈栀提前申请使用旧实验楼A-302。')).toBeInTheDocument()
+  })
+
+  it('周寻主动查询设备借用并发现未归还记录', async () => {
+    const user = userEvent.setup()
+    const url = 'stu.qiming-high.edu.cn/equipment-loans'
+    const state = chapterThreeState('zhou_xun', url)
+    discover(state, 'old_building_duty_record')
+    writeSave(state)
+    render(<GameProvider><StudentSite route={parseGameUrl(url)} onNavigate={() => undefined} /></GameProvider>)
+    await user.type(screen.getByLabelText('设备借用日期'), '2026-06-16')
+    await user.click(screen.getByRole('button', { name: '查询借用' }))
+    expect(screen.getByText('便携摄像设备、存储卡、数据线')).toBeInTheDocument()
+    expect(screen.getByText('已记录：沈栀借用的摄像与存储设备尚未归还。')).toBeInTheDocument()
+  })
+
+  it('周寻主动查询监控异常并发现数据覆盖', async () => {
+    const user = userEvent.setup()
+    const url = 'stu.qiming-high.edu.cn/camera-exceptions'
+    const state = chapterThreeState('zhou_xun', url)
+    discover(state, 'old_building_duty_record')
+    writeSave(state)
+    render(<GameProvider><StudentSite route={parseGameUrl(url)} onNavigate={() => undefined} /></GameProvider>)
+    await user.type(screen.getByLabelText('监控异常日期'), '2026-06-16')
+    await user.click(screen.getByRole('button', { name: '查询异常' }))
+    expect(screen.getByText('数据覆盖')).toBeInTheDocument()
+    expect(screen.getByText('已记录：22:25至22:40的监控数据发生覆盖。')).toBeInTheDocument()
+  })
+
+  it('官网主动查询值班日志并发现维护时间线', async () => {
+    const user = userEvent.setup()
+    const url = 'www.qiming-high.edu.cn/services/laboratory/duty-log'
+    writeSave(chapterThreeState(null, url))
+    render(<GameProvider><SchoolSite route={parseGameUrl(url)} onNavigate={() => undefined} /></GameProvider>)
+    await user.type(screen.getByLabelText('值班日志日期'), '2026-06-16')
+    await user.click(screen.getByRole('button', { name: '查询日志' }))
+    expect(screen.getByText('收到系统维护通知')).toBeInTheDocument()
+    expect(screen.getByText('执行系统同步')).toBeInTheDocument()
+    expect(screen.getByText('已记录：维护通知、系统同步与当晚值班日志处于同一时间线。')).toBeInTheDocument()
+  })
+
+  it('官网主动查询维护工单并发现数据同步记录', async () => {
+    const user = userEvent.setup()
+    const url = 'www.qiming-high.edu.cn/services/information-center/maintenance'
+    writeSave(chapterThreeState(null, url))
+    render(<GameProvider><SchoolSite route={parseGameUrl(url)} onNavigate={() => undefined} /></GameProvider>)
+    await user.type(screen.getByLabelText('维护工单编号'), 'SYS-0616')
+    await user.click(screen.getByRole('button', { name: '查询工单' }))
+    expect(screen.getByText('数据同步维护')).toBeInTheDocument()
+    expect(screen.getByText('已记录：6月16日22:20存在学生信息系统数据同步维护。')).toBeInTheDocument()
   })
 
   it('管理员痕迹出现后可以在官网记录系统升级新闻', async () => {

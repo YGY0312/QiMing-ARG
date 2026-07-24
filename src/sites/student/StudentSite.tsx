@@ -10,7 +10,13 @@ import { VirtualFileViewer } from '../../components/VirtualFileViewer'
 import { getVirtualFile } from '../../data/virtualFiles'
 import { attendanceRecords, baseDownloads, baseMessages, cardRecords, classStudents, zhouAttendanceRecord, zhouCardRecord } from '../../data/studentRecords'
 import { checkedAccessDirection, classHistoryViews, filterAccessRecords, filterGroupHistory, groupHistoryRecords, isBackdatedDatePair, statusCacheProfile, statusDateFields, type AccessDirection, type AccessPerson, type AccessQuery, type ClassHistoryPeriod, type StatusDateKey } from '../../data/chapterTwoInteractions'
-import { isChapterThreeAccessQuery, queryLaboratoryAccessRecords } from '../../data/chapterThree'
+import {
+  isChapterThreeAccessQuery,
+  queryCameraExceptions,
+  queryEquipmentLoans,
+  queryLaboratoryAccessRecords,
+  queryLaboratoryReservations,
+} from '../../data/chapterThree'
 
 interface Props {
   route: GameRoute
@@ -128,7 +134,12 @@ function StudentSystem({ route, onNavigate, onReturnSchoolTab }: Props) {
             {activeMenu.map(([label, path]) => <button className={route.pathname === `/${path}` ? 'active' : ''} key={path} type="button" onClick={() => onNavigate(`stu.qiming-high.edu.cn/${path}`)}><span aria-hidden="true">▪</span>{label}{path === 'messages' && messageUnreadCount(state, accountId) > 0 && <b className="menu-unread">{messageUnreadCount(state, accountId)}</b>}</button>)}
             {state.chapterTwoStarted && accountId === 'lin_mo' && <button className={route.pathname === '/class-group-history' ? 'active' : ''} type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/class-group-history')}><span aria-hidden="true">▪</span>班级群历史</button>}
             {accountId === 'zhou_xun' && state.unlockedFileIds.includes(OLD_BUILDING_ACCESS_FILE_ID) && <button className={route.pathname === '/access-query' ? 'active' : ''} type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/access-query')}><span aria-hidden="true">▪</span>门禁记录查询</button>}
-            {accountId === 'zhou_xun' && state.clues.old_building_duty_record.discovered && <><span className="student-menu-section">调查资料</span><button className={route.pathname === '/lab-access-records' ? 'active' : ''} type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/lab-access-records')}><span aria-hidden="true">▪</span>实验楼访问记录</button></>}
+            {accountId === 'zhou_xun' && state.clues.old_building_duty_record.discovered && <><span className="student-menu-section">调查资料</span>
+              <button className={route.pathname === '/lab-reservations' ? 'active' : ''} type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/lab-reservations')}><span aria-hidden="true">▪</span>实验室使用申请</button>
+              <button className={route.pathname === '/equipment-loans' ? 'active' : ''} type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/equipment-loans')}><span aria-hidden="true">▪</span>设备借用记录</button>
+              <button className={route.pathname === '/lab-access-records' ? 'active' : ''} type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/lab-access-records')}><span aria-hidden="true">▪</span>实验楼访问记录</button>
+              <button className={route.pathname === '/camera-exceptions' ? 'active' : ''} type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/camera-exceptions')}><span aria-hidden="true">▪</span>监控存储异常</button>
+            </>}
             {inactiveMenu.map((label) => <span className="student-menu-placeholder" key={label}><i aria-hidden="true">▪</i>{label}</span>)}
           </nav>
           <button className="back-school" type="button" onClick={() => onReturnSchoolTab ? onReturnSchoolTab() : onNavigate('www.qiming-high.edu.cn/')}>返回学校官网</button>
@@ -156,6 +167,9 @@ function StudentPage({ route, onNavigate, accountId }: Props & { accountId: Stud
     case 'student-group-history': return <GroupHistory accountId={accountId} />
     case 'student-access-query': return <AccessQueryPage accountId={accountId} />
     case 'student-lab-access-records': return <LaboratoryAccessRecordsPage accountId={accountId} />
+    case 'student-lab-reservations': return <LaboratoryReservationsPage accountId={accountId} />
+    case 'student-equipment-loans': return <EquipmentLoansPage accountId={accountId} />
+    case 'student-camera-exceptions': return <CameraExceptionsPage accountId={accountId} />
     case 'student-downloads': return <Downloads accountId={accountId} />
     case 'student-missing': return <MissingStudentRecord onNavigate={onNavigate} />
     default: return <StudentNotFound onNavigate={onNavigate} />
@@ -353,6 +367,73 @@ function LaboratoryAccessRecordsPage({ accountId }: { accountId: StudentAccountI
   </Panel></>
 }
 
+function PrivateInvestigationDenied({ title }: { title: string }) {
+  return <><PageHeader title={title} description="周寻个人调查资料。" /><div className="system-complete-note">当前账号无权查看周寻的私人调查资料。</div></>
+}
+
+function LaboratoryReservationsPage({ accountId }: { accountId: StudentAccountId }) {
+  const { state, recordChapterThreeEvidence } = useGame()
+  const [date, setDate] = useState('')
+  const [applicant, setApplicant] = useState('沈栀')
+  const [results, setResults] = useState<ReturnType<typeof queryLaboratoryReservations> | null>(null)
+  if (accountId !== 'zhou_xun') return <PrivateInvestigationDenied title="实验室使用申请记录" />
+  if (!state.clues.old_building_duty_record.discovered) return <><PageHeader title="实验室使用申请记录" description="周寻个人调查资料。" /><div className="system-complete-note">当前没有可读取的调查记录。</div></>
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    const next = queryLaboratoryReservations(date, applicant)
+    setResults(next)
+    if (next.length > 0) recordChapterThreeEvidence('reservation-record')
+  }
+  return <><PageHeader title="实验室使用申请记录" description="按使用日期和申请人检索实验室申请。" /><Panel title="实验室使用申请记录.xlsx">
+    <form className="record-query-form" onSubmit={submit}><label>使用日期<input aria-label="实验室使用日期" type="date" value={date} onChange={(event) => setDate(event.target.value)} /></label><label>申请人<select aria-label="实验室申请人" value={applicant} onChange={(event) => setApplicant(event.target.value)}><option>沈栀</option><option>周寻</option></select></label><button type="submit">查询申请</button></form>
+    {results && results.length > 0 && <SimpleTable headers={["申请日期", "使用日期", "地点", "用途", "申请人", "审批状态", "审批部门"]} rows={results.map((record) => [record.applicationDate, record.useDate, record.place, record.purpose, record.applicant, record.approvalStatus, record.approvalDepartment])} />}
+    {results && results.length === 0 && <p className="record-note">未查询到符合条件的使用申请。</p>}
+    {state.clues.old_building_reservation.discovered && <p className="record-note">已记录：沈栀提前申请使用旧实验楼A-302。</p>}
+  </Panel></>
+}
+
+function EquipmentLoansPage({ accountId }: { accountId: StudentAccountId }) {
+  const { state, recordChapterThreeEvidence } = useGame()
+  const [date, setDate] = useState('')
+  const [borrower, setBorrower] = useState('沈栀')
+  const [results, setResults] = useState<ReturnType<typeof queryEquipmentLoans> | null>(null)
+  if (accountId !== 'zhou_xun') return <PrivateInvestigationDenied title="实验室设备借用记录" />
+  if (!state.clues.old_building_duty_record.discovered) return <><PageHeader title="实验室设备借用记录" description="周寻个人调查资料。" /><div className="system-complete-note">当前没有可读取的调查记录。</div></>
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    const next = queryEquipmentLoans(date, borrower)
+    setResults(next)
+    if (next.length > 0) recordChapterThreeEvidence('equipment-record')
+  }
+  return <><PageHeader title="实验室设备借用记录" description="按日期和借用人检索设备借用状态。" /><Panel title="实验室设备借用记录.txt">
+    <form className="record-query-form" onSubmit={submit}><label>借用日期<input aria-label="设备借用日期" type="date" value={date} onChange={(event) => setDate(event.target.value)} /></label><label>借用人<select aria-label="设备借用人" value={borrower} onChange={(event) => setBorrower(event.target.value)}><option>沈栀</option><option>周寻</option></select></label><button type="submit">查询借用</button></form>
+    {results && results.length > 0 && <SimpleTable headers={["日期", "借用人", "设备", "状态"]} rows={results.map((record) => [record.date, record.borrower, record.equipment.join('、'), record.status])} />}
+    {results && results.length === 0 && <p className="record-note">未查询到符合条件的设备借用记录。</p>}
+    {state.clues.equipment_missing_record.discovered && <p className="record-note">已记录：沈栀借用的摄像与存储设备尚未归还。</p>}
+  </Panel></>
+}
+
+function CameraExceptionsPage({ accountId }: { accountId: StudentAccountId }) {
+  const { state, recordChapterThreeEvidence } = useGame()
+  const [date, setDate] = useState('')
+  const [device, setDevice] = useState('旧实验楼东门摄像头')
+  const [results, setResults] = useState<ReturnType<typeof queryCameraExceptions> | null>(null)
+  if (accountId !== 'zhou_xun') return <PrivateInvestigationDenied title="监控存储异常记录" />
+  if (!state.clues.old_building_duty_record.discovered) return <><PageHeader title="监控存储异常记录" description="周寻个人调查资料。" /><div className="system-complete-note">当前没有可读取的调查记录。</div></>
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    const next = queryCameraExceptions(date, device)
+    setResults(next)
+    if (next.length > 0) recordChapterThreeEvidence('camera-exception')
+  }
+  return <><PageHeader title="监控存储异常记录" description="按日期和设备检索监控存储异常。" /><Panel title="监控存储异常记录.txt">
+    <form className="record-query-form" onSubmit={submit}><label>异常日期<input aria-label="监控异常日期" type="date" value={date} onChange={(event) => setDate(event.target.value)} /></label><label>监控设备<select aria-label="监控设备" value={device} onChange={(event) => setDevice(event.target.value)}><option>旧实验楼东门摄像头</option><option>新实验楼东门摄像头</option></select></label><button type="submit">查询异常</button></form>
+    {results && results.length > 0 && <SimpleTable headers={["日期", "设备", "异常时间", "异常类型", "处理状态"]} rows={results.map((record) => [record.date, record.device, record.exceptionTime, record.exceptionType, record.status])} />}
+    {results && results.length === 0 && <p className="record-note">未查询到符合条件的监控异常记录。</p>}
+    {state.clues.camera_exception_record.discovered && <p className="record-note">已记录：22:25至22:40的监控数据发生覆盖。</p>}
+  </Panel></>
+}
+
 function Downloads({ accountId }: { accountId: StudentAccountId }) {
   const { state, activeTab, openBackup, openVirtualFile, closeVirtualFile, beginChapterEnding, beginChapterTwoEnding, discoverClue, revealFileSection } = useGame()
   const [passwordOpen, setPasswordOpen] = useState(false)
@@ -385,7 +466,7 @@ function Downloads({ accountId }: { accountId: StudentAccountId }) {
   return <><PageHeader title="文件中心" description="所有文件均以只读方式查看，不会传输到现实设备。" /><Panel title="可用文件"><div className="download-list">
     {unlocked && <div className="story-download"><span className="file-icon encrypted">ZIP</span><span><strong>调查备份_01.zip</strong><small>上传者：周寻 · 状态：加密</small></span><button type="button" onClick={() => setPasswordOpen(true)}>解锁</button></div>}
     {accountId === 'zhou_xun' && state.chapterTwoStarted && chapterFiles.map(([id, name]) => <div className="story-download" key={id}><span className="file-icon">{name.split('.').pop()?.toUpperCase()}</span><span><strong>{name}</strong><small>周寻个人文件 · 只读</small></span><button type="button" onClick={() => openStoryFile(id)}>打开</button></div>)}
-    {accountId === 'zhou_xun' && state.chapterTwoStarted && <div className="story-download damaged"><span className="file-icon">DAT</span><span><strong>学生缓存_2024010318.dat</strong><small>文件损坏 · 需要更多交叉证据</small></span><button type="button" disabled>无法读取</button></div>}
+    {accountId === 'zhou_xun' && state.chapterTwoStarted && <div className="story-download damaged"><span className="file-icon">DAT</span><span><strong>学生缓存_2024010318.dat</strong><small>文件损坏<br />部分数据无法恢复<br />需要更多关联记录</small></span><button type="button" disabled>无法读取</button></div>}
     {accountId === 'zhou_xun' && state.unlockedFileIds.includes(CHAPTER_TWO_FINAL_FILE_ID) && (() => { const file = getVirtualFile(CHAPTER_TWO_FINAL_FILE_ID)!; return <div className="story-download unlocked"><span className="file-icon">{file.name.split('.').pop()?.toUpperCase()}</span><span><strong>{file.name}</strong><small>恢复记录 · 只读</small></span><button type="button" onClick={() => openStoryFile(CHAPTER_TWO_FINAL_FILE_ID)}>打开</button></div> })()}
     {accountId === 'zhou_xun' && state.unlockedFileIds.includes(CHAPTER_THREE_BACKUP_FILE_ID) && (() => { const finalized = state.unlockedFileIds.includes(CHAPTER_THREE_FINAL_FILE_ID); const file = getVirtualFile(finalized ? CHAPTER_THREE_FINAL_FILE_ID : CHAPTER_THREE_BACKUP_FILE_ID)!; return <div className={finalized ? 'story-download unlocked' : 'story-download'}><span className="file-icon">TXT</span><span><strong>{file.name}</strong><small>{finalized ? '调查记录已更新 · 只读' : '周寻个人文件 · 只读'}</small></span><button type="button" onClick={openChapterThreeBackup}>打开</button></div> })()}
     {baseDownloads.map((file) => <div key={file.id}><span className="file-icon">{file.name.split('.').pop()?.toUpperCase()}</span><span><strong>{file.name}</strong><small>{file.meta}</small></span><button type="button" onClick={() => openVirtualFile(file.id)}>打开</button></div>)}

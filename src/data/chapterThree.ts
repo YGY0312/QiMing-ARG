@@ -40,3 +40,100 @@ export function queryLaboratoryAccessRecords(date: string, building: string): La
 export function isChapterThreeAccessQuery(date: string, building: string): boolean {
   return date === '2026-06-16' && building === '旧实验楼'
 }
+
+export interface LaboratoryReservationRecord {
+  applicationDate: string
+  useDate: string
+  place: string
+  purpose: string
+  applicant: string
+  approvalStatus: string
+  approvalDepartment: string
+}
+
+export const laboratoryReservationRecords: LaboratoryReservationRecord[] = [
+  {
+    applicationDate: '2026-06-15',
+    useDate: '2026-06-16',
+    place: '旧实验楼 A-302',
+    purpose: '资料整理',
+    applicant: '沈栀',
+    approvalStatus: '通过',
+    approvalDepartment: '信息中心',
+  },
+]
+
+export function queryLaboratoryReservations(useDate: string, applicant: string): LaboratoryReservationRecord[] {
+  return laboratoryReservationRecords.filter((record) => record.useDate === useDate && record.applicant === applicant)
+}
+
+export interface EquipmentLoanRecord {
+  date: string
+  borrower: string
+  equipment: string[]
+  status: string
+}
+
+export const equipmentLoanRecords: EquipmentLoanRecord[] = [
+  { date: '2026-06-16', borrower: '沈栀', equipment: ['便携摄像设备', '存储卡', '数据线'], status: '未归还' },
+]
+
+export function queryEquipmentLoans(date: string, borrower: string): EquipmentLoanRecord[] {
+  return equipmentLoanRecords.filter((record) => record.date === date && record.borrower === borrower)
+}
+
+export interface DutyLogRecord {
+  date: string
+  time: string
+  event: string
+}
+
+export const dutyLogRecords: DutyLogRecord[] = [
+  { date: '2026-06-16', time: '19:10', event: '旧实验楼开放' },
+  { date: '2026-06-16', time: '19:21', event: '发现学生进入A区' },
+  { date: '2026-06-16', time: '21:45', event: '收到系统维护通知' },
+  { date: '2026-06-16', time: '22:30', event: '执行系统同步' },
+  { date: '2026-06-16', time: '23:00', event: '值班结束' },
+]
+
+export function queryDutyLogs(date: string): DutyLogRecord[] {
+  return dutyLogRecords.filter((record) => record.date === date)
+}
+
+export interface CameraExceptionRecord {
+  date: string
+  device: string
+  exceptionTime: string
+  exceptionType: string
+  status: string
+}
+
+export const cameraExceptionRecords: CameraExceptionRecord[] = [
+  {
+    date: '2026-06-16',
+    device: '旧实验楼东门摄像头',
+    exceptionTime: '22:25-22:40',
+    exceptionType: '数据覆盖',
+    status: '已恢复',
+  },
+]
+
+export function queryCameraExceptions(date: string, device: string): CameraExceptionRecord[] {
+  return cameraExceptionRecords.filter((record) => record.date === date && record.device === device)
+}
+
+export interface MaintenanceTicketRecord {
+  id: string
+  time: string
+  type: string
+  scope: string
+  department: string
+}
+
+export const maintenanceTicketRecords: MaintenanceTicketRecord[] = [
+  { id: 'SYS-0616', time: '2026-06-16 22:20', type: '数据同步维护', scope: '学生信息系统', department: '信息中心' },
+]
+
+export function queryMaintenanceTickets(id: string): MaintenanceTicketRecord[] {
+  return maintenanceTicketRecords.filter((record) => record.id === id.trim().toUpperCase())
+}

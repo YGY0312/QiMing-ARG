@@ -102,6 +102,11 @@ export function recordChapterThreeEvidence(
     'access-log': 'old_building_access_log',
     'admin-trace': 'admin_permission_trace',
     'system-upgrade': 'system_upgrade_notice',
+    'reservation-record': 'old_building_reservation',
+    'equipment-record': 'equipment_missing_record',
+    'duty-log': 'duty_log_record',
+    'camera-exception': 'camera_exception_record',
+    'maintenance-ticket': 'system_maintenance_ticket',
   }
   return discoverStoryClue(state, clueByAction[action], sourceUrl, now)
 }

@@ -7,7 +7,7 @@ import { hotspotStyle, LAB_SAFETY_GROUP_PHOTO, resolveStoryImageSource } from '.
 import { getVirtualFile } from '../../data/virtualFiles'
 import { VirtualFileViewer } from '../../components/VirtualFileViewer'
 import { isShenzhiSearch, searchSchoolContent } from '../../data/chapterTwo'
-import { queryDutySchedule } from '../../data/chapterThree'
+import { queryDutyLogs, queryDutySchedule, queryMaintenanceTickets } from '../../data/chapterThree'
 
 interface Props {
   route: GameRoute
@@ -26,6 +26,7 @@ const navItems = [
   { label: '招生信息' },
   { label: '校园文化' },
   { label: '校园服务', url: 'www.qiming-high.edu.cn/services/laboratory', chapterThree: true },
+  { label: '信息中心', url: 'www.qiming-high.edu.cn/services/information-center', chapterThree: true },
   { label: '联系我们' },
 ]
 
@@ -85,6 +86,9 @@ function SchoolContent({ route, onNavigate, onOpenStudentTab }: Props) {
     case 'school-removed': return <RemovedSearchPage onNavigate={onNavigate} />
     case 'school-lab-management': return <LaboratoryManagement onNavigate={onNavigate} />
     case 'school-duty-schedule': return <DutySchedulePage onNavigate={onNavigate} />
+    case 'school-duty-log': return <DutyLogPage onNavigate={onNavigate} />
+    case 'school-information-center': return <InformationCenterPage onNavigate={onNavigate} />
+    case 'school-maintenance-ticket': return <MaintenanceTicketPage onNavigate={onNavigate} />
     default:
       return <SchoolNotFound onNavigate={onNavigate} />
   }
@@ -242,7 +246,10 @@ function LaboratoryManagement({ onNavigate }: Pick<Props, 'onNavigate'>) {
   if (!state.revealedFileSections.includes('chapter-three-backup-read')) return <SchoolNotFound onNavigate={onNavigate} />
   return <main className="school-main school-subpage"><div className="school-breadcrumb">当前位置：校园服务 &gt; 实验室管理</div><div className="subpage-layout">
     <aside><h2>校园服务</h2><span className="aside-active">实验室管理</span><span>场地预约</span><span>安全制度</span></aside>
-    <section className="school-list-page"><h2>实验室管理<small>LABORATORY SERVICES</small></h2><ul><li><button type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/laboratory/duty-june-2026')}><strong>2026年6月实验楼值班安排</strong><span>实验中心值班与巡查安排</span></button><time>2026-06</time></li></ul></section>
+    <section className="school-list-page"><h2>实验室管理<small>LABORATORY SERVICES</small></h2><ul>
+      <li><button type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/laboratory/duty-june-2026')}><strong>2026年6月实验楼值班安排</strong><span>实验中心值班与巡查安排</span></button><time>2026-06</time></li>
+      <li><button type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/laboratory/duty-log')}><strong>实验楼值班日志.txt</strong><span>按日期检索实验楼值班日志</span></button><time>日志</time></li>
+    </ul></section>
   </div></main>
 }
 
@@ -265,6 +272,61 @@ function DutySchedulePage({ onNavigate }: Pick<Props, 'onNavigate'>) {
     {results && results.length === 0 && <p className="record-note">未查询到该日期的旧实验楼值班安排。</p>}
     {state.clues.old_building_duty_record.discovered && <p className="record-note">已记录：6月16日晚旧实验楼存在值班人员。</p>}
     <button className="back-list" type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/laboratory')}>返回实验室管理</button>
+  </section></main>
+}
+
+function DutyLogPage({ onNavigate }: Pick<Props, 'onNavigate'>) {
+  const { state, recordChapterThreeEvidence } = useGame()
+  const [date, setDate] = useState('')
+  const [results, setResults] = useState<ReturnType<typeof queryDutyLogs> | null>(null)
+  if (!state.revealedFileSections.includes('chapter-three-backup-read')) return <SchoolNotFound onNavigate={onNavigate} />
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    const next = queryDutyLogs(date)
+    setResults(next)
+    if (date === '2026-06-16' && next.length > 0) recordChapterThreeEvidence('duty-log')
+  }
+  return <main className="school-main school-subpage"><div className="school-breadcrumb">当前位置：校园服务 &gt; 实验室管理 &gt; 值班日志</div><section className="school-list-page duty-schedule-page">
+    <h2>实验楼值班日志.txt<small>LABORATORY DUTY LOG</small></h2>
+    <p>输入日期检索实验中心归档的值班事件。</p>
+    <form className="record-query-form" onSubmit={submit}><label>日志日期<input aria-label="值班日志日期" type="date" value={date} onChange={(event) => setDate(event.target.value)} /></label><button type="submit">查询日志</button></form>
+    {results && results.length > 0 && <div className="table-scroll"><table><thead><tr><th>日期</th><th>时间</th><th>日志内容</th></tr></thead><tbody>{results.map((record) => <tr key={`${record.date}-${record.time}`}><td>{record.date}</td><td>{record.time}</td><td>{record.event}</td></tr>)}</tbody></table></div>}
+    {results && results.length === 0 && <p className="record-note">未查询到该日期的值班日志。</p>}
+    {state.clues.duty_log_record.discovered && <p className="record-note">已记录：维护通知、系统同步与当晚值班日志处于同一时间线。</p>}
+    <button className="back-list" type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/laboratory')}>返回实验室管理</button>
+  </section></main>
+}
+
+function InformationCenterPage({ onNavigate }: Pick<Props, 'onNavigate'>) {
+  const { state } = useGame()
+  if (!state.revealedFileSections.includes('chapter-three-backup-read')) return <SchoolNotFound onNavigate={onNavigate} />
+  return <main className="school-main school-subpage"><div className="school-breadcrumb">当前位置：信息中心</div><div className="subpage-layout">
+    <aside><h2>信息中心</h2><span className="aside-active">系统维护记录</span><span>服务公告</span><span>终端支持</span></aside>
+    <section className="school-list-page"><h2>信息中心<small>INFORMATION CENTER</small></h2><ul>
+      <li><button type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/information-center/maintenance')}><strong>系统维护记录</strong><span>按工单编号查询历史维护任务</span></button><time>查询</time></li>
+    </ul></section>
+  </div></main>
+}
+
+function MaintenanceTicketPage({ onNavigate }: Pick<Props, 'onNavigate'>) {
+  const { state, recordChapterThreeEvidence } = useGame()
+  const [ticketId, setTicketId] = useState('')
+  const [results, setResults] = useState<ReturnType<typeof queryMaintenanceTickets> | null>(null)
+  if (!state.revealedFileSections.includes('chapter-three-backup-read')) return <SchoolNotFound onNavigate={onNavigate} />
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    const next = queryMaintenanceTickets(ticketId)
+    setResults(next)
+    if (next.some((record) => record.id === 'SYS-0616')) recordChapterThreeEvidence('maintenance-ticket')
+  }
+  return <main className="school-main school-subpage"><div className="school-breadcrumb">当前位置：信息中心 &gt; 系统维护记录</div><section className="school-list-page duty-schedule-page">
+    <h2>系统维护记录<small>SYSTEM MAINTENANCE</small></h2>
+    <p>输入工单编号查询信息中心维护记录。</p>
+    <form className="record-query-form" onSubmit={submit}><label>工单编号<input aria-label="维护工单编号" value={ticketId} onChange={(event) => setTicketId(event.target.value)} placeholder="SYS-0000" /></label><button type="submit">查询工单</button></form>
+    {results && results.length > 0 && <div className="table-scroll"><table><thead><tr><th>编号</th><th>时间</th><th>类型</th><th>影响范围</th><th>执行部门</th></tr></thead><tbody>{results.map((record) => <tr key={record.id}><td>{record.id}</td><td>{record.time}</td><td>{record.type}</td><td>{record.scope}</td><td>{record.department}</td></tr>)}</tbody></table></div>}
+    {results && results.length === 0 && <p className="record-note">未查询到该工单。</p>}
+    {state.clues.system_maintenance_ticket.discovered && <p className="record-note">已记录：6月16日22:20存在学生信息系统数据同步维护。</p>}
+    <button className="back-list" type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/information-center')}>返回信息中心</button>
   </section></main>
 }
 

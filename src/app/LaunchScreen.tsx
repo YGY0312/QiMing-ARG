@@ -37,6 +37,7 @@ export function LaunchScreen() {
         <div className="launch-meta">
           <span>建议使用电脑端浏览器并佩戴耳机</span>
           <span>当前版本：{PROTOTYPE_VERSION}</span>
+          <span>当前章节：第三章《值班记录》</span>
         </div>
         <div className="launch-credits">
           <span>策划、设计与制作：{PROJECT_CREATOR}</span>

@@ -19,6 +19,9 @@ const schoolRoutes: RouteDefinition[] = [
   { pattern: /^\/removed\/([^/]+)$/, componentKey: 'school-removed', pageTitle: '页面已删除 - 启明市第一中学' },
   { pattern: /^\/services\/laboratory$/, componentKey: 'school-lab-management', pageTitle: '实验室管理 - 启明市第一中学' },
   { pattern: /^\/services\/laboratory\/duty-june-2026$/, componentKey: 'school-duty-schedule', pageTitle: '2026年6月实验楼值班安排 - 启明市第一中学' },
+  { pattern: /^\/services\/laboratory\/duty-log$/, componentKey: 'school-duty-log', pageTitle: '实验楼值班日志 - 启明市第一中学' },
+  { pattern: /^\/services\/information-center$/, componentKey: 'school-information-center', pageTitle: '信息中心 - 启明市第一中学' },
+  { pattern: /^\/services\/information-center\/maintenance$/, componentKey: 'school-maintenance-ticket', pageTitle: '系统维护记录 - 启明市第一中学' },
   { pattern: /^\/student\/shenzhi$/, componentKey: 'not-found', pageTitle: '未找到的学生' },
 ]
 
@@ -35,6 +38,9 @@ const studentRoutes: RouteDefinition[] = [
   { pattern: /^\/class-group-history$/, componentKey: 'student-group-history', pageTitle: '班级群历史 - 学生信息系统' },
   { pattern: /^\/access-query$/, componentKey: 'student-access-query', pageTitle: '门禁记录查询 - 学生信息系统' },
   { pattern: /^\/lab-access-records$/, componentKey: 'student-lab-access-records', pageTitle: '实验楼访问记录 - 学生信息系统' },
+  { pattern: /^\/lab-reservations$/, componentKey: 'student-lab-reservations', pageTitle: '实验室使用申请记录 - 学生信息系统' },
+  { pattern: /^\/equipment-loans$/, componentKey: 'student-equipment-loans', pageTitle: '实验室设备借用记录 - 学生信息系统' },
+  { pattern: /^\/camera-exceptions$/, componentKey: 'student-camera-exceptions', pageTitle: '监控存储异常记录 - 学生信息系统' },
   { pattern: /^\/downloads$/, componentKey: 'student-downloads', pageTitle: '文件下载 - 学生信息系统' },
   { pattern: /^\/student\/2024010318$/, componentKey: 'student-missing', pageTitle: '沈栀' },
 ]
