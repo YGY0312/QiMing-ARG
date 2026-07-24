@@ -19,7 +19,7 @@ export function LaunchScreen() {
         <p className="launch-subtitle">一款校园调查类网页 ARG 游戏</p>
         {state.chapterOneCompleted && <div className="chapter-complete-stamp">第一章已完成</div>}
         {state.chapterTwoCompleted && <div className="chapter-complete-stamp">第二章已完成</div>}
-        {state.revealedFileSections.includes('chapter-three-final-read')
+        {state.triggeredEvents.includes('chapter_three_completed')
           ? <div className="chapter-complete-stamp">第三章《值班记录》已完成</div>
           : state.triggeredEvents.includes('chapter_three_started') && <div className="chapter-complete-stamp">第三章《值班记录》调查中</div>}
         <p className="launch-intro">

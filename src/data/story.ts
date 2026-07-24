@@ -73,6 +73,7 @@ export const storyEventRequirements: Record<StoryEventId, ClueId[]> = {
     'old_building_duty_record', 'old_building_access_log', 'old_building_reservation', 'equipment_missing_record',
     'duty_log_record', 'camera_exception_record', 'system_maintenance_ticket', 'admin_permission_trace', 'system_upgrade_notice',
   ],
+  chapter_three_completed: [],
 }
 
 export const shenzhiCacheEvidenceIds: ClueId[] = ['class_size_mismatch', 'seat_chart_shenzhi', 'hidden_grade_row', 'shenzhi_essay', 'shenzhi_removed_from_group']

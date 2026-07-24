@@ -32,7 +32,7 @@ export function TestConsole({ onExitTestMode }: Props) {
   const [description, setDescription] = useState('')
 
   const discoveredCount = Object.values(state.clues).filter((clue) => clue.discovered).length
-  const chapterLabel = state.revealedFileSections.includes('chapter-three-final-read') ? '第三章《值班记录》调查完成'
+  const chapterLabel = state.triggeredEvents.includes('chapter_three_completed') ? '第三章《值班记录》调查完成'
     : state.triggeredEvents.includes('chapter_three_started') ? '第三章《值班记录》调查中'
       : state.chapterTwoCompleted ? '第二章已完成'
         : state.chapterTwoStarted ? '第二章调查中'
@@ -112,7 +112,7 @@ export function TestConsole({ onExitTestMode }: Props) {
             <div><dt>章节状态</dt><dd>{chapterLabel}</dd></div>
             <div><dt>第一章</dt><dd>{state.chapterOneCompleted ? '已完成' : state.isStarted ? '进行中' : '未开始'}</dd></div>
             <div><dt>第二章</dt><dd>{state.chapterTwoCompleted ? '已完成' : state.chapterTwoStarted ? '进行中' : '未开始'}</dd></div>
-            <div><dt>第三章</dt><dd>{state.revealedFileSections.includes('chapter-three-final-read') ? '已完成' : state.triggeredEvents.includes('chapter_three_started') ? '进行中' : '未开始'}</dd></div>
+            <div><dt>第三章</dt><dd>{state.triggeredEvents.includes('chapter_three_completed') ? '已完成' : state.triggeredEvents.includes('chapter_three_started') ? '进行中' : '未开始'}</dd></div>
             <div><dt>线索 / 事件</dt><dd>{discoveredCount} / {state.triggeredEvents.length}</dd></div>
             <div><dt>保存账号</dt><dd>{state.savedStudentAccounts.map((account) => account.displayName).join('、') || '无'}</dd></div>
             <div><dt>关键事实侧栏</dt><dd>{state.evidenceSidebarCollapsed ? '已收起' : '已展开'}</dd></div>

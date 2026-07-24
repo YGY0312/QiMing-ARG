@@ -37,7 +37,7 @@ export type ClueId = ChapterOneClueId | ChapterTwoClueId | ChapterThreeClueId
 
 export type ChapterOneEventId = 'old_building_contradiction' | 'zhou_draft_revealed' | 'investigation_backup_unlocked' | 'chapter_one_completed'
 export type ChapterTwoEventId = 'chapter_two_started' | 'shenzhi_cache_unlocked' | 'old_building_access_unlocked' | 'chapter_two_final_file_unlocked' | 'chapter_two_completed'
-export type ChapterThreeEventId = 'chapter_three_started' | 'chapter_three_final_unlocked'
+export type ChapterThreeEventId = 'chapter_three_started' | 'chapter_three_final_unlocked' | 'chapter_three_completed'
 export type StoryEventId = ChapterOneEventId | ChapterTwoEventId | ChapterThreeEventId
 
 export type ChapterThreeEvidenceAction =
@@ -69,4 +69,5 @@ export interface GameState extends Omit<GameSaveV5, 'schemaVersion' | 'prototype
   currentUrl: string; history: string[]; historyIndex: number; refreshToken: number; openVirtualFileId: string | null
   addressGlitchActive: boolean; chapterEndingVisible: boolean
   chapterTwoAddressGlitchActive: boolean; chapterTwoEndingVisible: boolean
+  chapterThreeEndingVisible: boolean
 }

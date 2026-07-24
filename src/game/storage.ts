@@ -45,7 +45,7 @@ export function createSave(state: GameState): GameSaveV5 {
 
 function stringArray(value: unknown): string[] { return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [] }
 function storyEvents(value: unknown): StoryEventId[] {
-  const allowed: StoryEventId[] = ['old_building_contradiction', 'zhou_draft_revealed', 'investigation_backup_unlocked', 'chapter_one_completed', 'chapter_two_started', 'shenzhi_cache_unlocked', 'old_building_access_unlocked', 'chapter_two_final_file_unlocked', 'chapter_two_completed', 'chapter_three_started', 'chapter_three_final_unlocked']
+  const allowed: StoryEventId[] = ['old_building_contradiction', 'zhou_draft_revealed', 'investigation_backup_unlocked', 'chapter_one_completed', 'chapter_two_started', 'shenzhi_cache_unlocked', 'old_building_access_unlocked', 'chapter_two_final_file_unlocked', 'chapter_two_completed', 'chapter_three_started', 'chapter_three_final_unlocked', 'chapter_three_completed']
   return stringArray(value).map((id) => id === 'zhou_message_unlocked' ? 'zhou_draft_revealed' : id).filter((id): id is StoryEventId => allowed.includes(id as StoryEventId))
 }
 
@@ -125,15 +125,20 @@ export function migrateSave(value: unknown): GameSaveV5 | null {
     tabs = [school ?? createSchoolTab(), ...tabs.filter((tab) => tab.id !== SCHOOL_TAB_ID && tab.siteType === 'student')]
     const activeTabId = typeof raw.activeTabId === 'string' && tabs.some((tab) => tab.id === raw.activeTabId) ? raw.activeTabId : SCHOOL_TAB_ID
     const messages = messageState(raw.unreadMessageIds, raw.readMessageIds)
+    const chapterDefaults = chapterTwoDefaults(raw)
+    const triggeredEvents = storyEvents(raw.triggeredEvents)
+    if (chapterDefaults.revealedFileSections.includes('chapter-three-final-read') && !triggeredEvents.includes('chapter_three_completed')) {
+      triggeredEvents.push('chapter_three_completed')
+    }
     return {
       schemaVersion: 5, prototypeVersion: PROTOTYPE_VERSION, isStarted: Boolean(raw.isStarted), tabs, activeTabId,
       savedStudentAccounts: normalizeSavedAccounts(raw.savedStudentAccounts), studentAccountStates: normalizeAccountStates(raw.studentAccountStates),
       evidenceSidebarCollapsed: Boolean(raw.evidenceSidebarCollapsed), visitedPages: stringArray(raw.visitedPages),
-      clues: mergeClues(raw.clues as Partial<ClueProgressMap> | undefined), triggeredEvents: storyEvents(raw.triggeredEvents),
+      clues: mergeClues(raw.clues as Partial<ClueProgressMap> | undefined), triggeredEvents,
       unreadMessageIds: messages.unread, readMessageIds: messages.read, unlockedFileIds: stringArray(raw.unlockedFileIds),
       chapterOneCompleted: Boolean(raw.chapterOneCompleted), chapterOneCompletedAt: typeof raw.chapterOneCompletedAt === 'string' ? raw.chapterOneCompletedAt : null,
       chapterEndingPlayed: Boolean(raw.chapterEndingPlayed), savedAt: typeof raw.savedAt === 'string' ? raw.savedAt : new Date().toISOString(),
-      ...chapterTwoDefaults(raw),
+      ...chapterDefaults,
     }
   }
 

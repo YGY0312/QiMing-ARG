@@ -15,7 +15,7 @@ import { CHAPTER_THREE_BACKUP_FILE_ID, CHAPTER_THREE_FINAL_FILE_ID, CHAPTER_TWO_
 import { createDefaultSavedAccounts } from './savedAccounts'
 import { createStudentAccountStates } from './storage'
 import { createSchoolTab } from './tabs'
-import { evaluateStoryEvents, recordChapterThreeEvidence } from './story'
+import { completeChapterThree, evaluateStoryEvents, recordChapterThreeEvidence } from './story'
 
 function state(): GameState {
   const tab = createSchoolTab()
@@ -28,7 +28,7 @@ function state(): GameState {
     chapterTwoStarted: true, chapterTwoCompleted: true, chapterTwoCompletedAt: '2026-09-17', chapterTwoEndingPlayed: true,
     searchResiduePlayed: false, classCountAnomalyPlayed: false, chapterTwoAnomalyHistoryAdded: true, revealedFileSections: [],
     studentTabCaptchas: {}, currentUrl: tab.currentUrl, history: tab.history, historyIndex: 0, refreshToken: 0, openVirtualFileId: null,
-    addressGlitchActive: false, chapterEndingVisible: false, chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false,
+    addressGlitchActive: false, chapterEndingVisible: false, chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false,
   }
 }
 
@@ -67,6 +67,7 @@ describe('第三章《值班记录》状态机', () => {
     expect(next.clues.camera_exception_record.discovered).toBe(true)
     expect(next.clues.system_maintenance_ticket.discovered).toBe(true)
     expect(next.triggeredEvents).toContain('chapter_three_final_unlocked')
+    expect(next.triggeredEvents).not.toContain('chapter_three_completed')
     expect(next.unlockedFileIds).toContain(CHAPTER_THREE_FINAL_FILE_ID)
   })
 
@@ -87,6 +88,20 @@ describe('第三章《值班记录》状态机', () => {
     const repeated = recordChapterThreeEvidence(first, 'duty-record', 'school-duty', 'later')
     expect(repeated.clues.old_building_duty_record.discoveredAt).toBe('first')
     expect(Object.keys(repeated.clues).filter((id) => id === 'old_building_duty_record')).toHaveLength(1)
+  })
+
+  it('关闭最终备份后完成第三章，重复完成不会重新显示结尾', () => {
+    const unlocked = {
+      ...evaluateStoryEvents(state()),
+      triggeredEvents: ['chapter_one_completed', 'chapter_two_started', 'chapter_two_completed', 'chapter_three_started', 'chapter_three_final_unlocked'] as GameState['triggeredEvents'],
+    }
+    const completed = completeChapterThree(unlocked)
+    expect(completed.triggeredEvents).toContain('chapter_three_completed')
+    expect(completed.chapterThreeEndingVisible).toBe(true)
+    const dismissed = { ...completed, chapterThreeEndingVisible: false }
+    const repeated = completeChapterThree(dismissed)
+    expect(repeated.chapterThreeEndingVisible).toBe(false)
+    expect(repeated.triggeredEvents.filter((id) => id === 'chapter_three_completed')).toHaveLength(1)
   })
 
   it('最后记录0616保持第二章结尾内容', () => {

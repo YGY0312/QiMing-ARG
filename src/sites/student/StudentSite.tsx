@@ -435,7 +435,7 @@ function CameraExceptionsPage({ accountId }: { accountId: StudentAccountId }) {
 }
 
 function Downloads({ accountId }: { accountId: StudentAccountId }) {
-  const { state, activeTab, openBackup, openVirtualFile, closeVirtualFile, beginChapterEnding, beginChapterTwoEnding, discoverClue, revealFileSection } = useGame()
+  const { state, activeTab, openBackup, openVirtualFile, closeVirtualFile, beginChapterEnding, beginChapterTwoEnding, completeChapterThree, discoverClue, revealFileSection } = useGame()
   const [passwordOpen, setPasswordOpen] = useState(false)
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -449,16 +449,18 @@ function Downloads({ accountId }: { accountId: StudentAccountId }) {
   const closeFile = useCallback(() => {
     const completedBackup = activeTab.openVirtualFileId === 'backup-readme'
     const completedChapterTwo = activeTab.openVirtualFileId === CHAPTER_TWO_FINAL_FILE_ID
+    const completedChapterThree = activeTab.openVirtualFileId === CHAPTER_THREE_FINAL_FILE_ID
     closeVirtualFile()
     if (completedBackup) beginChapterEnding()
     if (completedChapterTwo) beginChapterTwoEnding()
-  }, [activeTab.openVirtualFileId, closeVirtualFile, beginChapterEnding, beginChapterTwoEnding])
+    if (completedChapterThree) completeChapterThree()
+  }, [activeTab.openVirtualFileId, closeVirtualFile, beginChapterEnding, beginChapterTwoEnding, completeChapterThree])
   const openStoryFile = (id: string) => { const file = getVirtualFile(id); openVirtualFile(id); if (file?.onOpenClueId) discoverClue(file.onOpenClueId, 'stu.qiming-high.edu.cn/downloads') }
   const openChapterThreeBackup = () => {
     const finalized = state.unlockedFileIds.includes(CHAPTER_THREE_FINAL_FILE_ID)
     const id = finalized ? CHAPTER_THREE_FINAL_FILE_ID : CHAPTER_THREE_BACKUP_FILE_ID
     openVirtualFile(id)
-    revealFileSection(finalized ? 'chapter-three-final-read' : 'chapter-three-backup-read')
+    revealFileSection(finalized ? 'chapter_three_final_opened' : 'chapter-three-backup-read')
   }
   const chapterFiles = [
     ['chapter-two-search-note', '检索记录.txt'], ['seat-chart-may', '高二（3）班座位表_五月.pdf'], ['midterm-grades', '高二三班期中成绩汇总.csv'],

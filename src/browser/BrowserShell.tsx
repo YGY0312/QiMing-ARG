@@ -6,6 +6,7 @@ import { StudentSite } from '../sites/student/StudentSite'
 import { UnknownSiteError } from './UnknownSiteError'
 import { InvestigationLog } from '../game/InvestigationLog'
 import { ChapterEnding, ChapterTwoEnding } from '../game/ChapterEnding'
+import { ChapterThreeEnding } from '../game/ChapterThreeEnding'
 import { EvidenceSidebar } from '../game/EvidenceSidebar'
 
 export function BrowserShell() {
@@ -82,6 +83,7 @@ export function BrowserShell() {
       {logOpen && <InvestigationLog onClose={() => setLogOpen(false)} />}
       {state.chapterEndingVisible && <ChapterEnding />}
       {state.chapterTwoEndingVisible && <ChapterTwoEnding />}
+      {state.chapterThreeEndingVisible && <ChapterThreeEnding />}
     </main>
   )
 }

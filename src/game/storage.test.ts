@@ -16,7 +16,7 @@ function makeState(): GameState {
     chapterOneCompleted: false, chapterOneCompletedAt: null, chapterEndingPlayed: false,
     currentUrl: student.currentUrl, history: student.history, historyIndex: student.historyIndex, refreshToken: 0,
     addressGlitchActive: false, chapterEndingVisible: false,
-    chapterTwoStarted: false, chapterTwoCompleted: false, chapterTwoCompletedAt: null, chapterTwoEndingPlayed: false, searchResiduePlayed: false, classCountAnomalyPlayed: false, chapterTwoAnomalyHistoryAdded: false, revealedFileSections: [], chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false,
+    chapterTwoStarted: false, chapterTwoCompleted: false, chapterTwoCompletedAt: null, chapterTwoEndingPlayed: false, searchResiduePlayed: false, classCountAnomalyPlayed: false, chapterTwoAnomalyHistoryAdded: false, revealedFileSections: [], chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false,
   }
 }
 
@@ -105,6 +105,18 @@ describe('v5 本地存档', () => {
     expect(migrated?.schemaVersion).toBe(5)
     expect(migrated?.triggeredEvents).toContain('chapter_three_final_unlocked')
     expect(migrated?.unlockedFileIds).toContain('investigation-backup-02-final')
+  })
+
+  it('旧 v5 的 chapter-three-final-read 标记自动迁移为第三章完成事件', () => {
+    const state = makeState()
+    state.chapterTwoStarted = true
+    state.chapterTwoCompleted = true
+    state.triggeredEvents = ['chapter_one_completed', 'chapter_two_started', 'chapter_two_completed', 'chapter_three_started', 'chapter_three_final_unlocked']
+    state.unlockedFileIds = ['investigation-backup-02', 'investigation-backup-02-final']
+    state.revealedFileSections = ['chapter-three-backup-read', 'chapter-three-final-read']
+    const migrated = migrateSave(createSave(state))
+    expect(migrated?.schemaVersion).toBe(5)
+    expect(migrated?.triggeredEvents).toContain('chapter_three_completed')
   })
 
   it('损坏数据安全回退', () => {

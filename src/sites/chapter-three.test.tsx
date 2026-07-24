@@ -1,11 +1,13 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createEmptyClues } from '../data/story'
 import { CHAPTER_THREE_BACKUP_FILE_ID, CHAPTER_THREE_FINAL_FILE_ID } from '../game/constants'
 import { GameProvider } from '../game/GameContext'
+import { BrowserShell } from '../browser/BrowserShell'
+import { LaunchScreen } from '../app/LaunchScreen'
 import { parseGameUrl } from '../game/router'
 import { createDefaultSavedAccounts } from '../game/savedAccounts'
-import { createStudentAccountStates, writeSave } from '../game/storage'
+import { createStudentAccountStates, readSave, writeSave } from '../game/storage'
 import { createSchoolTab, createStudentTab } from '../game/tabs'
 import type { ClueId, GameState, StudentAccountId } from '../types/game'
 import { SchoolSite } from './school/SchoolSite'
@@ -25,7 +27,7 @@ function chapterThreeState(accountId: StudentAccountId | null, url: string): Gam
     chapterTwoStarted: true, chapterTwoCompleted: true, chapterTwoCompletedAt: '2026-09-17', chapterTwoEndingPlayed: true,
     searchResiduePlayed: false, classCountAnomalyPlayed: false, chapterTwoAnomalyHistoryAdded: true, revealedFileSections: ['chapter-three-backup-read'],
     studentTabCaptchas: {}, currentUrl: active.currentUrl, history: active.history, historyIndex: active.historyIndex, refreshToken: 0, openVirtualFileId: null,
-    addressGlitchActive: false, chapterEndingVisible: false, chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false,
+    addressGlitchActive: false, chapterEndingVisible: false, chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false,
   }
 }
 
@@ -60,6 +62,45 @@ describe('第三章页面与账号权限', () => {
     expect(screen.getByText(/ADMIN_03/)).toBeInTheDocument()
     expect(screen.getByText(/我还原了6月16日晚/)).toBeInTheDocument()
     expect(screen.getByText(/但我还不知道这个账号是谁/)).toBeInTheDocument()
+  })
+
+  it('最终备份打开时只记录opened，关闭后完成第三章并显示一次结尾', async () => {
+    const user = userEvent.setup()
+    const url = 'stu.qiming-high.edu.cn/downloads'
+    const state = chapterThreeState('zhou_xun', url)
+    state.triggeredEvents.push('chapter_three_final_unlocked')
+    state.unlockedFileIds.push(CHAPTER_THREE_FINAL_FILE_ID)
+    writeSave(state)
+    render(<GameProvider><BrowserShell /></GameProvider>)
+
+    const backupRow = screen.getByText('调查备份_02.txt').closest('.story-download')
+    await user.click(within(backupRow as HTMLElement).getByRole('button', { name: '打开' }))
+    expect(screen.queryByRole('dialog', { name: '值班记录' })).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(readSave()?.revealedFileSections).toContain('chapter_three_final_opened')
+      expect(readSave()?.triggeredEvents).not.toContain('chapter_three_completed')
+    })
+
+    await user.click(screen.getByRole('button', { name: '关闭' }))
+    expect(await screen.findByRole('dialog', { name: '值班记录' })).toBeInTheDocument()
+    expect(screen.getByText(/ADMIN_03/)).toBeInTheDocument()
+    await waitFor(() => expect(readSave()?.triggeredEvents).toContain('chapter_three_completed'))
+
+    await user.click(screen.getByRole('button', { name: '继续浏览' }))
+    const reopenedRow = screen.getByText('调查备份_02.txt').closest('.story-download')
+    await user.click(within(reopenedRow as HTMLElement).getByRole('button', { name: '打开' }))
+    await user.click(screen.getByRole('button', { name: '关闭' }))
+    expect(screen.queryByRole('dialog', { name: '值班记录' })).not.toBeInTheDocument()
+  })
+
+  it('刷新恢复后保持第三章完成且不自动重播结尾', () => {
+    const state = chapterThreeState('zhou_xun', 'stu.qiming-high.edu.cn/downloads')
+    state.triggeredEvents.push('chapter_three_final_unlocked', 'chapter_three_completed')
+    state.unlockedFileIds.push(CHAPTER_THREE_FINAL_FILE_ID)
+    writeSave(state)
+    render(<GameProvider><LaunchScreen /></GameProvider>)
+    expect(screen.getByText('第三章《值班记录》已完成')).toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: '值班记录' })).not.toBeInTheDocument()
   })
 
   it.each([
