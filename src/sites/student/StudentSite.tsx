@@ -9,7 +9,7 @@ import { ModalFrame } from '../../components/ModalFrame'
 import { VirtualFileViewer } from '../../components/VirtualFileViewer'
 import { getVirtualFile } from '../../data/virtualFiles'
 import { attendanceRecords, baseDownloads, baseMessages, cardRecords, classStudents, zhouAttendanceRecord, zhouCardRecord } from '../../data/studentRecords'
-import { accessComparisonComplete, classHistoryViews, filterAccessRecords, filterGroupHistory, groupHistoryRecords, isBackdatedDatePair, statusDateFields, type AccessDirection, type AccessPerson, type AccessQuery, type ClassHistoryPeriod, type StatusDateKey } from '../../data/chapterTwoInteractions'
+import { checkedAccessDirection, classHistoryViews, filterAccessRecords, filterGroupHistory, groupHistoryRecords, isBackdatedDatePair, statusCacheProfile, statusDateFields, type AccessDirection, type AccessPerson, type AccessQuery, type ClassHistoryPeriod, type StatusDateKey } from '../../data/chapterTwoInteractions'
 
 interface Props {
   route: GameRoute
@@ -270,7 +270,7 @@ function StatusCache({ accountId }: { accountId: StudentAccountId }) {
     } else setResult('wrong')
   }
   return <><PageHeader title="学籍历史缓存" description="选择两项日期字段进行核对。" /><Panel title="记录 2024010318">
-    <InfoGrid entries={[["姓名", "沈栀"], ["学籍状态", "已退学"], ["变更原因", "家庭原因"]]} />
+    <InfoGrid entries={[["姓名", statusCacheProfile.name], ["学籍状态", statusCacheProfile.status], ["变更原因", statusCacheProfile.reason]]} />
     <div className="date-compare-grid">{statusDateFields.map((field) => <button className={selected.includes(field.key) ? 'selected' : ''} type="button" key={field.key} onClick={() => toggle(field.key)}><span>{field.label}</span><strong>{field.value}</strong></button>)}</div>
     <button className="record-inspect" type="button" disabled={selected.length !== 2 || completed} onClick={compare}>{completed ? '日期已核对' : '核对所选日期'}</button>
     {result === 'wrong' && <p className="record-note" role="alert">所选字段不能说明记录写入顺序，请重新选择。</p>}
@@ -284,7 +284,7 @@ function GroupHistory({ accountId }: { accountId: StudentAccountId }) {
   const [date, setDate] = useState('')
   const [action, setAction] = useState('')
   const [results, setResults] = useState(() => groupHistoryRecords.filter((record) => record.member !== '沈栀'))
-  const [detail, setDetail] = useState(state.clues.shenzhi_removed_from_group.discovered)
+  const [detail, setDetail] = useState(false)
   if (accountId !== 'lin_mo') return <><PageHeader title="班级群历史" description="班级群成员变更记录。" /><PermissionNotice /></>
   const submit = (event: FormEvent) => { event.preventDefault(); setResults(filterGroupHistory(name, date, action)); setDetail(false) }
   const inspect = () => { setDetail(true); discoverClue('shenzhi_removed_from_group', 'stu.qiming-high.edu.cn/class-group-history') }
@@ -297,7 +297,7 @@ function GroupHistory({ accountId }: { accountId: StudentAccountId }) {
 }
 
 function AccessQueryPage({ accountId }: { accountId: StudentAccountId }) {
-  const { state, discoverClue, revealFileSection } = useGame()
+  const { state, recordAccessQuery } = useGame()
   const completed = state.clues.shenzhi_exit_missing.discovered
   const remembered: AccessDirection[] = completed ? ['进入', '离开'] : [
     ...(state.revealedFileSections.includes('access-query-enter') ? ['进入' as const] : []),
@@ -305,24 +305,20 @@ function AccessQueryPage({ accountId }: { accountId: StudentAccountId }) {
   ]
   const [query, setQuery] = useState<AccessQuery>({ date: '2026-06-16', place: '全部', person: '全部', direction: '全部' })
   const [results, setResults] = useState<ReturnType<typeof filterAccessRecords> | null>(null)
-  const [submitted, setSubmitted] = useState<AccessQuery | null>(null)
-  const [added, setAdded] = useState<AccessDirection[]>(remembered)
   if (accountId !== 'zhou_xun') return <><PageHeader title="门禁记录查询" description="校内门禁终端日志。" /><PermissionNotice /></>
   if (!state.unlockedFileIds.includes(OLD_BUILDING_ACCESS_FILE_ID)) return <><PageHeader title="门禁记录查询" description="校内门禁终端日志。" /><div className="system-complete-note">当前账号没有可查询的门禁范围。</div></>
-  const submit = (event: FormEvent) => { event.preventDefault(); setSubmitted({ ...query }); setResults(filterAccessRecords(query)) }
-  const addCurrent = () => {
-    if (!submitted || submitted.person !== '沈栀' || submitted.direction === '全部') return
-    setAdded((current) => current.includes(submitted.direction) ? current : [...current, submitted.direction])
-    revealFileSection(submitted.direction === '进入' ? 'access-query-enter' : 'access-query-exit')
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    const nextResults = filterAccessRecords(query)
+    setResults(nextResults)
+    const checked = checkedAccessDirection(query, nextResults)
+    if (checked) recordAccessQuery(checked)
   }
-  const confirm = () => { if (accessComparisonComplete(added)) discoverClue('shenzhi_exit_missing', 'stu.qiming-high.edu.cn/access-query') }
-  const canAdd = submitted?.person === '沈栀' && submitted.direction !== '全部'
   return <><PageHeader title="门禁记录查询" description="按日期、地点、人员与通行类型检索原始日志。" /><Panel title="查询条件">
-    <form className="record-query-form" onSubmit={submit}><label>日期<input type="date" value={query.date} onChange={(event) => setQuery({ ...query, date: event.target.value })} /></label><label>地点<select value={query.place} onChange={(event) => setQuery({ ...query, place: event.target.value })}><option>全部</option><option>旧实验楼东门</option><option>新实验楼北门</option></select></label><label>人员<select value={query.person} onChange={(event) => setQuery({ ...query, person: event.target.value as AccessPerson })}><option>全部</option><option>沈栀</option><option>顾言</option><option>何岚</option><option>唐棠</option></select></label><label>类型<select value={query.direction} onChange={(event) => setQuery({ ...query, direction: event.target.value as AccessDirection })}><option>全部</option><option>进入</option><option>离开</option></select></label><button type="submit">查询</button></form>
+    <form className="record-query-form" onSubmit={submit}><label>日期<input type="date" value={query.date} onChange={(event) => setQuery({ ...query, date: event.target.value })} /></label><label>地点<select value={query.place} onChange={(event) => setQuery({ ...query, place: event.target.value })}><option>全部</option><option>旧实验楼东门</option><option>新实验楼东门</option></select></label><label>人员<select value={query.person} onChange={(event) => setQuery({ ...query, person: event.target.value as AccessPerson })}><option>全部</option><option>沈栀</option><option>林默</option><option>顾言</option><option>何岚</option><option>唐棠</option></select></label><label>类型<select value={query.direction} onChange={(event) => setQuery({ ...query, direction: event.target.value as AccessDirection })}><option>全部</option><option>进入</option><option>离开</option></select></label><button type="submit">查询</button></form>
     {results && results.length > 0 && <SimpleTable headers={["日期", "时间", "人员", "地点", "类型"]} rows={results.map((record) => [record.date, record.time, record.person, record.place, record.direction])} />}
     {results && results.length === 0 && <p className="record-note">未检索到符合条件的记录。</p>}
-    {canAdd && results && <button className="record-inspect" type="button" onClick={addCurrent}>{added.includes(submitted.direction) ? '已加入比对' : '将本次结果加入比对'}</button>}
-    {added.length > 0 && <div className="comparison-box"><p>已加入：{added.join('、')}</p><button type="button" disabled={!accessComparisonComplete(added) || completed} onClick={confirm}>{completed ? '比对已确认' : '确认比对'}</button></div>}
+    {remembered.length > 0 && <div className="comparison-box"><p>已查询：{remembered.join('、')}</p>{completed && <strong>门禁异常已确认</strong>}</div>}
   </Panel></>
 }
 

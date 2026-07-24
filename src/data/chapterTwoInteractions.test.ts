@@ -1,4 +1,4 @@
-import { accessComparisonComplete, classHistoryViews, filterAccessRecords, filterGroupHistory, isBackdatedDatePair } from './chapterTwoInteractions'
+import { accessComparisonComplete, checkedAccessDirection, classHistoryViews, filterAccessRecords, filterGroupHistory, isBackdatedDatePair, statusCacheProfile } from './chapterTwoInteractions'
 import { searchSchoolContent } from './chapterTwo'
 import { virtualFiles } from './virtualFiles'
 
@@ -23,6 +23,10 @@ describe('第二章交互模型', () => {
     expect(isBackdatedDatePair(['application'])).toBe(false)
   })
 
+  it('学籍历史缓存的数据来源登记为周寻', () => {
+    expect(statusCacheProfile.name).toBe('周寻')
+  })
+
   it('沈栀门禁进入为一条而离开为零条', () => {
     const base = { date: '2026-06-16', place: '旧实验楼东门', person: '沈栀' as const }
     expect(filterAccessRecords({ ...base, direction: '进入' })).toHaveLength(1)
@@ -33,6 +37,22 @@ describe('第二章交互模型', () => {
     expect(accessComparisonComplete(['进入'])).toBe(false)
     expect(accessComparisonComplete(['离开'])).toBe(false)
     expect(accessComparisonComplete(['离开', '进入'])).toBe(true)
+  })
+
+  it('林默在新实验楼东门同时有进入和离开记录', () => {
+    const base = { date: '2026-06-16', place: '新实验楼东门', person: '林默' as const }
+    expect(filterAccessRecords({ ...base, direction: '进入' })).toContainEqual(expect.objectContaining({ time: '18:30', direction: '进入' }))
+    expect(filterAccessRecords({ ...base, direction: '离开' })).toContainEqual(expect.objectContaining({ time: '18:52', direction: '离开' }))
+  })
+
+  it('只有有效的旧实验楼进入或离开调查会登记比对方向', () => {
+    const enterQuery = { date: '2026-06-16', place: '全部', person: '全部' as const, direction: '进入' as const }
+    const leaveQuery = { ...enterQuery, direction: '离开' as const }
+    expect(checkedAccessDirection(enterQuery, filterAccessRecords(enterQuery))).toBe('进入')
+    expect(checkedAccessDirection(leaveQuery, filterAccessRecords(leaveQuery))).toBe('离开')
+    const allQuery = { ...enterQuery, direction: '全部' as const }
+    expect(checkedAccessDirection(allQuery, filterAccessRecords(allQuery))).toBeNull()
+    expect(checkedAccessDirection({ ...enterQuery, date: '2026-06-15' }, [])).toBeNull()
   })
 })
 

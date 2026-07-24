@@ -64,6 +64,22 @@ export function discoverStoryClue(state: GameState, id: ClueId, sourceUrl: strin
   }, now)
 }
 
+export function recordAccessQuery(
+  state: GameState,
+  direction: '进入' | '离开',
+  sourceUrl: string,
+  now = new Date().toISOString(),
+): GameState {
+  const key = direction === '进入' ? 'access-query-enter' : 'access-query-exit'
+  const revealedFileSections = state.revealedFileSections.includes(key)
+    ? state.revealedFileSections
+    : [...state.revealedFileSections, key]
+  const next = revealedFileSections === state.revealedFileSections ? state : { ...state, revealedFileSections }
+  const comparisonComplete = revealedFileSections.includes('access-query-enter')
+    && revealedFileSections.includes('access-query-exit')
+  return comparisonComplete ? discoverStoryClue(next, 'shenzhi_exit_missing', sourceUrl, now) : next
+}
+
 export function clearStoryClue(state: GameState, id: ClueId): GameState {
   return { ...state, clues: { ...state.clues, [id]: { ...state.clues[id], discovered: false, discoveredAt: null, sourceUrl: null } } }
 }

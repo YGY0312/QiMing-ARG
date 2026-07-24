@@ -30,6 +30,7 @@ export function filterGroupHistory(name: string, date: string, action: string): 
 }
 
 export type StatusDateKey = 'effective' | 'entered' | 'application'
+export const statusCacheProfile = { name: '周寻', status: '已退学', reason: '家庭原因' } as const
 export const statusDateFields: { key: StatusDateKey; label: string; value: string }[] = [
   { key: 'effective', label: '生效日期', value: '2026-06-17' },
   { key: 'entered', label: '记录录入时间', value: '2026-06-20 14:42' },
@@ -39,12 +40,13 @@ export function isBackdatedDatePair(selected: StatusDateKey[]): boolean {
   return selected.length === 2 && selected.includes('effective') && selected.includes('application')
 }
 
-export type AccessPerson = '全部' | '沈栀' | '顾言' | '何岚' | '唐棠'
+export type AccessPerson = '全部' | '沈栀' | '林默' | '顾言' | '何岚' | '唐棠'
 export type AccessDirection = '全部' | '进入' | '离开'
 export interface AccessRecord { date: string; time: string; person: string; place: string; direction: '进入' | '离开' }
 export interface AccessQuery { date: string; place: string; person: AccessPerson; direction: AccessDirection }
 export const accessRecords: AccessRecord[] = [
-  { date: '2026-06-16', time: '18:52', person: '林默', place: '新实验楼北门', direction: '离开' },
+  { date: '2026-06-16', time: '18:30', person: '林默', place: '新实验楼东门', direction: '进入' },
+  { date: '2026-06-16', time: '18:52', person: '林默', place: '新实验楼东门', direction: '离开' },
   { date: '2026-06-16', time: '19:21', person: '沈栀', place: '旧实验楼东门', direction: '进入' },
   { date: '2026-06-16', time: '19:26', person: '顾言', place: '旧实验楼东门', direction: '进入' },
   { date: '2026-06-16', time: '19:29', person: '何岚', place: '旧实验楼东门', direction: '进入' },
@@ -57,3 +59,13 @@ export function filterAccessRecords(query: AccessQuery): AccessRecord[] {
   return accessRecords.filter((record) => record.date === query.date && (query.place === '全部' || record.place === query.place) && (query.person === '全部' || record.person === query.person) && (query.direction === '全部' || record.direction === query.direction))
 }
 export function accessComparisonComplete(added: AccessDirection[]): boolean { return added.includes('进入') && added.includes('离开') }
+
+export function checkedAccessDirection(query: AccessQuery, results: AccessRecord[]): Exclude<AccessDirection, '全部'> | null {
+  if (query.date !== '2026-06-16' || query.direction === '全部') return null
+  if (query.place !== '全部' && query.place !== '旧实验楼东门') return null
+  if (query.person !== '全部' && query.person !== '沈栀') return null
+  if (query.direction === '进入') {
+    return results.some((record) => record.person === '沈栀' && record.direction === '进入') ? '进入' : null
+  }
+  return results.some((record) => record.person === '沈栀' && record.direction === '离开') ? null : '离开'
+}

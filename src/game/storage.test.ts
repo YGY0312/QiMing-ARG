@@ -44,6 +44,13 @@ describe('v5 本地存档', () => {
     expect(readSave()).toMatchObject({ evidenceSidebarCollapsed: true, clues: { dropout_notice: { discovered: true, sourceUrl: 'notice' } } })
   })
 
+  it('门禁查询进度使用既有 v5 字段保存并恢复', () => {
+    const state = makeState()
+    state.revealedFileSections = ['access-query-enter']
+    writeSave(state)
+    expect(readSave()?.revealedFileSections).toEqual(['access-query-enter'])
+  })
+
   it('v2 学生系统存档迁移为林默标签会话', () => {
     const migrated = migrateSave({ schemaVersion: 2, prototypeVersion: 'old', isStarted: true, currentUrl: 'stu.qiming-high.edu.cn/messages', history: ['www.qiming-high.edu.cn/', 'stu.qiming-high.edu.cn/login', 'stu.qiming-high.edu.cn/messages'], historyIndex: 2, studentLoggedIn: true, visitedPages: [], clues: createEmptyClues(), triggeredEvents: ['zhou_message_unlocked'], unreadMessageIds: [], readMessageIds: [], unlockedFileIds: [], chapterOneCompleted: false, chapterOneCompletedAt: null, chapterEndingPlayed: false, savedAt: 'old' })
     expect(migrated?.schemaVersion).toBe(5)
