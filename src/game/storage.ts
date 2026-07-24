@@ -45,7 +45,7 @@ export function createSave(state: GameState): GameSaveV5 {
 
 function stringArray(value: unknown): string[] { return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [] }
 function storyEvents(value: unknown): StoryEventId[] {
-  const allowed: StoryEventId[] = ['old_building_contradiction', 'zhou_draft_revealed', 'investigation_backup_unlocked', 'chapter_one_completed', 'chapter_two_started', 'shenzhi_cache_unlocked', 'old_building_access_unlocked', 'chapter_two_final_file_unlocked', 'chapter_two_completed']
+  const allowed: StoryEventId[] = ['old_building_contradiction', 'zhou_draft_revealed', 'investigation_backup_unlocked', 'chapter_one_completed', 'chapter_two_started', 'shenzhi_cache_unlocked', 'old_building_access_unlocked', 'chapter_two_final_file_unlocked', 'chapter_two_completed', 'chapter_three_started', 'chapter_three_final_unlocked']
   return stringArray(value).map((id) => id === 'zhou_message_unlocked' ? 'zhou_draft_revealed' : id).filter((id): id is StoryEventId => allowed.includes(id as StoryEventId))
 }
 

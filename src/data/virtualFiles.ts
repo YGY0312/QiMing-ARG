@@ -23,6 +23,8 @@ export const virtualFiles: Record<string, VirtualFileDefinition> = {
   'guyan-note': { id: 'guyan-note', name: '顾言不认识她？.txt', kind: 'text', source: '周寻个人文件', content: '顾言说他不认识沈栀。\n\n五月实验分组表里，他们在同一组。\n\n群成员记录里，顾言是管理员。\n\n', onOpenClueId: 'guyan_denial' },
   'lab-group-sheet': { id: 'lab-group-sheet', name: '实验器材整理活动分组表.pdf', kind: 'table', source: '实验中心资料', headers: ['组别', '时间', '地点', '成员'], rows: [['第4组','2026-06-16 19:30—21:00','旧实验楼三层广播设备室','顾言、沈栀、何岚、唐棠']], reveal: { key: 'lab-group-four-detail', label: '查看第4组详情', clueId: 'shenzhi_old_building_group' } },
   'last-record-0616': { id: 'last-record-0616', name: '最后记录_0616.txt', kind: 'text', source: '周寻个人文件', content: '沈栀不是正常转学。\n\n6月16日晚，她进入了旧实验楼。\n\n6月17日，她的学籍变更已经生效。\n\n退学申请文件是在之后创建的。\n\n门禁系统里有她的进入记录。\n\n没有查到离开记录。\n\n下一步：找当晚的值班记录。', onOpenClueId: 'shenzhi_last_record' },
+  'investigation-backup-02': simple('investigation-backup-02', '调查备份_02.txt', 'text', '周寻个人文件', '6月16日晚。\n\n她进入旧实验楼。\n\n但没有离开。\n\n入口不是重点。\n\n重点是：\n\n那一晚谁看到了她。\n\n下一步：寻找旧实验楼值班记录。'),
+  'investigation-backup-02-final': simple('investigation-backup-02-final', '调查备份_02.txt', 'text', '周寻个人文件', '我找到值班记录了。\n\n沈栀不是自己离开的。\n\n有人在22点以后处理了记录。\n\n但是奇怪的是。\n\n处理记录的人，\n\n不是普通教师。\n\noperator:\n\nADMIN_03'),
 }
 
 export function getVirtualFile(id: string | null): VirtualFileDefinition | null { return id ? virtualFiles[id] ?? null : null }

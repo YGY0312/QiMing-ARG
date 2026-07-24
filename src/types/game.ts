@@ -4,10 +4,10 @@ export type StudentAccountId = string
 
 export type ComponentKey =
   | 'school-home' | 'school-news' | 'school-news-detail' | 'school-notices' | 'school-notice-detail'
-  | 'school-search' | 'school-removed'
+  | 'school-search' | 'school-removed' | 'school-lab-management' | 'school-duty-schedule'
   | 'student-entry' | 'student-login' | 'student-dashboard' | 'student-status' | 'student-attendance'
   | 'student-card-records' | 'student-class-list' | 'student-messages' | 'student-downloads'
-  | 'student-group-history' | 'student-status-cache' | 'student-access-query' | 'student-missing' | 'not-found'
+  | 'student-group-history' | 'student-status-cache' | 'student-access-query' | 'student-lab-access-records' | 'student-missing' | 'not-found'
 
 export interface GameRoute { hostname: string; pathname: string; url: string; pageTitle: string; siteType: SiteType; componentKey: ComponentKey; params?: { id?: string } }
 export interface StudentTabSession { accountId: StudentAccountId | null }
@@ -27,11 +27,16 @@ export type ChapterTwoClueId =
   | 'chapter_two_search_note' | 'shenzhi_search_residue' | 'class_size_mismatch' | 'seat_chart_shenzhi'
   | 'hidden_grade_row' | 'shenzhi_essay' | 'guyan_denial' | 'shenzhi_removed_from_group'
   | 'shenzhi_dropout_backdated' | 'shenzhi_old_building_group' | 'shenzhi_exit_missing' | 'shenzhi_last_record'
-export type ClueId = ChapterOneClueId | ChapterTwoClueId
+export type ChapterThreeClueId =
+  | 'old_building_duty_record' | 'old_building_access_log' | 'admin_permission_trace' | 'system_upgrade_notice'
+export type ClueId = ChapterOneClueId | ChapterTwoClueId | ChapterThreeClueId
 
 export type ChapterOneEventId = 'old_building_contradiction' | 'zhou_draft_revealed' | 'investigation_backup_unlocked' | 'chapter_one_completed'
 export type ChapterTwoEventId = 'chapter_two_started' | 'shenzhi_cache_unlocked' | 'old_building_access_unlocked' | 'chapter_two_final_file_unlocked' | 'chapter_two_completed'
-export type StoryEventId = ChapterOneEventId | ChapterTwoEventId
+export type ChapterThreeEventId = 'chapter_three_started' | 'chapter_three_final_unlocked'
+export type StoryEventId = ChapterOneEventId | ChapterTwoEventId | ChapterThreeEventId
+
+export type ChapterThreeEvidenceAction = 'duty-record' | 'access-log' | 'admin-trace' | 'system-upgrade'
 
 export type ClueCategory = '公开资料' | '学生档案' | '系统记录' | '私人信息' | '身份痕迹' | '班级资料' | '学籍记录' | '人物关系' | '旧实验楼'
 export interface ClueProgress { id: ClueId; discovered: boolean; discoveredAt: string | null; sourceUrl: string | null; category: ClueCategory; isKeyClue: boolean }

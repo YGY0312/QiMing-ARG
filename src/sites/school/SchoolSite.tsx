@@ -7,6 +7,7 @@ import { hotspotStyle, LAB_SAFETY_GROUP_PHOTO, resolveStoryImageSource } from '.
 import { getVirtualFile } from '../../data/virtualFiles'
 import { VirtualFileViewer } from '../../components/VirtualFileViewer'
 import { isShenzhiSearch, searchSchoolContent } from '../../data/chapterTwo'
+import { queryDutySchedule } from '../../data/chapterThree'
 
 interface Props {
   route: GameRoute
@@ -24,10 +25,13 @@ const navItems = [
   { label: '德育建设' },
   { label: '招生信息' },
   { label: '校园文化' },
+  { label: '校园服务', url: 'www.qiming-high.edu.cn/services/laboratory', chapterThree: true },
   { label: '联系我们' },
 ]
 
 export function SchoolSite({ route, onNavigate, onOpenStudentTab }: Props) {
+  const game = useOptionalGame()
+  const chapterThreeNavigationVisible = game?.state.revealedFileSections.includes('chapter-three-backup-read') ?? false
   return (
     <div className="school-site">
       <header className="school-header">
@@ -38,7 +42,7 @@ export function SchoolSite({ route, onNavigate, onOpenStudentTab }: Props) {
           <div className="school-motto"><span>校　训</span><strong>明德　求真　笃行</strong></div>
         </div>
         <nav className="school-nav" aria-label="学校官网主导航">
-          {navItems.map((item) => item.url ? (
+          {navItems.filter((item) => !item.chapterThree || chapterThreeNavigationVisible).map((item) => item.url ? (
             <button key={item.label} type="button" onClick={() => onNavigate(item.url!)}>{item.label}</button>
           ) : (
             <span key={item.label} className="school-nav-placeholder">{item.label}</span>
@@ -79,12 +83,16 @@ function SchoolContent({ route, onNavigate, onOpenStudentTab }: Props) {
       return <ArticleDetail id={route.params?.id} type="notices" onNavigate={onNavigate} />
     case 'school-search': return <SchoolSearch query={route.params?.id ?? ''} onNavigate={onNavigate} />
     case 'school-removed': return <RemovedSearchPage onNavigate={onNavigate} />
+    case 'school-lab-management': return <LaboratoryManagement onNavigate={onNavigate} />
+    case 'school-duty-schedule': return <DutySchedulePage onNavigate={onNavigate} />
     default:
       return <SchoolNotFound onNavigate={onNavigate} />
   }
 }
 
 function SchoolHome({ onNavigate, onOpenStudentTab }: Pick<Props, 'onNavigate' | 'onOpenStudentTab'>) {
+  const game = useOptionalGame()
+  const visibleNews = newsItems.filter((item) => !item.chapterThreeOnly || game?.state.clues.admin_permission_trace.discovered)
   return (
     <main className="school-main school-home">
       <section className="campus-hero">
@@ -99,9 +107,9 @@ function SchoolHome({ onNavigate, onOpenStudentTab }: Pick<Props, 'onNavigate' |
           <PanelTitle title="校园新闻" onMore={() => onNavigate('www.qiming-high.edu.cn/news')} />
           <article className="featured-news">
             <div className="featured-placeholder"><span>校园简讯</span></div>
-            <div><h2>{newsItems[0].title}</h2><p>{newsItems[0].summary}</p></div>
+            <div><h2>{visibleNews[0].title}</h2><p>{visibleNews[0].summary}</p></div>
           </article>
-          <ArticleRows items={newsItems.slice(1)} prefix="news" onNavigate={onNavigate} />
+          <ArticleRows items={visibleNews.slice(1)} prefix="news" onNavigate={onNavigate} />
         </section>
         <section className="school-panel notice-panel">
           <PanelTitle title="通知公告" onMore={() => onNavigate('www.qiming-high.edu.cn/notices')} />
@@ -145,7 +153,8 @@ function ArticleList({ title, type, onNavigate }: {
   type: 'news' | 'notices'
   onNavigate: (url: string) => void
 }) {
-  const items = type === 'news' ? newsItems : noticeItems
+  const game = useOptionalGame()
+  const items = (type === 'news' ? newsItems : noticeItems).filter((item) => !item.chapterThreeOnly || game?.state.clues.admin_permission_trace.discovered)
   return (
     <main className="school-main school-subpage">
       <div className="school-breadcrumb">当前位置：网站首页 &gt; {title}</div>
@@ -175,7 +184,7 @@ function ArticleDetail({ id, type, onNavigate }: {
   type: 'news' | 'notices'
   onNavigate: (url: string) => void
 }) {
-  const { state, discoverClue, revealFileSection } = useGame()
+  const { state, discoverClue, revealFileSection, recordChapterThreeEvidence } = useGame()
   const [attachmentOpen, setAttachmentOpen] = useState(false)
   const items = type === 'news' ? newsItems : noticeItems
   const article = items.find((item) => item.id === id)
@@ -184,7 +193,7 @@ function ArticleDetail({ id, type, onNavigate }: {
     if (id === 'student-status-change') discoverClue('dropout_notice', 'www.qiming-high.edu.cn/notices/student-status-change')
     if (id === 'old-lab-closure') discoverClue('old_building_closed', 'www.qiming-high.edu.cn/notices/old-lab-closure')
   }, [id, type, discoverClue])
-  if (!article) return <SchoolNotFound onNavigate={onNavigate} />
+  if (!article || article.chapterThreeOnly && !state.clues.admin_permission_trace.discovered) return <SchoolNotFound onNavigate={onNavigate} />
   const label = type === 'news' ? '校园新闻' : '通知公告'
   const attachment = getVirtualFile(article.attachmentFileId ?? null)
   const openAttachment = () => {
@@ -200,6 +209,7 @@ function ArticleDetail({ id, type, onNavigate }: {
         <div className="article-body">{article.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div>
         {article.hasInvestigablePhoto && <ActivityPhoto />}
         {attachment && <button className="article-attachment" type="button" onClick={openAttachment}>附件：{article.attachmentLabel ?? attachment.name}</button>}
+        {article.id === 'campus-security-system-upgrade' && <button className="record-inspect" type="button" disabled={state.clues.system_upgrade_notice.discovered} onClick={() => recordChapterThreeEvidence('system-upgrade')}>{state.clues.system_upgrade_notice.discovered ? '发布时间已记录' : '记录发布时间与负责部门'}</button>}
         {article.department && <p className="article-department">启明市第一中学{article.department}<br />2026年{Number(article.date.slice(5, 7))}月{Number(article.date.slice(8, 10))}日</p>}
         <button className="back-list" type="button" onClick={() => onNavigate(`www.qiming-high.edu.cn/${type}`)}>返回{label}列表</button>
       </article>
@@ -213,7 +223,7 @@ function SchoolSearch({ query, onNavigate }: { query: string; onNavigate: (url: 
   const { state, markSearchResiduePlayed } = useGame()
   const normalized = decoded.trim().toLowerCase()
   const shenzhiSearch = isShenzhiSearch(normalized)
-  const results = searchSchoolContent(decoded)
+  const results = searchSchoolContent(decoded).filter(({ article }) => !article.chapterThreeOnly || state.clues.admin_permission_trace.discovered)
   useEffect(() => { if (shenzhiSearch && !state.searchResiduePlayed) markSearchResiduePlayed() }, [shenzhiSearch, state.searchResiduePlayed, markSearchResiduePlayed])
   return <main className="school-main school-subpage search-page"><div className="school-breadcrumb">当前位置：网站首页 &gt; 站内搜索</div><section className="school-list-page"><h2>搜索结果<small>SEARCH</small></h2><p>关键词：{decoded}</p>
     {shenzhiSearch ? <div className="search-residue"><strong>未找到公开内容</strong><p>旧索引缓存：高二（3）班学生沈栀……</p><small>来源页面：已删除</small><button type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/removed/shenzhi-index')}>查看索引来源</button></div> : <ul>{results.map(({ article, section }) => <li key={article.id}><button type="button" onClick={() => onNavigate(`www.qiming-high.edu.cn/${section}/${article.id}`)}><strong>{article.title}</strong><span>{article.summary}</span></button><time>{article.date}</time></li>)}</ul>}
@@ -225,6 +235,37 @@ function RemovedSearchPage({ onNavigate }: Pick<Props, 'onNavigate'>) {
   const { discoverClue } = useGame()
   useEffect(() => discoverClue('shenzhi_search_residue', 'www.qiming-high.edu.cn/removed/shenzhi-index'), [discoverClue])
   return <main className="school-main school-404"><div className="school-breadcrumb">当前位置：搜索索引 &gt; 已删除页面</div><div><strong>410</strong><h2>该页面已被删除</h2><p>索引更新时间：2026-06-20。缓存摘要仍显示“高二（3）班学生沈栀”。</p><button type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/')}>返回网站首页</button></div></main>
+}
+
+function LaboratoryManagement({ onNavigate }: Pick<Props, 'onNavigate'>) {
+  const { state } = useGame()
+  if (!state.revealedFileSections.includes('chapter-three-backup-read')) return <SchoolNotFound onNavigate={onNavigate} />
+  return <main className="school-main school-subpage"><div className="school-breadcrumb">当前位置：校园服务 &gt; 实验室管理</div><div className="subpage-layout">
+    <aside><h2>校园服务</h2><span className="aside-active">实验室管理</span><span>场地预约</span><span>安全制度</span></aside>
+    <section className="school-list-page"><h2>实验室管理<small>LABORATORY SERVICES</small></h2><ul><li><button type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/laboratory/duty-june-2026')}><strong>2026年6月实验楼值班安排</strong><span>实验中心值班与巡查安排</span></button><time>2026-06</time></li></ul></section>
+  </div></main>
+}
+
+function DutySchedulePage({ onNavigate }: Pick<Props, 'onNavigate'>) {
+  const { state, recordChapterThreeEvidence } = useGame()
+  const [date, setDate] = useState('')
+  const [results, setResults] = useState<ReturnType<typeof queryDutySchedule> | null>(null)
+  if (!state.revealedFileSections.includes('chapter-three-backup-read')) return <SchoolNotFound onNavigate={onNavigate} />
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    const next = queryDutySchedule(date, '旧实验楼')
+    setResults(next)
+    if (next.some((record) => record.date === '2026-06-16')) recordChapterThreeEvidence('duty-record')
+  }
+  return <main className="school-main school-subpage"><div className="school-breadcrumb">当前位置：校园服务 &gt; 实验室管理 &gt; 值班安排</div><section className="school-list-page duty-schedule-page">
+    <h2>2026年6月实验楼值班安排<small>LABORATORY DUTY SCHEDULE</small></h2>
+    <p>按日期查询实验楼晚间值班安排。</p>
+    <form className="record-query-form" onSubmit={submit}><label>日期<input aria-label="值班日期" type="date" value={date} onChange={(event) => setDate(event.target.value)} /></label><label>楼宇<select aria-label="值班楼宇" value="旧实验楼" disabled><option>旧实验楼</option></select></label><button type="submit">查询</button></form>
+    {results && results.length > 0 && <div className="table-scroll"><table><thead><tr><th>日期</th><th>楼宇</th><th>时段</th><th>值班教师</th></tr></thead><tbody>{results.map((record) => <tr key={`${record.date}-${record.building}`}><td>{record.date}</td><td>{record.building}</td><td>{record.period}</td><td>{record.teacher}</td></tr>)}</tbody></table></div>}
+    {results && results.length === 0 && <p className="record-note">未查询到该日期的旧实验楼值班安排。</p>}
+    {state.clues.old_building_duty_record.discovered && <p className="record-note">已记录：6月16日晚旧实验楼存在值班人员。</p>}
+    <button className="back-list" type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/laboratory')}>返回实验室管理</button>
+  </section></main>
 }
 
 function ActivityPhoto() {

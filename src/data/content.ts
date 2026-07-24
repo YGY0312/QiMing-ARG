@@ -9,9 +9,14 @@ export interface ArticleRecord {
   hasInvestigablePhoto?: boolean
   attachmentFileId?: string
   attachmentLabel?: string
+  chapterThreeOnly?: boolean
 }
 
 export const newsItems: ArticleRecord[] = [
+  {
+    id: 'campus-security-system-upgrade', title: '校园安全系统升级完成', date: '2026-06-18', summary: '信息中心完成校园安全系统升级与运行检查。', chapterThreeOnly: true,
+    paragraphs: ['近日，学校信息中心完成校园安全系统升级，并对相关终端进行了运行检查。', '升级期间各项校园服务保持正常，后续将继续开展例行维护。'],
+  },
   {
     id: 'old-lab-equipment-sorting', title: '高二年级开展实验器材整理活动', date: '2026-06-16', summary: '高二年级部分学生协助完成旧实验器材分类和整理工作。', attachmentFileId: 'lab-group-sheet', attachmentLabel: '打开',
     paragraphs: ['高二年级部分学生协助完成旧实验器材分类和整理工作。', '参与同学按分组进入指定房间，活动记录由实验中心统一归档。'],

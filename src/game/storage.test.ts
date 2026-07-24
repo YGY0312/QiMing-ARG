@@ -1,5 +1,5 @@
 import { LEGACY_V2_SAVE_KEY, SAVE_KEY } from './constants'
-import { createStudentAccountStates, migrateSave, readSave, resetGameStorage, writeSave } from './storage'
+import { createSave, createStudentAccountStates, migrateSave, readSave, resetGameStorage, writeSave } from './storage'
 import type { GameState } from '../types/game'
 import { createEmptyClues } from '../data/story'
 import { createDefaultSavedAccounts } from './savedAccounts'
@@ -75,6 +75,19 @@ describe('v5 本地存档', () => {
   it('已完成的 v2 存档迁移后仍保持完成', () => {
     localStorage.setItem(LEGACY_V2_SAVE_KEY, JSON.stringify({ schemaVersion: 2, prototypeVersion: 'old', isStarted: true, currentUrl: 'www.qiming-high.edu.cn/', history: ['www.qiming-high.edu.cn/'], historyIndex: 0, studentLoggedIn: false, visitedPages: [], clues: createEmptyClues(), triggeredEvents: ['chapter_one_completed'], unreadMessageIds: [], readMessageIds: [], unlockedFileIds: [], chapterOneCompleted: true, chapterOneCompletedAt: '2026-09-16T00:00:00Z', chapterEndingPlayed: true, savedAt: 'old' }))
     expect(readSave()).toMatchObject({ schemaVersion: 5, chapterOneCompleted: true, chapterEndingPlayed: true })
+  })
+
+  it('旧 v5 第二章完成存档补齐第三章线索且不改变版本', () => {
+    const state = makeState()
+    state.chapterTwoStarted = true
+    state.chapterTwoCompleted = true
+    state.chapterTwoCompletedAt = '2026-09-17T00:00:00Z'
+    state.triggeredEvents = ['chapter_one_completed', 'chapter_two_started', 'chapter_two_completed']
+    const oldV5 = createSave(state)
+    const migrated = migrateSave(oldV5)
+    expect(migrated).toMatchObject({ schemaVersion: 5, chapterTwoCompleted: true })
+    expect(migrated?.clues.old_building_duty_record.discovered).toBe(false)
+    expect(migrated?.clues.system_upgrade_notice.discovered).toBe(false)
   })
 
   it('损坏数据安全回退', () => {

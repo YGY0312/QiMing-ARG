@@ -231,6 +231,9 @@ button { border: 0; }
 .comparison-box p { margin: 0; color: #5e6d75; font-size: 11px; line-height: 1.7; }
 .comparison-box button, .record-query-form > button { padding: 7px 12px; color: white; background: #486f87; cursor: pointer; }
 .comparison-box button:disabled, .record-inspect:disabled { opacity: .55; cursor: default; }
+.student-menu-section { display: block; margin: 10px 12px 3px; color: #8fa1ab; font-size: 9px; letter-spacing: .16em; }
+.duty-schedule-page { min-height: 430px; padding: 22px; background: #fff; border: 1px solid #d7dde0; }
+.duty-schedule-page > p { color: #697982; font-size: 12px; }
 .record-query-form { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)) auto; align-items: end; gap: 9px; margin-bottom: 14px; }
 .record-query-form label { display: grid; gap: 5px; color: #61747f; font-size: 10px; }
 .record-query-form input, .record-query-form select { min-width: 0; height: 34px; padding: 0 8px; color: #3f525e; background: white; border: 1px solid #becbd2; }

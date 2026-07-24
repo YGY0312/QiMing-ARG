@@ -30,4 +30,10 @@ describe('游戏内地址解析', () => {
     expect(route.siteType).toBe('school')
     expect(route.componentKey).toBe('not-found')
   })
+
+  it('第三章官网与学生系统页面有稳定路由', () => {
+    expect(parseGameUrl('www.qiming-high.edu.cn/services/laboratory').componentKey).toBe('school-lab-management')
+    expect(parseGameUrl('www.qiming-high.edu.cn/services/laboratory/duty-june-2026').componentKey).toBe('school-duty-schedule')
+    expect(parseGameUrl('stu.qiming-high.edu.cn/lab-access-records').componentKey).toBe('student-lab-access-records')
+  })
 })

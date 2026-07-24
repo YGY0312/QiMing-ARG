@@ -3,13 +3,14 @@ import type { GameRoute, StudentAccountId } from '../../types/game'
 import { authenticateSavedStudent, authenticateStudent, generateCaptcha, generateDifferentCaptcha, getStudentAccount } from '../../utils/auth'
 import { formatSavedAccountLabel } from '../../game/savedAccounts'
 import { useGame } from '../../game/GameContext'
-import { BACKUP_FILE_ID, CHAPTER_TWO_FINAL_FILE_ID, GUYAN_DRAFT_MESSAGE_ID, OLD_BUILDING_ACCESS_FILE_ID, SHENZHI_CACHE_FILE_ID, ZHOU_CREDENTIALS_MESSAGE_ID, ZHOU_MESSAGE_ID } from '../../game/constants'
+import { BACKUP_FILE_ID, CHAPTER_THREE_BACKUP_FILE_ID, CHAPTER_THREE_FINAL_FILE_ID, CHAPTER_TWO_FINAL_FILE_ID, GUYAN_DRAFT_MESSAGE_ID, OLD_BUILDING_ACCESS_FILE_ID, SHENZHI_CACHE_FILE_ID, ZHOU_CREDENTIALS_MESSAGE_ID, ZHOU_MESSAGE_ID } from '../../game/constants'
 import { isBackupPasswordValid } from '../../game/story'
 import { ModalFrame } from '../../components/ModalFrame'
 import { VirtualFileViewer } from '../../components/VirtualFileViewer'
 import { getVirtualFile } from '../../data/virtualFiles'
 import { attendanceRecords, baseDownloads, baseMessages, cardRecords, classStudents, zhouAttendanceRecord, zhouCardRecord } from '../../data/studentRecords'
 import { checkedAccessDirection, classHistoryViews, filterAccessRecords, filterGroupHistory, groupHistoryRecords, isBackdatedDatePair, statusCacheProfile, statusDateFields, type AccessDirection, type AccessPerson, type AccessQuery, type ClassHistoryPeriod, type StatusDateKey } from '../../data/chapterTwoInteractions'
+import { isChapterThreeAccessQuery, queryLaboratoryAccessRecords } from '../../data/chapterThree'
 
 interface Props {
   route: GameRoute
@@ -127,6 +128,7 @@ function StudentSystem({ route, onNavigate, onReturnSchoolTab }: Props) {
             {activeMenu.map(([label, path]) => <button className={route.pathname === `/${path}` ? 'active' : ''} key={path} type="button" onClick={() => onNavigate(`stu.qiming-high.edu.cn/${path}`)}><span aria-hidden="true">▪</span>{label}{path === 'messages' && messageUnreadCount(state, accountId) > 0 && <b className="menu-unread">{messageUnreadCount(state, accountId)}</b>}</button>)}
             {state.chapterTwoStarted && accountId === 'lin_mo' && <button className={route.pathname === '/class-group-history' ? 'active' : ''} type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/class-group-history')}><span aria-hidden="true">▪</span>班级群历史</button>}
             {accountId === 'zhou_xun' && state.unlockedFileIds.includes(OLD_BUILDING_ACCESS_FILE_ID) && <button className={route.pathname === '/access-query' ? 'active' : ''} type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/access-query')}><span aria-hidden="true">▪</span>门禁记录查询</button>}
+            {accountId === 'zhou_xun' && state.clues.old_building_duty_record.discovered && <><span className="student-menu-section">调查资料</span><button className={route.pathname === '/lab-access-records' ? 'active' : ''} type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/lab-access-records')}><span aria-hidden="true">▪</span>实验楼访问记录</button></>}
             {inactiveMenu.map((label) => <span className="student-menu-placeholder" key={label}><i aria-hidden="true">▪</i>{label}</span>)}
           </nav>
           <button className="back-school" type="button" onClick={() => onReturnSchoolTab ? onReturnSchoolTab() : onNavigate('www.qiming-high.edu.cn/')}>返回学校官网</button>
@@ -153,6 +155,7 @@ function StudentPage({ route, onNavigate, accountId }: Props & { accountId: Stud
     case 'student-messages': return <Messages accountId={accountId} onNavigate={onNavigate} />
     case 'student-group-history': return <GroupHistory accountId={accountId} />
     case 'student-access-query': return <AccessQueryPage accountId={accountId} />
+    case 'student-lab-access-records': return <LaboratoryAccessRecordsPage accountId={accountId} />
     case 'student-downloads': return <Downloads accountId={accountId} />
     case 'student-missing': return <MissingStudentRecord onNavigate={onNavigate} />
     default: return <StudentNotFound onNavigate={onNavigate} />
@@ -170,6 +173,7 @@ function Dashboard({ onNavigate, accountId }: Pick<Props, 'onNavigate'> & { acco
     <div className="dashboard-alert"><span>{isZhou ? '学籍变动提醒' : '旧消息提醒'}</span><p>{isZhou ? '你的学籍状态已发生变更。' : '消息中心有一条周寻此前留下的消息。'}</p><button type="button" onClick={() => onNavigate(isZhou ? 'stu.qiming-high.edu.cn/student-status' : 'stu.qiming-high.edu.cn/messages')}>{isZhou ? '查看学籍信息' : '查看消息'}</button></div>
     <div className="stat-cards"><Stat label="学籍状态" value={isZhou ? '已退学' : '在籍'} /><Stat label="未读消息" value={`${messageUnreadCount(state, accountId)} 条`} /><Stat label="可用文件" value={`${fileCount} 个`} /><Stat label="账号" value={account.studentId} /></div>
     {state.chapterOneCompleted && <div className="system-complete-note">调查资料已保存在本机。系统中的原始记录可能仍会发生变化。</div>}
+    {state.triggeredEvents.includes('chapter_three_started') && <div className="system-complete-note">第三章《值班记录》：查明6月16日晚旧实验楼发生了什么。</div>}
     <div className="dashboard-grid"><Panel title="学生基本信息"><InfoGrid entries={[["姓名", account.name], ["学号", account.studentId], ["班级", account.className], ["入学年份", "2024年"]]} /></Panel><Panel title="今日课程"><SimpleTable headers={["节次", "课程", "教室"]} rows={[["第1节", "语文", account.className], ["第2节", "数学", account.className], ["第3节", "物理", "新实验楼B201"]]} /></Panel></div>
   </>
 }
@@ -322,6 +326,33 @@ function AccessQueryPage({ accountId }: { accountId: StudentAccountId }) {
   </Panel></>
 }
 
+function LaboratoryAccessRecordsPage({ accountId }: { accountId: StudentAccountId }) {
+  const { state, recordChapterThreeEvidence } = useGame()
+  const [date, setDate] = useState('')
+  const [building, setBuilding] = useState('旧实验楼')
+  const [results, setResults] = useState<ReturnType<typeof queryLaboratoryAccessRecords> | null>(null)
+  const [detailOpen, setDetailOpen] = useState(false)
+  if (accountId !== 'zhou_xun') return <><PageHeader title="实验楼访问记录" description="周寻个人调查资料。" /><div className="system-complete-note">当前账号无权查看周寻的私人调查资料。</div></>
+  if (!state.clues.old_building_duty_record.discovered) return <><PageHeader title="实验楼访问记录" description="周寻个人调查资料。" /><div className="system-complete-note">当前没有可读取的调查记录。</div></>
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    const next = queryLaboratoryAccessRecords(date, building)
+    setResults(next)
+    setDetailOpen(false)
+    if (isChapterThreeAccessQuery(date, building) && next.length > 0) recordChapterThreeEvidence('access-log')
+  }
+  const inspectOperation = () => {
+    setDetailOpen(true)
+    recordChapterThreeEvidence('admin-trace')
+  }
+  return <><PageHeader title="实验楼访问记录" description="按日期和楼宇查询周寻保存的异常访问记录。" /><Panel title="实验楼异常访问记录.txt">
+    <form className="record-query-form" onSubmit={submit}><label>日期<input aria-label="访问记录日期" type="date" value={date} onChange={(event) => setDate(event.target.value)} /></label><label>地点<select aria-label="访问记录地点" value={building} onChange={(event) => setBuilding(event.target.value)}><option>旧实验楼</option><option>新实验楼</option></select></label><button type="submit">查询</button></form>
+    {results && results.length > 0 && <div className="table-scroll"><table><thead><tr><th>日期</th><th>时间</th><th>地点</th><th>记录</th><th /></tr></thead><tbody>{results.map((record) => <tr key={`${record.date}-${record.time}`}><td>{record.date}</td><td>{record.time}</td><td>{record.place}</td><td>{record.event}</td><td>{record.time === '22:30' && <button type="button" onClick={inspectOperation}>查看操作来源</button>}</td></tr>)}</tbody></table></div>}
+    {results && results.length === 0 && <p className="record-note">未查询到符合条件的访问记录。</p>}
+    {detailOpen && <InfoGrid entries={[["操作时间", "2026-06-16 22:30"], ["操作来源", "权限：管理员"], ["具体账号", "未显示"]]} />}
+  </Panel></>
+}
+
 function Downloads({ accountId }: { accountId: StudentAccountId }) {
   const { state, activeTab, openBackup, openVirtualFile, closeVirtualFile, beginChapterEnding, beginChapterTwoEnding, discoverClue, revealFileSection } = useGame()
   const [passwordOpen, setPasswordOpen] = useState(false)
@@ -342,6 +373,12 @@ function Downloads({ accountId }: { accountId: StudentAccountId }) {
     if (completedChapterTwo) beginChapterTwoEnding()
   }, [activeTab.openVirtualFileId, closeVirtualFile, beginChapterEnding, beginChapterTwoEnding])
   const openStoryFile = (id: string) => { const file = getVirtualFile(id); openVirtualFile(id); if (file?.onOpenClueId) discoverClue(file.onOpenClueId, 'stu.qiming-high.edu.cn/downloads') }
+  const openChapterThreeBackup = () => {
+    const finalized = state.unlockedFileIds.includes(CHAPTER_THREE_FINAL_FILE_ID)
+    const id = finalized ? CHAPTER_THREE_FINAL_FILE_ID : CHAPTER_THREE_BACKUP_FILE_ID
+    openVirtualFile(id)
+    revealFileSection(finalized ? 'chapter-three-final-read' : 'chapter-three-backup-read')
+  }
   const chapterFiles = [
     ['chapter-two-search-note', '检索记录.txt'], ['seat-chart-may', '高二（3）班座位表_五月.pdf'], ['midterm-grades', '高二三班期中成绩汇总.csv'],
   ] as const
@@ -350,6 +387,7 @@ function Downloads({ accountId }: { accountId: StudentAccountId }) {
     {accountId === 'zhou_xun' && state.chapterTwoStarted && chapterFiles.map(([id, name]) => <div className="story-download" key={id}><span className="file-icon">{name.split('.').pop()?.toUpperCase()}</span><span><strong>{name}</strong><small>周寻个人文件 · 只读</small></span><button type="button" onClick={() => openStoryFile(id)}>打开</button></div>)}
     {accountId === 'zhou_xun' && state.chapterTwoStarted && <div className="story-download damaged"><span className="file-icon">DAT</span><span><strong>学生缓存_2024010318.dat</strong><small>文件损坏 · 需要更多交叉证据</small></span><button type="button" disabled>无法读取</button></div>}
     {accountId === 'zhou_xun' && state.unlockedFileIds.includes(CHAPTER_TWO_FINAL_FILE_ID) && (() => { const file = getVirtualFile(CHAPTER_TWO_FINAL_FILE_ID)!; return <div className="story-download unlocked"><span className="file-icon">{file.name.split('.').pop()?.toUpperCase()}</span><span><strong>{file.name}</strong><small>恢复记录 · 只读</small></span><button type="button" onClick={() => openStoryFile(CHAPTER_TWO_FINAL_FILE_ID)}>打开</button></div> })()}
+    {accountId === 'zhou_xun' && state.unlockedFileIds.includes(CHAPTER_THREE_BACKUP_FILE_ID) && (() => { const finalized = state.unlockedFileIds.includes(CHAPTER_THREE_FINAL_FILE_ID); const file = getVirtualFile(finalized ? CHAPTER_THREE_FINAL_FILE_ID : CHAPTER_THREE_BACKUP_FILE_ID)!; return <div className={finalized ? 'story-download unlocked' : 'story-download'}><span className="file-icon">TXT</span><span><strong>{file.name}</strong><small>{finalized ? '调查记录已更新 · 只读' : '周寻个人文件 · 只读'}</small></span><button type="button" onClick={openChapterThreeBackup}>打开</button></div> })()}
     {baseDownloads.map((file) => <div key={file.id}><span className="file-icon">{file.name.split('.').pop()?.toUpperCase()}</span><span><strong>{file.name}</strong><small>{file.meta}</small></span><button type="button" onClick={() => openVirtualFile(file.id)}>打开</button></div>)}
   </div></Panel>
   {passwordOpen && <ModalFrame title="加密文件验证" onClose={() => setPasswordOpen(false)} className="password-modal"><form className="backup-password-form" onSubmit={submitPassword}><p>请输入四位数字密码。</p><label>密码<input type="password" inputMode="numeric" aria-label="调查备份密码" value={password} onChange={(event) => setPassword(event.target.value)} autoFocus /></label>{error && <p className="password-error" role="alert">{error}</p>}<button type="submit">解锁并打开</button></form></ModalFrame>}

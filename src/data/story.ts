@@ -1,10 +1,14 @@
-import type { ChapterTwoClueId, ClueId, ClueProgress, ClueProgressMap, StoryEventId } from '../types/game'
+import type { ChapterThreeClueId, ChapterTwoClueId, ClueId, ClueProgress, ClueProgressMap, StoryEventId } from '../types/game'
 
 export interface ClueDefinition extends Omit<ClueProgress, 'discovered' | 'discoveredAt' | 'sourceUrl'> { title: string; source: string; description: string; sidebarFacts: string[] }
 
 export const chapterTwoClueIds: ChapterTwoClueId[] = [
   'chapter_two_search_note', 'shenzhi_search_residue', 'class_size_mismatch', 'seat_chart_shenzhi', 'hidden_grade_row', 'shenzhi_essay',
   'guyan_denial', 'shenzhi_removed_from_group', 'shenzhi_dropout_backdated', 'shenzhi_old_building_group', 'shenzhi_exit_missing', 'shenzhi_last_record',
+]
+
+export const chapterThreeClueIds: ChapterThreeClueId[] = [
+  'old_building_duty_record', 'old_building_access_log', 'admin_permission_trace', 'system_upgrade_notice',
 ]
 
 export const clueDefinitions: Record<ClueId, ClueDefinition> = {
@@ -31,6 +35,11 @@ export const clueDefinitions: Record<ClueId, ClueDefinition> = {
   shenzhi_old_building_group: { id: 'shenzhi_old_building_group', title: '旧实验楼活动分组', source: '实验器材整理活动附件', description: '6月16日晚沈栀与顾言等人在旧实验楼参加活动。', category: '旧实验楼', isKeyClue: true, sidebarFacts: ['2026-06-16晚', '旧实验楼三层广播设备室'] },
   shenzhi_exit_missing: { id: 'shenzhi_exit_missing', title: '门禁异常', source: '旧实验楼门禁查询', description: '查询比对显示沈栀有进入记录，但未检索到离开记录。', category: '旧实验楼', isKeyClue: true, sidebarFacts: ['2026-06-16', '沈栀有进入旧实验楼记录', '未检索到离开记录'] },
   shenzhi_last_record: { id: 'shenzhi_last_record', title: '最后记录', source: '周寻调查资料', description: '周寻整理了沈栀最后一段可确认的学校记录。', category: '旧实验楼', isKeyClue: true, sidebarFacts: [] },
+
+  old_building_duty_record: { id: 'old_building_duty_record', title: '旧实验楼值班记录', source: '学校官网实验室管理', description: '官网值班安排显示6月16日晚旧实验楼有教师值班。', category: '旧实验楼', isKeyClue: true, sidebarFacts: ['2026-06-16晚', '旧实验楼值班教师：陈启明'] },
+  old_building_access_log: { id: 'old_building_access_log', title: '实验楼异常访问记录', source: '周寻账号调查资料', description: '查询结果显示沈栀进入后，A-302门禁出现异常，并在22:30解除。', category: '系统记录', isKeyClue: true, sidebarFacts: ['19:21 沈栀进入旧实验楼', '19:45 A-302门禁异常', '22:30 异常解除'] },
+  admin_permission_trace: { id: 'admin_permission_trace', title: '管理员权限痕迹', source: '实验楼异常访问记录详情', description: '22:30的异常解除记录来自管理员权限，但没有留下具体账号。', category: '系统记录', isKeyClue: true, sidebarFacts: ['22:30操作来源：管理员权限', '具体账号：未记录'] },
+  system_upgrade_notice: { id: 'system_upgrade_notice', title: '校园安全系统升级', source: '学校官网校园新闻', description: '信息中心在事件发生两天后完成了校园安全系统升级。', category: '公开资料', isKeyClue: true, sidebarFacts: ['系统升级完成日期：2026-06-18', '负责部门：信息中心'] },
 }
 
 export interface EvidenceFactGroup { id: ClueId; title: string; source: string; facts: string[] }
@@ -53,6 +62,8 @@ export const storyEventRequirements: Record<StoryEventId, ClueId[]> = {
   old_building_access_unlocked: ['shenzhi_dropout_backdated', 'shenzhi_old_building_group'],
   chapter_two_final_file_unlocked: ['seat_chart_shenzhi', 'hidden_grade_row', 'shenzhi_essay', 'shenzhi_dropout_backdated', 'shenzhi_old_building_group', 'shenzhi_exit_missing'],
   chapter_two_completed: ['shenzhi_last_record'],
+  chapter_three_started: [],
+  chapter_three_final_unlocked: ['old_building_duty_record', 'old_building_access_log', 'admin_permission_trace', 'system_upgrade_notice'],
 }
 
 export const shenzhiCacheEvidenceIds: ClueId[] = ['class_size_mismatch', 'seat_chart_shenzhi', 'hidden_grade_row', 'shenzhi_essay', 'shenzhi_removed_from_group']

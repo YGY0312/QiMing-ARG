@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { APP_VERSION, APP_VERSION_LABEL, PROJECT_CREATOR, SAVE_SCHEMA_VERSION } from '../config/app'
-import { chapterTwoClueIds, clueDefinitions } from '../data/story'
+import { chapterThreeClueIds, chapterTwoClueIds, clueDefinitions } from '../data/story'
 import { SAVE_KEY } from '../game/constants'
 import { useGame } from '../game/GameContext'
 import { createSave, writeSave } from '../game/storage'
@@ -32,10 +32,12 @@ export function TestConsole({ onExitTestMode }: Props) {
   const [description, setDescription] = useState('')
 
   const discoveredCount = Object.values(state.clues).filter((clue) => clue.discovered).length
-  const chapterLabel = state.chapterTwoCompleted ? '第二章已完成'
-    : state.chapterTwoStarted ? '第二章调查中'
-      : state.chapterOneCompleted ? '第一章已完成'
-        : state.isStarted ? '第一章调查中' : '尚未开始'
+  const chapterLabel = state.revealedFileSections.includes('chapter-three-final-read') ? '第三章调查完成'
+    : state.triggeredEvents.includes('chapter_three_started') ? '第三章调查中'
+      : state.chapterTwoCompleted ? '第二章已完成'
+        : state.chapterTwoStarted ? '第二章调查中'
+          : state.chapterOneCompleted ? '第一章已完成'
+            : state.isStarted ? '第一章调查中' : '尚未开始'
   const safeRawState = useMemo(() => createSave(state), [state])
   const feedbackText = useMemo(() => createFeedbackText({
     nickname,
@@ -110,6 +112,7 @@ export function TestConsole({ onExitTestMode }: Props) {
             <div><dt>章节状态</dt><dd>{chapterLabel}</dd></div>
             <div><dt>第一章</dt><dd>{state.chapterOneCompleted ? '已完成' : state.isStarted ? '进行中' : '未开始'}</dd></div>
             <div><dt>第二章</dt><dd>{state.chapterTwoCompleted ? '已完成' : state.chapterTwoStarted ? '进行中' : '未开始'}</dd></div>
+            <div><dt>第三章</dt><dd>{state.revealedFileSections.includes('chapter-three-final-read') ? '已完成' : state.triggeredEvents.includes('chapter_three_started') ? '进行中' : '未开始'}</dd></div>
             <div><dt>线索 / 事件</dt><dd>{discoveredCount} / {state.triggeredEvents.length}</dd></div>
             <div><dt>保存账号</dt><dd>{state.savedStudentAccounts.map((account) => account.displayName).join('、') || '无'}</dd></div>
             <div><dt>关键事实侧栏</dt><dd>{state.evidenceSidebarCollapsed ? '已收起' : '已展开'}</dd></div>
@@ -133,6 +136,9 @@ export function TestConsole({ onExitTestMode }: Props) {
             <button type="button" onClick={() => navigate('www.qiming-high.edu.cn/news/old-lab-equipment-sorting')}>实验器材整理新闻</button>
             <button type="button" onClick={() => openAccountPage('zhou_xun', 'stu.qiming-high.edu.cn/student-status/cache')}>学籍历史缓存</button>
             <button type="button" onClick={() => openAccountPage('zhou_xun', 'stu.qiming-high.edu.cn/access-query')}>门禁记录查询</button>
+            <button type="button" onClick={() => navigate('www.qiming-high.edu.cn/services/laboratory/duty-june-2026')}>第三章值班安排</button>
+            <button type="button" onClick={() => openAccountPage('zhou_xun', 'stu.qiming-high.edu.cn/lab-access-records')}>第三章访问记录</button>
+            <button type="button" onClick={() => navigate('www.qiming-high.edu.cn/news/campus-security-system-upgrade')}>系统升级新闻</button>
             <button type="button" onClick={() => openAccountPage('zhou_xun', 'stu.qiming-high.edu.cn/downloads')}>周寻文件区</button>
           </div>
         </section>
@@ -178,6 +184,11 @@ export function TestConsole({ onExitTestMode }: Props) {
           <button type="button" onClick={() => confirmAction('确定标记第二章完成吗？', () => forceEvent('chapter_two_completed'))}>标记第二章完成</button>
           <button type="button" onClick={playChapterTwoEnding}>播放第二章结尾</button>
           <button type="button" className="danger" onClick={() => confirmAction('确定清除第二章全部进度吗？第一章完成状态会保留。', resetChapterTwo)}>重置第二章</button>
+        </ClueSection>
+
+        <ClueSection title="第三章测试" ids={chapterThreeClueIds} state={state} onToggle={toggleClue}>
+          <button type="button" onClick={() => forceEvent('chapter_three_started')}>开启第三章</button>
+          <button type="button" onClick={() => forceEvent('chapter_three_final_unlocked')}>解锁最终备份</button>
         </ClueSection>
 
         <section>
