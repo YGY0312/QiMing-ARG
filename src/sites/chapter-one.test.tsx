@@ -23,7 +23,7 @@ function seedSave(account: StudentAccountId | null = null, discovered: ClueId[] 
     unreadMessageIds: [ZHOU_CREDENTIALS_MESSAGE_ID, ZHOU_MESSAGE_ID], readMessageIds: [], unlockedFileIds, openVirtualFileId: null,
     chapterOneCompleted: false, chapterOneCompletedAt: null, chapterEndingPlayed: false,
     currentUrl: url, history: [url], historyIndex: 0, refreshToken: 0, addressGlitchActive: false, chapterEndingVisible: false,
-    chapterTwoStarted: false, chapterTwoCompleted: false, chapterTwoCompletedAt: null, chapterTwoEndingPlayed: false, searchResiduePlayed: false, classCountAnomalyPlayed: false, chapterTwoAnomalyHistoryAdded: false, revealedFileSections: [], chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false,
+    chapterTwoStarted: false, chapterTwoCompleted: false, chapterTwoCompletedAt: null, chapterTwoEndingPlayed: false, searchResiduePlayed: false, classCountAnomalyPlayed: false, chapterTwoAnomalyHistoryAdded: false, revealedFileSections: [], chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false, chapterFourEndingVisible: false,
   }
   writeSave(state)
 }

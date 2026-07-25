@@ -5,8 +5,8 @@ import { parseGameUrl } from './router'
 import { addSavedStudentAccount, createDefaultSavedAccounts, removeSavedStudentAccount } from './savedAccounts'
 import { createStudentAccountStates, readSave, resetGameStorage, writeSave } from './storage'
 import { createNextStudentTab, createSchoolTab, goBackInTab, goForwardInTab, navigateTab, refreshTab, replaceTab, SCHOOL_TAB_ID, withStudentSession } from './tabs'
-import { appendChapterAnomaly, appendChapterTwoAnomaly, clearStoryClue, completeChapterThree as completeChapterThreeStory, discoverStoryClue, evaluateStoryEvents, forceStoryEvent, openInvestigationBackup, readStoryMessage, recordAccessQuery as recordStoryAccessQuery, recordChapterThreeEvidence as recordStoryChapterThreeEvidence, resetChapterProgress, resetChapterTwoProgress } from './story'
-import type { BrowserTabState, ChapterThreeEvidenceAction, ClueId, GameRoute, GameState, StoryEventId, StudentAccountId, TabId } from '../types/game'
+import { appendChapterAnomaly, appendChapterTwoAnomaly, clearStoryClue, completeChapterFour as completeChapterFourStory, completeChapterThree as completeChapterThreeStory, discoverStoryClue, evaluateStoryEvents, forceStoryEvent, openInvestigationBackup, readStoryMessage, recordAccessQuery as recordStoryAccessQuery, recordChapterFourEvidence as recordStoryChapterFourEvidence, recordChapterThreeEvidence as recordStoryChapterThreeEvidence, resetChapterProgress, resetChapterTwoProgress } from './story'
+import type { BrowserTabState, ChapterFourEvidenceAction, ChapterThreeEvidenceAction, ClueId, GameRoute, GameState, StoryEventId, StudentAccountId, TabId } from '../types/game'
 
 interface GameContextValue {
   state: GameState
@@ -46,6 +46,7 @@ interface GameContextValue {
   revealFileSection: (key: string, clueId?: ClueId) => void
   recordAccessQuery: (direction: '进入' | '离开') => void
   recordChapterThreeEvidence: (action: ChapterThreeEvidenceAction) => void
+  recordChapterFourEvidence: (action: ChapterFourEvidenceAction) => void
   markSearchResiduePlayed: () => void
   markClassCountAnomalyPlayed: () => void
   beginChapterEnding: () => void
@@ -56,6 +57,8 @@ interface GameContextValue {
   dismissChapterTwoEnding: () => void
   completeChapterThree: () => void
   dismissChapterThreeEnding: () => void
+  completeChapterFour: () => void
+  dismissChapterFourEnding: () => void
   playChapterTwoEnding: () => void
   clearChapterTwoAnomalyHistory: () => void
 }
@@ -82,14 +85,14 @@ function emptyState(): GameState {
     searchResiduePlayed: false, classCountAnomalyPlayed: false, chapterTwoAnomalyHistoryAdded: false, revealedFileSections: [],
     currentUrl: schoolTab.currentUrl, history: schoolTab.history, historyIndex: schoolTab.historyIndex, refreshToken: schoolTab.refreshToken, openVirtualFileId: null,
     addressGlitchActive: false, chapterEndingVisible: false,
-    chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false,
+    chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false, chapterFourEndingVisible: false,
   }
 }
 
 function initialState(): GameState {
   const saved = readSave()
   if (!saved) return emptyState()
-  return evaluateStoryEvents(syncActiveTab({ ...emptyState(), ...saved, isStarted: false, hasSave: true, studentTabCaptchas: {}, addressGlitchActive: false, chapterEndingVisible: false, chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false }))
+  return evaluateStoryEvents(syncActiveTab({ ...emptyState(), ...saved, isStarted: false, hasSave: true, studentTabCaptchas: {}, addressGlitchActive: false, chapterEndingVisible: false, chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false, chapterFourEndingVisible: false }))
 }
 
 function withVisited(state: GameState): GameState {
@@ -122,7 +125,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const startGame = useCallback(() => setState((current) => withVisited({ ...current, isStarted: true, hasSave: true })), [])
-  const returnToTitle = useCallback(() => setState((current) => ({ ...current, isStarted: false, chapterEndingVisible: false, chapterTwoEndingVisible: false })), [])
+  const returnToTitle = useCallback(() => setState((current) => ({ ...current, isStarted: false, chapterEndingVisible: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false, chapterFourEndingVisible: false })), [])
   const goBack = useCallback(() => setState((current) => { const updated = goBackInTab(activeTabOf(current.tabs, current.activeTabId)); return updated.historyIndex === current.historyIndex ? current : withVisited(syncActiveTab(current, replaceTab(current.tabs, updated))) }), [])
   const goForward = useCallback(() => setState((current) => { const updated = goForwardInTab(activeTabOf(current.tabs, current.activeTabId)); return updated.historyIndex === current.historyIndex ? current : withVisited(syncActiveTab(current, replaceTab(current.tabs, updated))) }), [])
   const refresh = useCallback(() => setState((current) => { const updated = refreshTab(activeTabOf(current.tabs, current.activeTabId)); return syncActiveTab(current, replaceTab(current.tabs, updated)) }), [])
@@ -193,6 +196,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const recordChapterThreeEvidence = useCallback((action: ChapterThreeEvidenceAction) => setState((current) => (
     recordStoryChapterThreeEvidence(current, action, current.currentUrl)
   )), [])
+  const recordChapterFourEvidence = useCallback((action: ChapterFourEvidenceAction) => setState((current) => (
+    recordStoryChapterFourEvidence(current, action, current.currentUrl)
+  )), [])
   const markSearchResiduePlayed = useCallback(() => setState((current) => ({ ...current, searchResiduePlayed: true })), [])
   const markClassCountAnomalyPlayed = useCallback(() => setState((current) => ({ ...current, classCountAnomalyPlayed: true })), [])
   const beginChapterEnding = useCallback(() => setState(appendChapterAnomaly), [])
@@ -203,6 +209,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const dismissChapterTwoEnding = useCallback(() => setState((current) => ({ ...current, chapterTwoEndingVisible: false })), [])
   const completeChapterThree = useCallback(() => setState(completeChapterThreeStory), [])
   const dismissChapterThreeEnding = useCallback(() => setState((current) => ({ ...current, chapterThreeEndingVisible: false })), [])
+  const completeChapterFour = useCallback(() => setState(completeChapterFourStory), [])
+  const dismissChapterFourEnding = useCallback(() => setState((current) => ({ ...current, chapterFourEndingVisible: false })), [])
   const playChapterTwoEnding = useCallback(() => setState((current) => appendChapterTwoAnomaly(forceStoryEvent({ ...current, chapterTwoEndingPlayed: false }, 'chapter_two_completed'))), [])
   const clearChapterTwoAnomalyHistory = useCallback(() => setState((current) => {
     const tabs = current.tabs.map((tab) => {
@@ -221,10 +229,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     startGame, returnToTitle, navigate, goBack, goForward, refresh, openStudentTab, focusSchoolTab, switchTab, closeTab, resetTabs,
     loginStudent, logoutStudent, resetStudentSessions, addSavedAccount, removeSavedAccount, setStudentTabCaptcha, clearStudentTabCaptcha, setEvidenceSidebarCollapsed, resetGame,
     discoverClue, clearClue, readMessage, openBackup, openVirtualFile, closeVirtualFile, forceEvent, resetChapterOne, resetChapterTwo,
-    revealFileSection, recordAccessQuery, recordChapterThreeEvidence, markSearchResiduePlayed, markClassCountAnomalyPlayed,
+    revealFileSection, recordAccessQuery, recordChapterThreeEvidence, recordChapterFourEvidence, markSearchResiduePlayed, markClassCountAnomalyPlayed,
     beginChapterEnding, finishAddressGlitch, dismissChapterEnding,
-    beginChapterTwoEnding, finishChapterTwoAddressGlitch, dismissChapterTwoEnding, completeChapterThree, dismissChapterThreeEnding, playChapterTwoEnding, clearChapterTwoAnomalyHistory,
-  }), [state, route, activeTab, startGame, returnToTitle, navigate, goBack, goForward, refresh, openStudentTab, focusSchoolTab, switchTab, closeTab, resetTabs, loginStudent, logoutStudent, resetStudentSessions, addSavedAccount, removeSavedAccount, setStudentTabCaptcha, clearStudentTabCaptcha, setEvidenceSidebarCollapsed, resetGame, discoverClue, clearClue, readMessage, openBackup, openVirtualFile, closeVirtualFile, forceEvent, resetChapterOne, resetChapterTwo, revealFileSection, recordAccessQuery, recordChapterThreeEvidence, markSearchResiduePlayed, markClassCountAnomalyPlayed, beginChapterEnding, finishAddressGlitch, dismissChapterEnding, beginChapterTwoEnding, finishChapterTwoAddressGlitch, dismissChapterTwoEnding, completeChapterThree, dismissChapterThreeEnding, playChapterTwoEnding, clearChapterTwoAnomalyHistory])
+    beginChapterTwoEnding, finishChapterTwoAddressGlitch, dismissChapterTwoEnding, completeChapterThree, dismissChapterThreeEnding, completeChapterFour, dismissChapterFourEnding, playChapterTwoEnding, clearChapterTwoAnomalyHistory,
+  }), [state, route, activeTab, startGame, returnToTitle, navigate, goBack, goForward, refresh, openStudentTab, focusSchoolTab, switchTab, closeTab, resetTabs, loginStudent, logoutStudent, resetStudentSessions, addSavedAccount, removeSavedAccount, setStudentTabCaptcha, clearStudentTabCaptcha, setEvidenceSidebarCollapsed, resetGame, discoverClue, clearClue, readMessage, openBackup, openVirtualFile, closeVirtualFile, forceEvent, resetChapterOne, resetChapterTwo, revealFileSection, recordAccessQuery, recordChapterThreeEvidence, recordChapterFourEvidence, markSearchResiduePlayed, markClassCountAnomalyPlayed, beginChapterEnding, finishAddressGlitch, dismissChapterEnding, beginChapterTwoEnding, finishChapterTwoAddressGlitch, dismissChapterTwoEnding, completeChapterThree, dismissChapterThreeEnding, completeChapterFour, dismissChapterFourEnding, playChapterTwoEnding, clearChapterTwoAnomalyHistory])
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>
 }

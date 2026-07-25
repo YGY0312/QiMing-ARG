@@ -30,6 +30,10 @@ export const virtualFiles: Record<string, VirtualFileDefinition> = {
   'maintenance-ticket-sys-0616': simple('maintenance-ticket-sys-0616', '系统维护记录_SYS-0616.txt', 'text', '信息中心维护记录', '编号：SYS-0616\n\n时间：2026-06-16 22:20\n\n类型：数据同步维护\n\n影响范围：学生信息系统\n\n执行部门：信息中心'),
   'investigation-backup-02': simple('investigation-backup-02', '调查备份_02.txt', 'text', '周寻个人文件', '我找到了一些东西。\n\n6月16日晚，\n\n沈栀提前申请进入旧实验楼。\n\n她不是临时过去。\n\n她在那里寻找某个东西。\n\n继续查访问记录。'),
   'investigation-backup-02-final': simple('investigation-backup-02-final', '调查备份_02.txt', 'text', '周寻个人文件', '我还原了6月16日晚。\n\n沈栀19:21进入旧实验楼A区。\n\n她提前申请了实验室，\n\n借用了设备。\n\n22点以后，\n\n有人处理了现场记录。\n\n监控被覆盖。\n\n门禁记录被修改。\n\n执行操作的不是普通教师。\n\n系统只留下：\n\nADMIN_03\n\n但我还不知道这个账号是谁。'),
+  'admin-access-failure': simple('admin-access-failure', '访问失败记录.txt', 'text', '周寻个人调查资料', '访问时间：2026-07-23 01:14\n\n访问目标：/admin/history\n\n结果：403 Forbidden\n\n备注：入口仍然存在，但普通学生账号没有历史查询权限。'),
+  'permission-request-manual': simple('permission-request-manual', '权限申请说明.txt', 'text', '学生系统帮助', '历史数据访问申请说明\n\n申请历史数据访问需要同时提供：\n\n1. 维护编号\n2. 管理员授权记录\n3. 访问申请\n\n材料不完整时，系统不会开放历史查询入口。'),
+  'investigation-backup-03': simple('investigation-backup-03', '调查备份_03.txt', 'text', '周寻个人文件', '我找到管理员入口了。\n\n但是ADMIN_03不是账号。\n\n它是一组权限。'),
+  'investigation-backup-03-final': simple('investigation-backup-03-final', '调查备份_03.txt', 'text', '周寻个人文件', '我终于明白了。\n\n他们不是删除一个人。\n\n他们只是修改系统里的状态。\n\n只要权限足够。\n\n一个人可以从系统里消失。\n\n但是现在出现了新的目标。\n\n2024010307。\n\n这是你的账号。'),
 }
 
 export function getVirtualFile(id: string | null): VirtualFileDefinition | null { return id ? virtualFiles[id] ?? null : null }

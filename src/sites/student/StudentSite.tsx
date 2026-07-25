@@ -3,7 +3,7 @@ import type { GameRoute, StudentAccountId } from '../../types/game'
 import { authenticateSavedStudent, authenticateStudent, generateCaptcha, generateDifferentCaptcha, getStudentAccount } from '../../utils/auth'
 import { formatSavedAccountLabel } from '../../game/savedAccounts'
 import { useGame } from '../../game/GameContext'
-import { BACKUP_FILE_ID, CHAPTER_THREE_BACKUP_FILE_ID, CHAPTER_THREE_FINAL_FILE_ID, CHAPTER_TWO_FINAL_FILE_ID, GUYAN_DRAFT_MESSAGE_ID, OLD_BUILDING_ACCESS_FILE_ID, SHENZHI_CACHE_FILE_ID, ZHOU_CREDENTIALS_MESSAGE_ID, ZHOU_MESSAGE_ID } from '../../game/constants'
+import { BACKUP_FILE_ID, CHAPTER_FOUR_BACKUP_FILE_ID, CHAPTER_FOUR_FINAL_FILE_ID, CHAPTER_THREE_BACKUP_FILE_ID, CHAPTER_THREE_FINAL_FILE_ID, CHAPTER_TWO_FINAL_FILE_ID, GUYAN_DRAFT_MESSAGE_ID, OLD_BUILDING_ACCESS_FILE_ID, SHENZHI_CACHE_FILE_ID, ZHOU_CREDENTIALS_MESSAGE_ID, ZHOU_MESSAGE_ID } from '../../game/constants'
 import { isBackupPasswordValid } from '../../game/story'
 import { ModalFrame } from '../../components/ModalFrame'
 import { VirtualFileViewer } from '../../components/VirtualFileViewer'
@@ -17,6 +17,7 @@ import {
   queryLaboratoryAccessRecords,
   queryLaboratoryReservations,
 } from '../../data/chapterThree'
+import { isAdminReferenceQuery, queryAdminHistory, type AdminHistoryResult } from '../../data/chapterFour'
 
 interface Props {
   route: GameRoute
@@ -140,6 +141,12 @@ function StudentSystem({ route, onNavigate, onReturnSchoolTab }: Props) {
               <button className={route.pathname === '/lab-access-records' ? 'active' : ''} type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/lab-access-records')}><span aria-hidden="true">▪</span>实验楼访问记录</button>
               <button className={route.pathname === '/camera-exceptions' ? 'active' : ''} type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/camera-exceptions')}><span aria-hidden="true">▪</span>监控存储异常</button>
             </>}
+            {state.triggeredEvents.includes('chapter_four_started') && <button className={route.pathname === '/system-search' ? 'active' : ''} type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/system-search')}><span aria-hidden="true">▪</span>系统检索</button>}
+            {accountId === 'zhou_xun' && state.triggeredEvents.includes('chapter_four_started') && <><span className="student-menu-section">权限调查</span>
+              <button className={route.pathname === '/admin-attempts' ? 'active' : ''} type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/admin-attempts')}><span aria-hidden="true">▪</span>访问失败记录</button>
+              <button className={route.pathname === '/system-help/permission-request' ? 'active' : ''} type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/system-help/permission-request')}><span aria-hidden="true">▪</span>权限申请说明</button>
+              {state.triggeredEvents.includes('chapter_four_admin_unlocked') && <button className={route.pathname === '/admin/history' ? 'active' : ''} type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/admin/history')}><span aria-hidden="true">▪</span>历史查询</button>}
+            </>}
             {inactiveMenu.map((label) => <span className="student-menu-placeholder" key={label}><i aria-hidden="true">▪</i>{label}</span>)}
           </nav>
           <button className="back-school" type="button" onClick={() => onReturnSchoolTab ? onReturnSchoolTab() : onNavigate('www.qiming-high.edu.cn/')}>返回学校官网</button>
@@ -170,6 +177,10 @@ function StudentPage({ route, onNavigate, accountId }: Props & { accountId: Stud
     case 'student-lab-reservations': return <LaboratoryReservationsPage accountId={accountId} />
     case 'student-equipment-loans': return <EquipmentLoansPage accountId={accountId} />
     case 'student-camera-exceptions': return <CameraExceptionsPage accountId={accountId} />
+    case 'student-system-search': return <SystemSearchPage />
+    case 'student-admin-attempts': return <AdminAttemptsPage accountId={accountId} />
+    case 'student-permission-help': return <PermissionHelpPage accountId={accountId} />
+    case 'student-admin-history': return <AdminHistoryPage accountId={accountId} />
     case 'student-downloads': return <Downloads accountId={accountId} />
     case 'student-missing': return <MissingStudentRecord onNavigate={onNavigate} />
     default: return <StudentNotFound onNavigate={onNavigate} />
@@ -434,8 +445,81 @@ function CameraExceptionsPage({ accountId }: { accountId: StudentAccountId }) {
   </Panel></>
 }
 
+function SystemSearchPage() {
+  const { state, recordChapterFourEvidence } = useGame()
+  const [query, setQuery] = useState('')
+  const [searched, setSearched] = useState(false)
+  if (!state.triggeredEvents.includes('chapter_four_started')) return <><PageHeader title="系统检索" description="检索系统服务与历史引用。" /><div className="system-complete-note">当前没有可用的检索范围。</div></>
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    const matched = isAdminReferenceQuery(query)
+    setSearched(matched)
+    if (matched) recordChapterFourEvidence('permission-search')
+  }
+  return <><PageHeader title="系统检索" description="检索系统服务、账号与历史引用。" /><Panel title="系统检索">
+    <form className="record-query-form" onSubmit={submit}><label>关键词<input aria-label="系统检索关键词" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="输入账号或权限标识" /></label><button type="submit">检索</button></form>
+    {searched && <div className="comparison-box"><strong>找到1条历史引用</strong><p>标识：ADMIN_03</p><p>公开账号：未找到</p><p>详情：权限不足，普通账号无法查询。</p></div>}
+    {!searched && query && <p className="record-note">请输入完整标识并执行检索。</p>}
+  </Panel></>
+}
+
+function AdminAttemptsPage({ accountId }: { accountId: StudentAccountId }) {
+  const { state, recordChapterFourEvidence } = useGame()
+  const [inspected, setInspected] = useState(state.clues.zhou_admin_attempt.discovered)
+  if (accountId !== 'zhou_xun') return <PrivateInvestigationDenied title="访问失败记录" />
+  if (!state.triggeredEvents.includes('chapter_four_started')) return <PrivateInvestigationDenied title="访问失败记录" />
+  const inspect = () => {
+    setInspected(true)
+    recordChapterFourEvidence('zhou-attempt')
+  }
+  return <><PageHeader title="访问失败记录" description="周寻个人调查资料。" /><Panel title="访问失败记录.txt">
+    <p>记录中保留了一次被拒绝的管理入口访问。</p>
+    <button className="record-inspect" type="button" onClick={inspect} disabled={inspected}>{inspected ? '访问记录已核对' : '核对访问目标'}</button>
+    {inspected && <InfoGrid entries={[['访问目标', '/admin/history'], ['访问结果', '403 Forbidden'], ['访问人', '周寻']]} />}
+  </Panel></>
+}
+
+function PermissionHelpPage({ accountId }: { accountId: StudentAccountId }) {
+  const { state, recordChapterFourEvidence } = useGame()
+  const [inspected, setInspected] = useState(state.clues.permission_request_manual.discovered)
+  if (accountId !== 'zhou_xun') return <><PageHeader title="权限申请说明" description="系统帮助。" /><PermissionNotice /></>
+  const inspect = () => {
+    setInspected(true)
+    recordChapterFourEvidence('permission-manual')
+  }
+  return <><PageHeader title="权限申请说明" description="历史数据访问帮助。" /><Panel title="权限申请说明">
+    <p>历史数据访问仅向完成校内授权流程的维护人员开放。</p>
+    <button className="record-inspect" type="button" onClick={inspect} disabled={inspected}>{inspected ? '申请条件已核对' : '核对申请条件'}</button>
+    {inspected && <InfoGrid entries={[['条件一', '维护编号'], ['条件二', '管理员授权记录'], ['条件三', '访问申请']]} />}
+  </Panel></>
+}
+
+function AdminHistoryPage({ accountId }: { accountId: StudentAccountId }) {
+  const { state, recordChapterFourEvidence } = useGame()
+  const [query, setQuery] = useState('')
+  const [result, setResult] = useState<AdminHistoryResult | null>(null)
+  const accessible = accountId === 'zhou_xun' && state.triggeredEvents.includes('chapter_four_admin_unlocked')
+  useEffect(() => {
+    if (accessible) recordChapterFourEvidence('history-access')
+  }, [accessible, recordChapterFourEvidence])
+  if (!accessible) return <><PageHeader title="历史查询" description="管理员历史操作记录。" /><PermissionNotice /></>
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    const next = queryAdminHistory(query)
+    setResult(next)
+    if (next?.title === '学生状态修改记录') recordChapterFourEvidence('student-status-log')
+    if (next?.title === '权限组记录') recordChapterFourEvidence('admin-group')
+    if (next?.title === '目标记录') recordChapterFourEvidence('linmo-target')
+  }
+  return <><PageHeader title="历史查询" description="旧版管理员历史操作记录。" /><Panel title="历史操作记录">
+    <form className="record-query-form" onSubmit={submit}><label>查询对象<input aria-label="管理员历史查询" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="学号、姓名或权限标识" /></label><button type="submit">查询历史</button></form>
+    {result && <><h3>{result.title}</h3><InfoGrid entries={result.rows} /></>}
+    {result === null && query && <p className="record-note">没有匹配的历史记录。</p>}
+  </Panel></>
+}
+
 function Downloads({ accountId }: { accountId: StudentAccountId }) {
-  const { state, activeTab, openBackup, openVirtualFile, closeVirtualFile, beginChapterEnding, beginChapterTwoEnding, completeChapterThree, discoverClue, revealFileSection } = useGame()
+  const { state, activeTab, openBackup, openVirtualFile, closeVirtualFile, beginChapterEnding, beginChapterTwoEnding, completeChapterThree, completeChapterFour, discoverClue, revealFileSection } = useGame()
   const [passwordOpen, setPasswordOpen] = useState(false)
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -450,17 +534,25 @@ function Downloads({ accountId }: { accountId: StudentAccountId }) {
     const completedBackup = activeTab.openVirtualFileId === 'backup-readme'
     const completedChapterTwo = activeTab.openVirtualFileId === CHAPTER_TWO_FINAL_FILE_ID
     const completedChapterThree = activeTab.openVirtualFileId === CHAPTER_THREE_FINAL_FILE_ID
+    const completedChapterFour = activeTab.openVirtualFileId === CHAPTER_FOUR_FINAL_FILE_ID
     closeVirtualFile()
     if (completedBackup) beginChapterEnding()
     if (completedChapterTwo) beginChapterTwoEnding()
     if (completedChapterThree) completeChapterThree()
-  }, [activeTab.openVirtualFileId, closeVirtualFile, beginChapterEnding, beginChapterTwoEnding, completeChapterThree])
+    if (completedChapterFour) completeChapterFour()
+  }, [activeTab.openVirtualFileId, closeVirtualFile, beginChapterEnding, beginChapterTwoEnding, completeChapterThree, completeChapterFour])
   const openStoryFile = (id: string) => { const file = getVirtualFile(id); openVirtualFile(id); if (file?.onOpenClueId) discoverClue(file.onOpenClueId, 'stu.qiming-high.edu.cn/downloads') }
   const openChapterThreeBackup = () => {
     const finalized = state.unlockedFileIds.includes(CHAPTER_THREE_FINAL_FILE_ID)
     const id = finalized ? CHAPTER_THREE_FINAL_FILE_ID : CHAPTER_THREE_BACKUP_FILE_ID
     openVirtualFile(id)
     revealFileSection(finalized ? 'chapter_three_final_opened' : 'chapter-three-backup-read')
+  }
+  const openChapterFourBackup = () => {
+    const finalized = state.unlockedFileIds.includes(CHAPTER_FOUR_FINAL_FILE_ID)
+    const id = finalized ? CHAPTER_FOUR_FINAL_FILE_ID : CHAPTER_FOUR_BACKUP_FILE_ID
+    openVirtualFile(id)
+    revealFileSection(finalized ? 'chapter_four_final_opened' : 'chapter-four-backup-read')
   }
   const chapterFiles = [
     ['chapter-two-search-note', '检索记录.txt'], ['seat-chart-may', '高二（3）班座位表_五月.pdf'], ['midterm-grades', '高二三班期中成绩汇总.csv'],
@@ -471,6 +563,7 @@ function Downloads({ accountId }: { accountId: StudentAccountId }) {
     {accountId === 'zhou_xun' && state.chapterTwoStarted && <div className="story-download damaged"><span className="file-icon">DAT</span><span><strong>学生缓存_2024010318.dat</strong><small>文件损坏<br />部分数据无法恢复<br />需要更多关联记录</small></span><button type="button" disabled>无法读取</button></div>}
     {accountId === 'zhou_xun' && state.unlockedFileIds.includes(CHAPTER_TWO_FINAL_FILE_ID) && (() => { const file = getVirtualFile(CHAPTER_TWO_FINAL_FILE_ID)!; return <div className="story-download unlocked"><span className="file-icon">{file.name.split('.').pop()?.toUpperCase()}</span><span><strong>{file.name}</strong><small>恢复记录 · 只读</small></span><button type="button" onClick={() => openStoryFile(CHAPTER_TWO_FINAL_FILE_ID)}>打开</button></div> })()}
     {accountId === 'zhou_xun' && state.unlockedFileIds.includes(CHAPTER_THREE_BACKUP_FILE_ID) && (() => { const finalized = state.unlockedFileIds.includes(CHAPTER_THREE_FINAL_FILE_ID); const file = getVirtualFile(finalized ? CHAPTER_THREE_FINAL_FILE_ID : CHAPTER_THREE_BACKUP_FILE_ID)!; return <div className={finalized ? 'story-download unlocked' : 'story-download'}><span className="file-icon">TXT</span><span><strong>{file.name}</strong><small>{finalized ? '调查记录已更新 · 只读' : '周寻个人文件 · 只读'}</small></span><button type="button" onClick={openChapterThreeBackup}>打开</button></div> })()}
+    {accountId === 'zhou_xun' && state.unlockedFileIds.includes(CHAPTER_FOUR_BACKUP_FILE_ID) && (() => { const finalized = state.unlockedFileIds.includes(CHAPTER_FOUR_FINAL_FILE_ID); const file = getVirtualFile(finalized ? CHAPTER_FOUR_FINAL_FILE_ID : CHAPTER_FOUR_BACKUP_FILE_ID)!; return <div className={finalized ? 'story-download unlocked' : 'story-download'}><span className="file-icon">TXT</span><span><strong>{file.name}</strong><small>{finalized ? '权限调查已更新 · 只读' : '周寻个人文件 · 只读'}</small></span><button type="button" onClick={openChapterFourBackup}>打开</button></div> })()}
     {baseDownloads.map((file) => <div key={file.id}><span className="file-icon">{file.name.split('.').pop()?.toUpperCase()}</span><span><strong>{file.name}</strong><small>{file.meta}</small></span><button type="button" onClick={() => openVirtualFile(file.id)}>打开</button></div>)}
   </div></Panel>
   {passwordOpen && <ModalFrame title="加密文件验证" onClose={() => setPasswordOpen(false)} className="password-modal"><form className="backup-password-form" onSubmit={submitPassword}><p>请输入四位数字密码。</p><label>密码<input type="password" inputMode="numeric" aria-label="调查备份密码" value={password} onChange={(event) => setPassword(event.target.value)} autoFocus /></label>{error && <p className="password-error" role="alert">{error}</p>}<button type="submit">解锁并打开</button></form></ModalFrame>}
@@ -485,5 +578,5 @@ function MissingStudentRecord({ onNavigate }: Pick<Props, 'onNavigate'>) {
 function StudentNotFound({ onNavigate }: Pick<Props, 'onNavigate'>) { return <div className="student-404"><strong>404</strong><h1>请求的功能页面不存在</h1><p>请核对系统内地址，或返回系统首页。</p><button type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/dashboard')}>返回系统首页</button></div> }
 function Stat({ label, value }: { label: string; value: string }) { return <div className="stat-card"><span>{label}</span><strong>{value}</strong></div> }
 function Panel({ title, children }: { title: string; children: ReactNode }) { return <section className="system-panel"><h2>{title}</h2><div className="system-panel-body">{children}</div></section> }
-function InfoGrid({ entries }: { entries: [string, string][] }) { return <dl className="info-grid">{entries.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl> }
+function InfoGrid({ entries }: { entries: [string, string][] }) { return <dl className="info-grid">{entries.map(([label, value], index) => <div key={`${label}-${index}`}><dt>{label}</dt><dd>{value}</dd></div>)}</dl> }
 function SimpleTable({ headers, rows, highlightLast = false, emphasizeCell }: { headers: string[]; rows: string[][]; highlightLast?: boolean; emphasizeCell?: (cell: string, columnIndex: number, rowIndex: number) => boolean }) { return <div className="table-scroll"><table><thead><tr>{headers.map((header) => <th key={header}>{header}</th>)}</tr></thead><tbody>{rows.map((row, rowIndex) => <tr key={`${row.join('-')}-${rowIndex}`} className={highlightLast && rowIndex === rows.length - 1 ? 'anomaly-row' : ''}>{row.map((cell, columnIndex) => <td className={emphasizeCell?.(cell, columnIndex, rowIndex) ? 'clue-time-emphasis' : undefined} key={`${cell}-${columnIndex}`}>{cell}</td>)}</tr>)}</tbody></table></div> }

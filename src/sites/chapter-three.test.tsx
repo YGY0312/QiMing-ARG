@@ -27,7 +27,7 @@ function chapterThreeState(accountId: StudentAccountId | null, url: string): Gam
     chapterTwoStarted: true, chapterTwoCompleted: true, chapterTwoCompletedAt: '2026-09-17', chapterTwoEndingPlayed: true,
     searchResiduePlayed: false, classCountAnomalyPlayed: false, chapterTwoAnomalyHistoryAdded: true, revealedFileSections: ['chapter-three-backup-read'],
     studentTabCaptchas: {}, currentUrl: active.currentUrl, history: active.history, historyIndex: active.historyIndex, refreshToken: 0, openVirtualFileId: null,
-    addressGlitchActive: false, chapterEndingVisible: false, chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false,
+    addressGlitchActive: false, chapterEndingVisible: false, chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false, chapterFourEndingVisible: false,
   }
 }
 

@@ -16,7 +16,7 @@ function makeState(): GameState {
     chapterOneCompleted: false, chapterOneCompletedAt: null, chapterEndingPlayed: false,
     currentUrl: student.currentUrl, history: student.history, historyIndex: student.historyIndex, refreshToken: 0,
     addressGlitchActive: false, chapterEndingVisible: false,
-    chapterTwoStarted: false, chapterTwoCompleted: false, chapterTwoCompletedAt: null, chapterTwoEndingPlayed: false, searchResiduePlayed: false, classCountAnomalyPlayed: false, chapterTwoAnomalyHistoryAdded: false, revealedFileSections: [], chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false,
+    chapterTwoStarted: false, chapterTwoCompleted: false, chapterTwoCompletedAt: null, chapterTwoEndingPlayed: false, searchResiduePlayed: false, classCountAnomalyPlayed: false, chapterTwoAnomalyHistoryAdded: false, revealedFileSections: [], chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false, chapterFourEndingVisible: false,
   }
 }
 
@@ -117,6 +117,15 @@ describe('v5 本地存档', () => {
     const migrated = migrateSave(createSave(state))
     expect(migrated?.schemaVersion).toBe(5)
     expect(migrated?.triggeredEvents).toContain('chapter_three_completed')
+  })
+
+  it('旧 v5 的 chapter-four-final-read 标记自动迁移为第四章完成事件', () => {
+    const state = makeState()
+    state.triggeredEvents = ['chapter_one_completed', 'chapter_two_started', 'chapter_two_completed', 'chapter_three_started', 'chapter_three_final_unlocked', 'chapter_three_completed', 'chapter_four_started', 'chapter_four_admin_unlocked', 'chapter_four_final_unlocked']
+    state.revealedFileSections = ['chapter-four-final-read']
+    const migrated = migrateSave(createSave(state))
+    expect(migrated?.schemaVersion).toBe(5)
+    expect(migrated?.triggeredEvents).toContain('chapter_four_completed')
   })
 
   it('损坏数据安全回退', () => {

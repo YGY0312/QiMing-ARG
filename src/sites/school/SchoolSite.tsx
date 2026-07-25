@@ -89,6 +89,8 @@ function SchoolContent({ route, onNavigate, onOpenStudentTab }: Props) {
     case 'school-duty-log': return <DutyLogPage onNavigate={onNavigate} />
     case 'school-information-center': return <InformationCenterPage onNavigate={onNavigate} />
     case 'school-maintenance-ticket': return <MaintenanceTicketPage onNavigate={onNavigate} />
+    case 'school-system-services': return <SystemServicesPage onNavigate={onNavigate} />
+    case 'school-admin-denied': return <AdminDeniedPage onNavigate={onNavigate} />
     default:
       return <SchoolNotFound onNavigate={onNavigate} />
   }
@@ -304,8 +306,35 @@ function InformationCenterPage({ onNavigate }: Pick<Props, 'onNavigate'>) {
     <aside><h2>信息中心</h2><span className="aside-active">系统维护记录</span><span>服务公告</span><span>终端支持</span></aside>
     <section className="school-list-page"><h2>信息中心<small>INFORMATION CENTER</small></h2><ul>
       <li><button type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/information-center/maintenance')}><strong>系统维护记录</strong><span>按工单编号查询历史维护任务</span></button><time>查询</time></li>
+      {state.triggeredEvents.includes('chapter_four_started') && <li><button type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/information-center/system-services')}><strong>系统服务</strong><span>校园系统升级说明与兼容服务</span></button><time>服务</time></li>}
     </ul></section>
   </div></main>
+}
+
+function SystemServicesPage({ onNavigate }: Pick<Props, 'onNavigate'>) {
+  const { state, recordChapterFourEvidence } = useGame()
+  const [entryVisible, setEntryVisible] = useState(state.clues.legacy_admin_entry.discovered)
+  if (!state.triggeredEvents.includes('chapter_four_started')) return <SchoolNotFound onNavigate={onNavigate} />
+  const revealEntry = () => {
+    setEntryVisible(true)
+    recordChapterFourEvidence('legacy-entry')
+  }
+  return <main className="school-main school-subpage"><div className="school-breadcrumb">当前位置：信息中心 &gt; 系统服务</div><section className="school-list-page duty-schedule-page">
+    <h2>系统服务<small>SYSTEM SERVICES</small></h2>
+    <p>校园安全系统已完成升级。旧版兼容服务仅用于历史数据维护。</p>
+    <button className="record-inspect" type="button" onClick={revealEntry} disabled={entryVisible}>{entryVisible ? '兼容服务信息已展开' : '查看旧版兼容服务'}</button>
+    {entryVisible && <div className="comparison-box"><p>旧版管理入口：/admin</p><button type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/admin')}>访问旧版管理入口</button></div>}
+    <button className="back-list" type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/information-center')}>返回信息中心</button>
+  </section></main>
+}
+
+function AdminDeniedPage({ onNavigate }: Pick<Props, 'onNavigate'>) {
+  const { state, recordChapterFourEvidence } = useGame()
+  useEffect(() => {
+    if (state.triggeredEvents.includes('chapter_four_started')) recordChapterFourEvidence('access-denied')
+  }, [state.triggeredEvents, recordChapterFourEvidence])
+  if (!state.triggeredEvents.includes('chapter_four_started')) return <SchoolNotFound onNavigate={onNavigate} />
+  return <main className="school-main school-404"><div className="school-breadcrumb">当前位置：信息中心 &gt; 旧版管理入口</div><div><strong>403</strong><h2>Forbidden</h2><p>权限不足。当前访问来源不具备管理员权限。</p><button type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/information-center/system-services')}>返回系统服务</button></div></main>
 }
 
 function MaintenanceTicketPage({ onNavigate }: Pick<Props, 'onNavigate'>) {

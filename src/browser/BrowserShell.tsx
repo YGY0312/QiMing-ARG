@@ -7,6 +7,7 @@ import { UnknownSiteError } from './UnknownSiteError'
 import { InvestigationLog } from '../game/InvestigationLog'
 import { ChapterEnding, ChapterTwoEnding } from '../game/ChapterEnding'
 import { ChapterThreeEnding } from '../game/ChapterThreeEnding'
+import { ChapterFourEnding } from '../game/ChapterFourEnding'
 import { EvidenceSidebar } from '../game/EvidenceSidebar'
 
 export function BrowserShell() {
@@ -84,6 +85,7 @@ export function BrowserShell() {
       {state.chapterEndingVisible && <ChapterEnding />}
       {state.chapterTwoEndingVisible && <ChapterTwoEnding />}
       {state.chapterThreeEndingVisible && <ChapterThreeEnding />}
+      {state.chapterFourEndingVisible && <ChapterFourEnding />}
     </main>
   )
 }

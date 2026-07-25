@@ -1,4 +1,4 @@
-import type { ChapterThreeClueId, ChapterTwoClueId, ClueId, ClueProgress, ClueProgressMap, StoryEventId } from '../types/game'
+import type { ChapterFourClueId, ChapterThreeClueId, ChapterTwoClueId, ClueId, ClueProgress, ClueProgressMap, StoryEventId } from '../types/game'
 
 export interface ClueDefinition extends Omit<ClueProgress, 'discovered' | 'discoveredAt' | 'sourceUrl'> { title: string; source: string; description: string; sidebarFacts: string[] }
 
@@ -10,6 +10,12 @@ export const chapterTwoClueIds: ChapterTwoClueId[] = [
 export const chapterThreeClueIds: ChapterThreeClueId[] = [
   'old_building_duty_record', 'old_building_access_log', 'old_building_reservation', 'equipment_missing_record',
   'duty_log_record', 'camera_exception_record', 'system_maintenance_ticket', 'admin_permission_trace', 'system_upgrade_notice',
+]
+
+export const chapterFourClueIds: ChapterFourClueId[] = [
+  'permission_limit', 'legacy_admin_entry', 'admin_access_denied', 'zhou_admin_attempt',
+  'permission_request_manual', 'history_query_access', 'student_status_modify_log',
+  'admin03_permission_group', 'linmo_target_record',
 ]
 
 export const clueDefinitions: Record<ClueId, ClueDefinition> = {
@@ -46,6 +52,15 @@ export const clueDefinitions: Record<ClueId, ClueDefinition> = {
   system_maintenance_ticket: { id: 'system_maintenance_ticket', title: '系统维护工单', source: '学校官网信息中心', description: '信息中心工单显示6月16日22:20执行了学生信息系统数据同步维护。', category: '系统记录', isKeyClue: true, sidebarFacts: ['工单：SYS-0616', '时间：2026-06-16 22:20', '类型：数据同步维护'] },
   admin_permission_trace: { id: 'admin_permission_trace', title: '管理员权限痕迹', source: '实验楼异常访问记录详情', description: '22:30的异常解除记录来自管理员权限，但没有留下具体账号。', category: '系统记录', isKeyClue: true, sidebarFacts: ['22:30操作来源：管理员权限', '具体账号：未记录'] },
   system_upgrade_notice: { id: 'system_upgrade_notice', title: '校园安全系统升级', source: '学校官网校园新闻', description: '信息中心在事件发生两天后完成了校园安全系统升级。', category: '公开资料', isKeyClue: true, sidebarFacts: ['系统升级完成日期：2026-06-18', '负责部门：信息中心'] },
+  permission_limit: { id: 'permission_limit', title: '权限限制', source: '学生系统检索', description: 'ADMIN_03存在历史引用，但普通学生账号无法查询其详情。', category: '系统记录', isKeyClue: true, sidebarFacts: ['ADMIN_03：存在历史引用', '查询权限：不足'] },
+  legacy_admin_entry: { id: 'legacy_admin_entry', title: '旧版管理入口', source: '学校官网系统服务', description: '信息中心的系统服务页面保留了旧版管理入口 /admin。', category: '公开资料', isKeyClue: true, sidebarFacts: ['旧版入口：/admin'] },
+  admin_access_denied: { id: 'admin_access_denied', title: '管理员入口拒绝访问', source: '旧版管理入口', description: '访问旧版管理入口时返回403权限不足。', category: '系统记录', isKeyClue: true, sidebarFacts: ['403 Forbidden', '权限不足'] },
+  zhou_admin_attempt: { id: 'zhou_admin_attempt', title: '周寻管理员访问记录', source: '周寻账号调查资料', description: '周寻曾尝试访问管理员历史页面 /admin/history。', category: '私人信息', isKeyClue: true, sidebarFacts: ['访问目标：/admin/history', '结果：拒绝访问'] },
+  permission_request_manual: { id: 'permission_request_manual', title: '权限申请说明', source: '学生系统帮助', description: '历史数据访问需要维护编号、管理员授权记录与访问申请。', category: '系统记录', isKeyClue: true, sidebarFacts: ['维护编号', '管理员授权记录', '访问申请'] },
+  history_query_access: { id: 'history_query_access', title: '历史查询入口', source: '学生系统', description: '满足调查条件后，旧版历史查询入口出现在周寻账号中。', category: '系统记录', isKeyClue: true, sidebarFacts: ['入口：管理员历史查询'] },
+  student_status_modify_log: { id: 'student_status_modify_log', title: '学生状态修改记录', source: '管理员历史查询', description: '沈栀的状态由正常在籍修改为异常注销。', category: '学籍记录', isKeyClue: true, sidebarFacts: ['原状态：正常在籍', '修改：异常注销'] },
+  admin03_permission_group: { id: 'admin03_permission_group', title: 'ADMIN_03权限组', source: '管理员历史查询', description: 'ADMIN_03不是普通账号，而是一组系统权限。', category: '系统记录', isKeyClue: true, sidebarFacts: ['StudentStatusModify', 'ArchiveAccess', 'RecordCleanup'] },
+  linmo_target_record: { id: 'linmo_target_record', title: '林默调查记录', source: '管理员历史查询', description: '管理员记录中出现了林默的学号，状态为调查中。', category: '私人信息', isKeyClue: true, sidebarFacts: ['目标：2024010307', '状态：调查中'] },
 }
 
 export interface EvidenceFactGroup { id: ClueId; title: string; source: string; facts: string[] }
@@ -74,6 +89,14 @@ export const storyEventRequirements: Record<StoryEventId, ClueId[]> = {
     'duty_log_record', 'camera_exception_record', 'system_maintenance_ticket', 'admin_permission_trace', 'system_upgrade_notice',
   ],
   chapter_three_completed: [],
+  chapter_four_started: [],
+  chapter_four_admin_unlocked: ['permission_limit', 'legacy_admin_entry', 'admin_access_denied', 'zhou_admin_attempt', 'permission_request_manual'],
+  chapter_four_final_unlocked: [
+    'permission_limit', 'legacy_admin_entry', 'admin_access_denied', 'zhou_admin_attempt',
+    'permission_request_manual', 'history_query_access', 'student_status_modify_log',
+    'admin03_permission_group', 'linmo_target_record',
+  ],
+  chapter_four_completed: [],
 }
 
 export const shenzhiCacheEvidenceIds: ClueId[] = ['class_size_mismatch', 'seat_chart_shenzhi', 'hidden_grade_row', 'shenzhi_essay', 'shenzhi_removed_from_group']

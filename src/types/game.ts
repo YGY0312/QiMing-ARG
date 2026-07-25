@@ -6,10 +6,12 @@ export type ComponentKey =
   | 'school-home' | 'school-news' | 'school-news-detail' | 'school-notices' | 'school-notice-detail'
   | 'school-search' | 'school-removed' | 'school-lab-management' | 'school-duty-schedule' | 'school-duty-log'
   | 'school-information-center' | 'school-maintenance-ticket'
+  | 'school-system-services' | 'school-admin-denied'
   | 'student-entry' | 'student-login' | 'student-dashboard' | 'student-status' | 'student-attendance'
   | 'student-card-records' | 'student-class-list' | 'student-messages' | 'student-downloads'
   | 'student-group-history' | 'student-status-cache' | 'student-access-query' | 'student-lab-access-records'
   | 'student-lab-reservations' | 'student-equipment-loans' | 'student-camera-exceptions' | 'student-missing' | 'not-found'
+  | 'student-system-search' | 'student-admin-attempts' | 'student-permission-help' | 'student-admin-history'
 
 export interface GameRoute { hostname: string; pathname: string; url: string; pageTitle: string; siteType: SiteType; componentKey: ComponentKey; params?: { id?: string } }
 export interface StudentTabSession { accountId: StudentAccountId | null }
@@ -33,16 +35,24 @@ export type ChapterThreeClueId =
   | 'old_building_duty_record' | 'old_building_access_log' | 'admin_permission_trace' | 'system_upgrade_notice'
   | 'old_building_reservation' | 'equipment_missing_record' | 'duty_log_record'
   | 'camera_exception_record' | 'system_maintenance_ticket'
-export type ClueId = ChapterOneClueId | ChapterTwoClueId | ChapterThreeClueId
+export type ChapterFourClueId =
+  | 'permission_limit' | 'legacy_admin_entry' | 'admin_access_denied' | 'zhou_admin_attempt'
+  | 'permission_request_manual' | 'history_query_access' | 'student_status_modify_log'
+  | 'admin03_permission_group' | 'linmo_target_record'
+export type ClueId = ChapterOneClueId | ChapterTwoClueId | ChapterThreeClueId | ChapterFourClueId
 
 export type ChapterOneEventId = 'old_building_contradiction' | 'zhou_draft_revealed' | 'investigation_backup_unlocked' | 'chapter_one_completed'
 export type ChapterTwoEventId = 'chapter_two_started' | 'shenzhi_cache_unlocked' | 'old_building_access_unlocked' | 'chapter_two_final_file_unlocked' | 'chapter_two_completed'
 export type ChapterThreeEventId = 'chapter_three_started' | 'chapter_three_final_unlocked' | 'chapter_three_completed'
-export type StoryEventId = ChapterOneEventId | ChapterTwoEventId | ChapterThreeEventId
+export type ChapterFourEventId = 'chapter_four_started' | 'chapter_four_admin_unlocked' | 'chapter_four_final_unlocked' | 'chapter_four_completed'
+export type StoryEventId = ChapterOneEventId | ChapterTwoEventId | ChapterThreeEventId | ChapterFourEventId
 
 export type ChapterThreeEvidenceAction =
   | 'duty-record' | 'access-log' | 'admin-trace' | 'system-upgrade'
   | 'reservation-record' | 'equipment-record' | 'duty-log' | 'camera-exception' | 'maintenance-ticket'
+export type ChapterFourEvidenceAction =
+  | 'permission-search' | 'legacy-entry' | 'access-denied' | 'zhou-attempt' | 'permission-manual'
+  | 'history-access' | 'student-status-log' | 'admin-group' | 'linmo-target'
 
 export type ClueCategory = '公开资料' | '学生档案' | '系统记录' | '私人信息' | '身份痕迹' | '班级资料' | '学籍记录' | '人物关系' | '旧实验楼'
 export interface ClueProgress { id: ClueId; discovered: boolean; discoveredAt: string | null; sourceUrl: string | null; category: ClueCategory; isKeyClue: boolean }
@@ -70,4 +80,5 @@ export interface GameState extends Omit<GameSaveV5, 'schemaVersion' | 'prototype
   addressGlitchActive: boolean; chapterEndingVisible: boolean
   chapterTwoAddressGlitchActive: boolean; chapterTwoEndingVisible: boolean
   chapterThreeEndingVisible: boolean
+  chapterFourEndingVisible: boolean
 }

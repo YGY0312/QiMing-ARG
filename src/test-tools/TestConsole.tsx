@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { APP_VERSION, APP_VERSION_LABEL, PROJECT_CREATOR, SAVE_SCHEMA_VERSION } from '../config/app'
-import { chapterThreeClueIds, chapterTwoClueIds, clueDefinitions } from '../data/story'
+import { chapterFourClueIds, chapterThreeClueIds, chapterTwoClueIds, clueDefinitions } from '../data/story'
 import { SAVE_KEY } from '../game/constants'
 import { useGame } from '../game/GameContext'
 import { createSave, writeSave } from '../game/storage'
@@ -32,7 +32,9 @@ export function TestConsole({ onExitTestMode }: Props) {
   const [description, setDescription] = useState('')
 
   const discoveredCount = Object.values(state.clues).filter((clue) => clue.discovered).length
-  const chapterLabel = state.triggeredEvents.includes('chapter_three_completed') ? '第三章《值班记录》调查完成'
+  const chapterLabel = state.triggeredEvents.includes('chapter_four_completed') ? '第四章《权限不足》调查完成'
+    : state.triggeredEvents.includes('chapter_four_started') ? '第四章《权限不足》调查中'
+    : state.triggeredEvents.includes('chapter_three_completed') ? '第三章《值班记录》调查完成'
     : state.triggeredEvents.includes('chapter_three_started') ? '第三章《值班记录》调查中'
       : state.chapterTwoCompleted ? '第二章已完成'
         : state.chapterTwoStarted ? '第二章调查中'
@@ -113,6 +115,7 @@ export function TestConsole({ onExitTestMode }: Props) {
             <div><dt>第一章</dt><dd>{state.chapterOneCompleted ? '已完成' : state.isStarted ? '进行中' : '未开始'}</dd></div>
             <div><dt>第二章</dt><dd>{state.chapterTwoCompleted ? '已完成' : state.chapterTwoStarted ? '进行中' : '未开始'}</dd></div>
             <div><dt>第三章</dt><dd>{state.triggeredEvents.includes('chapter_three_completed') ? '已完成' : state.triggeredEvents.includes('chapter_three_started') ? '进行中' : '未开始'}</dd></div>
+            <div><dt>第四章</dt><dd>{state.triggeredEvents.includes('chapter_four_completed') ? '已完成' : state.triggeredEvents.includes('chapter_four_started') ? '进行中' : '未开始'}</dd></div>
             <div><dt>线索 / 事件</dt><dd>{discoveredCount} / {state.triggeredEvents.length}</dd></div>
             <div><dt>保存账号</dt><dd>{state.savedStudentAccounts.map((account) => account.displayName).join('、') || '无'}</dd></div>
             <div><dt>关键事实侧栏</dt><dd>{state.evidenceSidebarCollapsed ? '已收起' : '已展开'}</dd></div>
@@ -140,6 +143,9 @@ export function TestConsole({ onExitTestMode }: Props) {
             <button type="button" onClick={() => openAccountPage('zhou_xun', 'stu.qiming-high.edu.cn/lab-access-records')}>第三章访问记录</button>
             <button type="button" onClick={() => navigate('www.qiming-high.edu.cn/news/campus-security-system-upgrade')}>系统升级新闻</button>
             <button type="button" onClick={() => openAccountPage('zhou_xun', 'stu.qiming-high.edu.cn/downloads')}>周寻文件区</button>
+            <button type="button" onClick={() => openAccountPage('zhou_xun', 'stu.qiming-high.edu.cn/system-search')}>第四章系统检索</button>
+            <button type="button" onClick={() => navigate('www.qiming-high.edu.cn/services/information-center/system-services')}>第四章系统服务</button>
+            <button type="button" onClick={() => openAccountPage('zhou_xun', 'stu.qiming-high.edu.cn/admin/history')}>第四章历史查询</button>
           </div>
         </section>
 
@@ -189,6 +195,12 @@ export function TestConsole({ onExitTestMode }: Props) {
         <ClueSection title="第三章测试" ids={chapterThreeClueIds} state={state} onToggle={toggleClue}>
           <button type="button" onClick={() => forceEvent('chapter_three_started')}>开启第三章</button>
           <button type="button" onClick={() => forceEvent('chapter_three_final_unlocked')}>解锁最终备份</button>
+        </ClueSection>
+
+        <ClueSection title="第四章测试" ids={chapterFourClueIds} state={state} onToggle={toggleClue}>
+          <button type="button" onClick={() => forceEvent('chapter_four_started')}>开启第四章</button>
+          <button type="button" onClick={() => forceEvent('chapter_four_admin_unlocked')}>解锁历史查询</button>
+          <button type="button" onClick={() => forceEvent('chapter_four_final_unlocked')}>解锁最终备份</button>
         </ClueSection>
 
         <section>

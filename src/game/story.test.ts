@@ -14,7 +14,7 @@ function makeState(): GameState {
     currentUrl: tab.currentUrl, history: tab.history, historyIndex: tab.historyIndex, visitedPages: [tab.currentUrl], clues: createEmptyClues(),
     triggeredEvents: [], unreadMessageIds: [ZHOU_CREDENTIALS_MESSAGE_ID], readMessageIds: [], unlockedFileIds: [], openVirtualFileId: null,
     chapterOneCompleted: false, chapterOneCompletedAt: null, chapterEndingPlayed: false, refreshToken: 0, addressGlitchActive: false, chapterEndingVisible: false,
-    chapterTwoStarted: false, chapterTwoCompleted: false, chapterTwoCompletedAt: null, chapterTwoEndingPlayed: false, searchResiduePlayed: false, classCountAnomalyPlayed: false, chapterTwoAnomalyHistoryAdded: false, revealedFileSections: [], chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false,
+    chapterTwoStarted: false, chapterTwoCompleted: false, chapterTwoCompletedAt: null, chapterTwoEndingPlayed: false, searchResiduePlayed: false, classCountAnomalyPlayed: false, chapterTwoAnomalyHistoryAdded: false, revealedFileSections: [], chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false, chapterFourEndingVisible: false,
   }
 }
 
