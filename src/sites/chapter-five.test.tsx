@@ -63,17 +63,60 @@ describe('第五章页面与权限', () => {
     expect(screen.getByText('当前账号无权查看该账号的安全调查资料。')).toBeInTheDocument()
   })
 
-  it('正确核对两条终端记录后发现失踪后登录', async () => {
+  it('默认日期范围覆盖跨日记录，正确核对后直接发现失踪后登录', async () => {
     const user = userEvent.setup()
     renderStudent(chapterFiveState('zhou_xun', 'stu.qiming-high.edu.cn/security/devices'))
+    expect(screen.getByLabelText('登录开始日期')).toHaveValue('2026-09-14')
+    expect(screen.getByLabelText('登录结束日期')).toHaveValue('2026-09-15')
+    expect(screen.queryByLabelText('登录日期')).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '查询' }))
+    expect(screen.getByText('2026-09-14 23:48')).toBeInTheDocument()
+    expect(screen.getByText('2026-09-15 00:02')).toBeInTheDocument()
     await user.click(screen.getByRole('checkbox', { name: '选择2026-09-14 23:48' }))
     expect(screen.getByRole('button', { name: '核对登录时间' })).toBeDisabled()
     await user.click(screen.getByRole('checkbox', { name: '选择2026-09-15 00:02' }))
     await user.click(screen.getByRole('button', { name: '核对登录时间' }))
-    expect(readSave()?.clues.zhou_post_disappearance_login.discovered).toBe(false)
-    await user.click(screen.getByRole('button', { name: '记录该异常' }))
     await waitFor(() => expect(readSave()?.clues.zhou_post_disappearance_login.discovered).toBe(true))
+    expect(screen.getByRole('button', { name: '登录异常已核对' })).toBeDisabled()
+  })
+
+  it('错误日期范围保留上次合法结果且不会发现线索', async () => {
+    const user = userEvent.setup()
+    renderStudent(chapterFiveState('zhou_xun', 'stu.qiming-high.edu.cn/security/devices'))
+    await user.click(screen.getByRole('button', { name: '查询' }))
+    expect(screen.getByText('2026-09-14 23:48')).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('登录开始日期'), { target: { value: '2026-09-16' } })
+    await user.click(screen.getByRole('button', { name: '查询' }))
+    expect(screen.getByRole('alert')).toHaveTextContent('开始日期不能晚于结束日期')
+    expect(screen.getByText('2026-09-14 23:48')).toBeInTheDocument()
+    expect(readSave()?.clues.zhou_post_disappearance_login.discovered).toBe(false)
+  })
+
+  it('错误组合不触发线索，重新查询会清理不可见选择', async () => {
+    const user = userEvent.setup()
+    renderStudent(chapterFiveState('zhou_xun', 'stu.qiming-high.edu.cn/security/devices'))
+    await user.click(screen.getByRole('button', { name: '查询' }))
+    await user.click(screen.getByRole('checkbox', { name: '选择2026-09-14 21:06' }))
+    await user.click(screen.getByRole('checkbox', { name: '选择2026-09-14 23:48' }))
+    await user.click(screen.getByRole('button', { name: '核对登录时间' }))
+    expect(screen.getByRole('alert')).toHaveTextContent('所选记录不能证明')
+    expect(readSave()?.clues.zhou_post_disappearance_login.discovered).toBe(false)
+    fireEvent.change(screen.getByLabelText('登录开始日期'), { target: { value: '2026-09-15' } })
+    await user.click(screen.getByRole('button', { name: '查询' }))
+    expect(screen.getByRole('checkbox', { name: '选择2026-09-15 00:02' })).not.toBeChecked()
+    expect(screen.getByRole('button', { name: '核对登录时间' })).toBeDisabled()
+  })
+
+  it('已发现登录线索的存档直接显示完成状态', () => {
+    const state = chapterFiveState('zhou_xun', 'stu.qiming-high.edu.cn/security/devices')
+    state.clues.zhou_post_disappearance_login = {
+      ...state.clues.zhou_post_disappearance_login,
+      discovered: true,
+      discoveredAt: '2026-09-15T00:03:00.000Z',
+      sourceUrl: state.currentUrl,
+    }
+    renderStudent(state)
+    expect(screen.getByRole('button', { name: '登录异常已核对' })).toBeDisabled()
   })
 
   it('设备详情主动核对后发现停用终端活动', async () => {
@@ -103,18 +146,42 @@ describe('第五章页面与权限', () => {
     await waitFor(() => expect(readSave()?.clues.shenzhi_zhou_terminal_link.discovered).toBe(true))
   })
 
-  it('三个账号全部加入后才能确认关联', async () => {
+  it('三个账号逐个加入并显示明确关系后才能确认关联', async () => {
     const user = userEvent.setup()
     const state = chapterFiveState('zhou_xun', 'stu.qiming-high.edu.cn/investigation/account-relations')
     state.triggeredEvents.push('chapter_five_cache_unlocked', 'chapter_five_relation_unlocked')
     renderStudent(state)
-    for (const id of ['2024010318', '2024010312', '2024010307']) {
+    const confirm = screen.getByRole('button', { name: '确认关联' })
+    expect(confirm).toBeDisabled()
+    for (const [index, id] of ['2024010318', '2024010312', '2024010307'].entries()) {
       fireEvent.change(screen.getByLabelText('关联账号查询'), { target: { value: id } })
       await user.click(screen.getByRole('button', { name: '查询' }))
-      await user.click(screen.getByRole('button', { name: '加入关联比对' }))
+      const add = screen.getByRole('button', { name: '加入关联比对' })
+      await user.click(add)
+      expect(screen.getByRole('button', { name: '已加入比对' })).toBeDisabled()
+      if (index < 2) expect(confirm).toBeDisabled()
     }
+    expect(confirm).toBeEnabled()
+    expect(screen.getByRole('region', { name: '关联结果' })).toHaveTextContent('沈栀2024010318')
+    expect(screen.getByRole('region', { name: '关联结果' })).toHaveTextContent('周寻2024010312')
+    expect(screen.getByRole('region', { name: '关联结果' })).toHaveTextContent('林默2024010307')
     await user.click(screen.getByRole('button', { name: '确认关联' }))
     await waitFor(() => expect(readSave()?.clues.three_account_relation.discovered).toBe(true))
+    expect(screen.getByRole('button', { name: '已确认关联' })).toBeDisabled()
+  })
+
+  it('已确认关联的存档恢复完整关系和完成状态', () => {
+    const state = chapterFiveState('zhou_xun', 'stu.qiming-high.edu.cn/investigation/account-relations')
+    state.triggeredEvents.push('chapter_five_cache_unlocked', 'chapter_five_relation_unlocked')
+    state.clues.three_account_relation = {
+      ...state.clues.three_account_relation,
+      discovered: true,
+      discoveredAt: '2026-09-15T00:05:00.000Z',
+      sourceUrl: state.currentUrl,
+    }
+    renderStudent(state)
+    expect(screen.getByRole('region', { name: '关联结果' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '已确认关联' })).toBeDisabled()
   })
 
   it('未发送草稿需要主动打开并正确比对时间', async () => {

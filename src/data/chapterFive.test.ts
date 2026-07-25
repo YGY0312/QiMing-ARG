@@ -9,9 +9,50 @@ import {
 } from './chapterFive'
 
 describe('第五章调查纯函数', () => {
-  it('按日期、设备与状态筛选登录记录', () => {
-    expect(filterLoginRecords({ date: '2026-09-14', device: '维护终端03', status: '成功' })).toHaveLength(1)
-    expect(filterLoginRecords({ date: '2026-09-15', device: '维护终端03', status: '会话中断' })[0]?.time).toBe('00:02')
+  it('单日闭区间返回当天记录', () => {
+    const result = filterLoginRecords({ startDate: '2026-09-14', endDate: '2026-09-14', device: '', status: '' })
+    expect(result.error).toBeNull()
+    expect(result.records.map((record) => record.date)).toEqual(['2026-09-14', '2026-09-14'])
+  })
+
+  it('跨日闭区间同时包含首日和末日记录', () => {
+    const result = filterLoginRecords({ startDate: '2026-09-14', endDate: '2026-09-15', device: '维护终端03', status: '' })
+    expect(result.error).toBeNull()
+    expect(result.records.map((record) => `${record.date} ${record.time}`)).toEqual([
+      '2026-09-14 23:48',
+      '2026-09-15 00:02',
+    ])
+  })
+
+  it('开始日期晚于结束日期时返回校验错误', () => {
+    expect(filterLoginRecords({ startDate: '2026-09-15', endDate: '2026-09-14', device: '', status: '' })).toEqual({
+      records: [],
+      error: 'reversed-range',
+    })
+  })
+
+  it('日期范围缺失或无效时返回校验错误', () => {
+    expect(filterLoginRecords({ startDate: '', endDate: '2026-09-15', device: '', status: '' }).error).toBe('incomplete-range')
+    expect(filterLoginRecords({ startDate: '2026-09-14', endDate: '', device: '', status: '' }).error).toBe('incomplete-range')
+    expect(filterLoginRecords({ startDate: '2026-02-30', endDate: '2026-09-15', device: '', status: '' }).error).toBe('invalid-date')
+  })
+
+  it('设备和状态筛选可与日期范围组合', () => {
+    const success = filterLoginRecords({ startDate: '2026-09-14', endDate: '2026-09-15', device: '维护终端03', status: '成功' })
+    const interrupted = filterLoginRecords({ startDate: '2026-09-14', endDate: '2026-09-15', device: '维护终端03', status: '会话中断' })
+    expect(success.records.map((record) => record.time)).toEqual(['23:48'])
+    expect(interrupted.records.map((record) => record.time)).toEqual(['00:02'])
+  })
+
+  it('筛选结果按完整日期时间升序排列且不依赖时区解析', () => {
+    const result = filterLoginRecords({ startDate: '2026-09-08', endDate: '2026-09-15', device: '', status: '' })
+    expect(result.records.map((record) => `${record.date} ${record.time}`)).toEqual([
+      '2026-09-08 18:20',
+      '2026-09-13 07:11',
+      '2026-09-14 21:06',
+      '2026-09-14 23:48',
+      '2026-09-15 00:02',
+    ])
   })
 
   it('仅正确两条终端记录构成退学后登录核对', () => {

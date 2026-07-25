@@ -144,9 +144,36 @@ button { border: 0; }
 
 .table-link { padding: 0; border: 0; color: #1c4f83; background: transparent; text-decoration: underline; cursor: pointer; }
 .table-link + small { display: block; margin-top: 2px; color: #697786; }
-.relation-diagram { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 16px 0; }
-.relation-diagram span { display: grid; min-width: 128px; padding: 12px; border: 1px solid #aebdca; background: #f5f8fa; text-align: center; }
-.relation-diagram span + span::before { content: "↔"; margin-left: -24px; margin-right: 8px; color: #6d7e8d; }
+.relation-query-section { padding-bottom: 4px; border-bottom: 1px solid #dce3e7; }
+.relation-query-form { grid-template-columns: minmax(180px, 1fr) auto; }
+.relation-result-card { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 16px; padding: 16px; background: #f4f7f8; border: 1px solid #c7d2d8; border-left: 4px solid #607f92; }
+.relation-result-card > div { min-width: 0; }
+.relation-result-card small, .relation-result-card strong, .relation-result-card code { display: block; }
+.relation-result-card small { color: #74838c; font-size: 10px; }
+.relation-result-card strong { margin-top: 4px; color: #344f60; font-size: 16px; }
+.relation-result-card code { margin-top: 2px; color: #516875; font-size: 12px; }
+.relation-result-card p { margin: 8px 0 0; color: #687780; font-size: 11px; }
+.relation-add-action, .primary-action { padding: 9px 15px; color: white; background: #426f8a; border: 1px solid #345e77; cursor: pointer; font-weight: 600; }
+.relation-add-action:hover:not(:disabled), .primary-action:hover:not(:disabled) { background: #355f78; }
+.relation-add-action.is-added { color: #426552; background: #e5efe9; border-color: #a9c0b2; }
+.relation-add-action:disabled, .primary-action:disabled { color: #7a878e; background: #e4e8ea; border-color: #c6ced2; cursor: not-allowed; opacity: 1; }
+.relation-selection { margin-top: 20px; }
+.relation-selection h3, .relation-result-section h3 { margin: 0 0 10px; color: #405d70; font-size: 13px; font-weight: 600; }
+.relation-selection > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.relation-selection span { display: grid; min-width: 110px; padding: 8px 10px; color: #536874; background: #eef3f5; border: 1px solid #c9d4d9; }
+.relation-selection small { margin-top: 2px; color: #798890; }
+.relation-result-section { margin-top: 20px; padding: 16px; background: #f8fafb; border: 1px solid #cbd5da; }
+.relation-chain { display: grid; grid-template-columns: minmax(90px, 1fr) auto minmax(120px, 1fr) auto minmax(90px, 1fr) auto minmax(90px, 1fr); align-items: center; gap: 8px; }
+.relation-node, .relation-terminal { min-width: 0; padding: 13px 10px; text-align: center; background: white; border: 1px solid #b9c7ce; }
+.relation-node strong, .relation-node small, .relation-terminal strong, .relation-terminal small { display: block; overflow-wrap: anywhere; }
+.relation-node strong, .relation-terminal strong { color: #38566a; font-size: 13px; }
+.relation-node small, .relation-terminal small { margin-top: 4px; color: #7a8991; font-size: 9px; }
+.relation-node.emphasized { background: #e9f0f4; border-color: #66869a; box-shadow: inset 0 0 0 1px #66869a; }
+.relation-terminal { background: #f2eee5; border-color: #c8b894; }
+.relation-connector { display: grid; justify-items: center; color: #567386; }
+.relation-connector span { font-size: 17px; line-height: 1; }
+.relation-connector small { margin-top: 3px; white-space: nowrap; color: #748791; font-size: 9px; }
+.relation-confirm-action, .login-compare-action { margin-top: 16px; }
 
 /* Stage 4: persistent evidence rail and saved-account login. */
 .evidence-sidebar { min-width: 0; min-height: 0; overflow: hidden; color: #334650; background: #f1f4f5; border-left: 1px solid #c8d0d4; }
@@ -242,6 +269,7 @@ button { border: 0; }
 .duty-schedule-page { min-height: 430px; padding: 22px; background: #fff; border: 1px solid #d7dde0; }
 .duty-schedule-page > p { color: #697982; font-size: 12px; }
 .record-query-form { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)) auto; align-items: end; gap: 9px; margin-bottom: 14px; }
+.login-range-form { grid-template-columns: repeat(4, minmax(0, 1fr)) auto; }
 .record-query-form label { display: grid; gap: 5px; color: #61747f; font-size: 10px; }
 .record-query-form input, .record-query-form select { min-width: 0; height: 34px; padding: 0 8px; color: #3f525e; background: white; border: 1px solid #becbd2; }
 .date-compare-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin: 14px 0; }
@@ -250,7 +278,23 @@ button { border: 0; }
 .date-compare-grid button strong { margin-top: 7px; color: #3d5666; font-size: 12px; }
 .date-compare-grid button.selected { background: #e5edf2; border-color: #52758a; box-shadow: inset 0 0 0 1px #52758a; }
 
-@media (max-width: 720px) { .seat-chart { grid-template-columns: repeat(3, 1fr); } .school-search { justify-content: center; } .record-query-form { grid-template-columns: 1fr 1fr; } .date-compare-grid { grid-template-columns: 1fr; } }
+@media (max-width: 900px) {
+  .login-range-form { grid-template-columns: 1fr 1fr; }
+  .login-range-form > button { grid-column: 1 / -1; }
+  .relation-chain { grid-template-columns: 1fr; }
+  .relation-connector.reverse span { transform: rotate(180deg); }
+  .relation-connector small { white-space: normal; }
+}
+@media (max-width: 720px) {
+  .seat-chart { grid-template-columns: repeat(3, 1fr); }
+  .school-search { justify-content: center; }
+  .record-query-form { grid-template-columns: 1fr 1fr; }
+  .relation-query-form { grid-template-columns: 1fr; }
+  .relation-result-card { align-items: stretch; flex-direction: column; }
+  .relation-add-action { width: 100%; }
+  .relation-selection > div { display: grid; grid-template-columns: 1fr; }
+  .date-compare-grid { grid-template-columns: 1fr; }
+}
 
 /* Public-test identity and opt-in test console. */
 .launch-credits { margin-top: 22px; color: #7b878d; font-size: 10px; line-height: 1.8; }

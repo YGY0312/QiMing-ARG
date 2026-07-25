@@ -18,12 +18,39 @@ export const zhouLoginRecords: LoginRecord[] = [
   { id: 'mobile-0908', date: '2026-09-08', time: '18:20', device: '校园移动端', location: '宿舍区', status: '成功' },
 ]
 
-export interface LoginFilters { date: string; device: string; status: string }
-export function filterLoginRecords(filters: LoginFilters): LoginRecord[] {
-  return zhouLoginRecords.filter((record) =>
-    (!filters.date || record.date === filters.date)
-    && (!filters.device || record.device === filters.device)
-    && (!filters.status || record.status === filters.status))
+export interface LoginFilters { startDate: string; endDate: string; device: string; status: string }
+export type LoginFilterError = 'incomplete-range' | 'invalid-date' | 'reversed-range'
+export interface LoginFilterResult {
+  records: LoginRecord[]
+  error: LoginFilterError | null
+}
+
+function isValidIsoDate(value: string): boolean {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
+  if (!match) return false
+  const year = Number(match[1])
+  const month = Number(match[2])
+  const day = Number(match[3])
+  if (month < 1 || month > 12 || day < 1) return false
+  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)
+  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+  return day <= days[month - 1]
+}
+
+export function filterLoginRecords(filters: LoginFilters): LoginFilterResult {
+  if (!filters.startDate || !filters.endDate) return { records: [], error: 'incomplete-range' }
+  if (!isValidIsoDate(filters.startDate) || !isValidIsoDate(filters.endDate)) {
+    return { records: [], error: 'invalid-date' }
+  }
+  if (filters.startDate > filters.endDate) return { records: [], error: 'reversed-range' }
+  const records = zhouLoginRecords
+    .filter((record) =>
+      record.date >= filters.startDate
+      && record.date <= filters.endDate
+      && (!filters.device || record.device === filters.device)
+      && (!filters.status || record.status === filters.status))
+    .sort((left, right) => `${left.date} ${left.time}`.localeCompare(`${right.date} ${right.time}`))
+  return { records, error: null }
 }
 
 export function isPostDisappearancePair(ids: string[]): boolean {
