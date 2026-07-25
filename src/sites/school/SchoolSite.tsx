@@ -111,10 +111,10 @@ function SchoolHome({ onNavigate, onOpenStudentTab }: Pick<Props, 'onNavigate' |
       <div className="school-grid">
         <section className="school-panel news-panel">
           <PanelTitle title="校园新闻" onMore={() => onNavigate('www.qiming-high.edu.cn/news')} />
-          <article className="featured-news">
+          <a className="featured-news" href={`#/news/${visibleNews[0].id}`} onClick={(event) => { event.preventDefault(); onNavigate(`www.qiming-high.edu.cn/news/${visibleNews[0].id}`) }}>
             <div className="featured-placeholder"><span>校园简讯</span></div>
             <div><h2>{visibleNews[0].title}</h2><p>{visibleNews[0].summary}</p></div>
-          </article>
+          </a>
           <ArticleRows items={visibleNews.slice(1)} prefix="news" onNavigate={onNavigate} />
         </section>
         <section className="school-panel notice-panel">

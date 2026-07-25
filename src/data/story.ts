@@ -1,4 +1,4 @@
-import type { ChapterFourClueId, ChapterThreeClueId, ChapterTwoClueId, ClueId, ClueProgress, ClueProgressMap, StoryEventId } from '../types/game'
+import type { ChapterFiveClueId, ChapterFourClueId, ChapterThreeClueId, ChapterTwoClueId, ClueId, ClueProgress, ClueProgressMap, StoryEventId } from '../types/game'
 
 export interface ClueDefinition extends Omit<ClueProgress, 'discovered' | 'discoveredAt' | 'sourceUrl'> { title: string; source: string; description: string; sidebarFacts: string[] }
 
@@ -16,6 +16,12 @@ export const chapterFourClueIds: ChapterFourClueId[] = [
   'permission_limit', 'legacy_admin_entry', 'admin_access_denied', 'zhou_admin_attempt',
   'permission_request_manual', 'history_query_access', 'student_status_modify_log',
   'admin03_permission_group', 'linmo_target_record',
+]
+
+export const chapterFiveClueIds: ChapterFiveClueId[] = [
+  'account_relation_warning', 'zhou_post_disappearance_login', 'decommissioned_terminal_activity',
+  'shenzhi_cache_recovered', 'shenzhi_zhou_terminal_link', 'three_account_relation',
+  'zhou_last_draft', 'draft_modified_after_logout', 'zhou_last_login_summary',
 ]
 
 export const clueDefinitions: Record<ClueId, ClueDefinition> = {
@@ -61,6 +67,15 @@ export const clueDefinitions: Record<ClueId, ClueDefinition> = {
   student_status_modify_log: { id: 'student_status_modify_log', title: '学生状态修改记录', source: '管理员历史查询', description: '沈栀的状态由正常在籍修改为异常注销。', category: '学籍记录', isKeyClue: true, sidebarFacts: ['原状态：正常在籍', '修改：异常注销'] },
   admin03_permission_group: { id: 'admin03_permission_group', title: 'ADMIN_03权限组', source: '管理员历史查询', description: 'ADMIN_03不是普通账号，而是一组系统权限。', category: '系统记录', isKeyClue: true, sidebarFacts: ['StudentStatusModify', 'ArchiveAccess', 'RecordCleanup'] },
   linmo_target_record: { id: 'linmo_target_record', title: '林默调查记录', source: '管理员历史查询', description: '管理员记录中出现了林默的学号，状态为调查中。', category: '私人信息', isKeyClue: true, sidebarFacts: ['目标：2024010307', '状态：调查中'] },
+  account_relation_warning: { id: 'account_relation_warning', title: '账号关联提醒', source: '林默账号安全提醒', description: '林默账号被系统认定与2024010312存在异常关联。', category: '账号安全', isKeyClue: true, sidebarFacts: ['关联账号：2024010312', '处理状态：监测中'] },
+  zhou_post_disappearance_login: { id: 'zhou_post_disappearance_login', title: '失踪后的登录', source: '周寻账号登录与设备', description: '周寻退学后，账号仍从旧实验楼相关设备登录。', category: '登录记录', isKeyClue: true, sidebarFacts: ['周寻退学后仍从旧实验楼设备登录'] },
+  decommissioned_terminal_activity: { id: 'decommissioned_terminal_activity', title: '停用终端活动', source: 'TERM-OLD-03设备详情', description: '停用终端在数月后仍产生周寻账号登录记录。', category: '设备状态', isKeyClue: true, sidebarFacts: ['TERM-OLD-03于6月18日停用', '2026-09-15仍产生登录记录'] },
+  shenzhi_cache_recovered: { id: 'shenzhi_cache_recovered', title: '沈栀缓存恢复', source: '学生缓存_2024010318.dat', description: '损坏缓存恢复出沈栀的最后有效身份和登录设备。', category: '缓存恢复', isKeyClue: true, sidebarFacts: ['2024010318对应沈栀', '最后登录设备：TERM-OLD-03'] },
+  shenzhi_zhou_terminal_link: { id: 'shenzhi_zhou_terminal_link', title: '终端关联', source: '沈栀缓存关联字段', description: '沈栀与周寻的账号记录都指向TERM-OLD-03。', category: '账号关联', isKeyClue: true, sidebarFacts: ['沈栀与周寻均关联TERM-OLD-03'] },
+  three_account_relation: { id: 'three_account_relation', title: '三个账号的关联', source: '账号关联查询', description: '沈栀与周寻共同关联停用终端，林默则因周寻账号被列为监测对象。', category: '账号关联', isKeyClue: true, sidebarFacts: ['沈栀 → TERM-OLD-03', '周寻 → TERM-OLD-03', '林默 → 周寻'] },
+  zhou_last_draft: { id: 'zhou_last_draft', title: '周寻最后的草稿', source: '周寻未发送草稿', description: '周寻警告林默，继续使用他的账号会让系统把两人关联起来。', category: '周寻草稿', isKeyClue: true, sidebarFacts: ['状态：草稿 · 未发送', '继续查询会建立账号关联'] },
+  draft_modified_after_logout: { id: 'draft_modified_after_logout', title: '草稿时间异常', source: '草稿时间比对', description: '周寻账号会话中断以后，草稿仍发生修改。', category: '时间异常', isKeyClue: true, sidebarFacts: ['会话中断：00:02', '草稿修改：00:04'] },
+  zhou_last_login_summary: { id: 'zhou_last_login_summary', title: '最后登录', source: '调查备份_04.txt', description: '周寻失踪后账号仍在停用终端活动，最后一次操作身份无法确认。', category: '登录记录', isKeyClue: true, sidebarFacts: ['失踪后账号仍在TERM-OLD-03活动', '最后一次操作身份无法确认'] },
 }
 
 export interface EvidenceFactGroup { id: ClueId; title: string; source: string; facts: string[] }
@@ -97,6 +112,15 @@ export const storyEventRequirements: Record<StoryEventId, ClueId[]> = {
     'admin03_permission_group', 'linmo_target_record',
   ],
   chapter_four_completed: [],
+  chapter_five_started: [],
+  chapter_five_cache_unlocked: ['decommissioned_terminal_activity', 'admin03_permission_group'],
+  chapter_five_relation_unlocked: ['shenzhi_cache_recovered', 'shenzhi_zhou_terminal_link'],
+  chapter_five_final_unlocked: [
+    'account_relation_warning', 'zhou_post_disappearance_login', 'decommissioned_terminal_activity',
+    'shenzhi_cache_recovered', 'shenzhi_zhou_terminal_link', 'three_account_relation',
+    'zhou_last_draft', 'draft_modified_after_logout',
+  ],
+  chapter_five_completed: [],
 }
 
 export const shenzhiCacheEvidenceIds: ClueId[] = ['class_size_mismatch', 'seat_chart_shenzhi', 'hidden_grade_row', 'shenzhi_essay', 'shenzhi_removed_from_group']

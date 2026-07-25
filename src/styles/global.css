@@ -103,7 +103,8 @@ button { border: 0; }
 .panel-title { height: 38px; display: flex; align-items: center; border-bottom: 2px solid #185b91; }
 .panel-title h2 { margin: 0; padding: 0 10px; color: #154f7c; border-left: 5px solid #d3a62d; font-size: 19px; }
 .panel-title button { margin-left: auto; color: #77838c; background: transparent; cursor: pointer; font-size: 11px; }
-.featured-news { display: grid; grid-template-columns: 155px 1fr; gap: 15px; padding: 16px 0 10px; border-bottom: 1px dotted #cbd1d5; }
+.featured-news { display: grid; grid-template-columns: 155px 1fr; gap: 15px; padding: 16px 0 10px; color: inherit; border-bottom: 1px dotted #cbd1d5; text-decoration: none; transition: background-color .15s ease, box-shadow .15s ease; }
+.featured-news:hover, .featured-news:focus-visible { background: #f5f8f9; box-shadow: inset 3px 0 #55778c; outline: none; }
 .featured-placeholder { height: 92px; display: grid; place-items: center; color: #e9f1f7; background: linear-gradient(145deg, #688ca4, #355f7c); border: 4px solid #e3e8ec; outline: 1px solid #b7c1c8; font-family: KaiTi, serif; }
 .featured-news h2 { margin: 2px 0 9px; font-size: 16px; }.featured-news p { margin: 0; color: #74818a; font-size: 12px; line-height: 1.7; }
 .article-rows { margin: 5px 0 0; padding: 0; list-style: none; }
@@ -140,6 +141,12 @@ button { border: 0; }
 @media (max-width: 720px) {
   .game-desktop { padding-top: 48px; }.mobile-warning { display: block; position: fixed; z-index: 50; top: 0; left: 0; right: 0; padding: 11px; text-align: center; color: #f3e9d4; background: #694f2e; font-size: 12px; }.browser-window { min-height: 600px; }.toolbar-nav button:nth-child(2), .single-tab-note { display: none; }.address-form button { padding: 0 9px; }.school-utility { display: none; }.school-brand { min-height: 82px; }.school-emblem { width: 54px; height: 54px; }.school-emblem span { font-size: 26px; }.school-brand h1 { font-size: 23px; }.school-motto { display: none; }.school-nav { overflow-x: auto; }.school-nav button, .school-nav-placeholder { min-width: 80px; height: 40px; }.campus-hero { height: 180px; }.school-grid, .subpage-layout { grid-template-columns: 1fr; }.school-main { width: calc(100% - 24px); }.featured-news { grid-template-columns: 110px 1fr; }.school-links { overflow-x: auto; }.subpage-layout aside { display: none; }.student-login-page > main { width: calc(100% - 28px); grid-template-columns: 1fr; gap: 20px; padding: 25px 0; }.login-notice { display: none; }.student-login-page > footer { padding: 15px; gap: 15px; }.student-shell { grid-template-columns: 170px minmax(0, 1fr); }.student-system-brand { min-width: 170px; }.student-user span { display: none; }.student-sidebar nav button, .student-menu-placeholder { padding: 0 13px; }.student-profile { padding: 12px; }.student-content { padding: 0 12px 30px; }.student-breadcrumb { margin-left: -12px; margin-right: -12px; padding: 0 12px; }.stat-cards { grid-template-columns: 1fr 1fr; }.info-grid { grid-template-columns: 1fr; }.message-list > div { grid-template-columns: 50px 1fr; }.message-list time, .message-list > div > span:nth-child(3) { display: none; }.launch-card { padding: 45px 24px; }.launch-meta { flex-direction: column; gap: 7px; }
 }
+
+.table-link { padding: 0; border: 0; color: #1c4f83; background: transparent; text-decoration: underline; cursor: pointer; }
+.table-link + small { display: block; margin-top: 2px; color: #697786; }
+.relation-diagram { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 16px 0; }
+.relation-diagram span { display: grid; min-width: 128px; padding: 12px; border: 1px solid #aebdca; background: #f5f8fa; text-align: center; }
+.relation-diagram span + span::before { content: "↔"; margin-left: -24px; margin-right: 8px; color: #6d7e8d; }
 
 /* Stage 4: persistent evidence rail and saved-account login. */
 .evidence-sidebar { min-width: 0; min-height: 0; overflow: hidden; color: #334650; background: #f1f4f5; border-left: 1px solid #c8d0d4; }

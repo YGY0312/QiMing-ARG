@@ -12,6 +12,7 @@ import { createSchoolTab, createStudentTab } from '../game/tabs'
 import type { ClueId, GameState, StudentAccountId } from '../types/game'
 import { StudentSite } from './student/StudentSite'
 import { SchoolSite } from './school/SchoolSite'
+import { TestConsole } from '../test-tools/TestConsole'
 
 function chapterFourState(accountId: StudentAccountId, url: string): GameState {
   const school = createSchoolTab()
@@ -140,6 +141,7 @@ describe('第四章页面、权限与结尾', () => {
     expect(await screen.findByRole('dialog', { name: '第四章结束' })).toBeInTheDocument()
     expect(screen.getByText('你的访问权限已被记录。')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '继续浏览' }))
+    await waitFor(() => expect(readSave()?.revealedFileSections).toContain('chapter-four-ending-played'))
     await user.click(within(screen.getByText('调查备份_03.txt').closest('.story-download') as HTMLElement).getByRole('button', { name: '打开' }))
     await user.click(screen.getByRole('button', { name: '关闭' }))
     expect(screen.queryByRole('dialog', { name: '第四章结束' })).not.toBeInTheDocument()
@@ -154,5 +156,42 @@ describe('第四章页面、权限与结尾', () => {
     render(<GameProvider><LaunchScreen /></GameProvider>)
     expect(screen.getByText('第四章《权限不足》已完成')).toBeInTheDocument()
     expect(screen.queryByRole('dialog', { name: '第四章结束' })).not.toBeInTheDocument()
+  })
+
+  it('Esc关闭第四章最终文件时仍能识别closingFileId并显示结尾', async () => {
+    const user = userEvent.setup()
+    const state = chapterFourState('zhou_xun', 'stu.qiming-high.edu.cn/downloads')
+    state.triggeredEvents.push('chapter_four_admin_unlocked', 'chapter_four_final_unlocked')
+    state.unlockedFileIds.push(CHAPTER_FOUR_FINAL_FILE_ID)
+    writeSave(state)
+    render(<GameProvider><BrowserShell /></GameProvider>)
+    await user.click(within(screen.getByText('调查备份_03.txt').closest('.story-download') as HTMLElement).getByRole('button', { name: '打开' }))
+    await user.keyboard('{Escape}')
+    expect(await screen.findByRole('dialog', { name: '第四章结束' })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(readSave()?.tabs.find((tab) => tab.id === 'student-1')?.openVirtualFileId).toBeNull()
+      expect(readSave()?.triggeredEvents).toContain('chapter_four_completed')
+    })
+  })
+
+  it('测试控制台可以手动重播第三章结尾', async () => {
+    const user = userEvent.setup()
+    const state = chapterFourState('zhou_xun', 'stu.qiming-high.edu.cn/downloads')
+    writeSave(state)
+    render(<GameProvider><BrowserShell /><TestConsole onExitTestMode={() => undefined} /></GameProvider>)
+    await user.click(screen.getByRole('button', { name: '打开测试控制台' }))
+    await user.click(screen.getByRole('button', { name: '播放第三章结尾' }))
+    expect(await screen.findByRole('dialog', { name: '值班记录' })).toBeInTheDocument()
+  })
+
+  it('测试控制台可以手动重播第四章结尾', async () => {
+    const user = userEvent.setup()
+    const state = chapterFourState('zhou_xun', 'stu.qiming-high.edu.cn/downloads')
+    state.triggeredEvents.push('chapter_four_admin_unlocked', 'chapter_four_final_unlocked', 'chapter_four_completed')
+    writeSave(state)
+    render(<GameProvider><BrowserShell /><TestConsole onExitTestMode={() => undefined} /></GameProvider>)
+    await user.click(screen.getByRole('button', { name: '打开测试控制台' }))
+    await user.click(screen.getByRole('button', { name: '播放第四章结尾' }))
+    expect(await screen.findByRole('dialog', { name: '第四章结束' })).toBeInTheDocument()
   })
 })

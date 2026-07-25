@@ -34,6 +34,8 @@ export const virtualFiles: Record<string, VirtualFileDefinition> = {
   'permission-request-manual': simple('permission-request-manual', '权限申请说明.txt', 'text', '学生系统帮助', '历史数据访问申请说明\n\n申请历史数据访问需要同时提供：\n\n1. 维护编号\n2. 管理员授权记录\n3. 访问申请\n\n材料不完整时，系统不会开放历史查询入口。'),
   'investigation-backup-03': simple('investigation-backup-03', '调查备份_03.txt', 'text', '周寻个人文件', '我找到管理员入口了。\n\n但是ADMIN_03不是账号。\n\n它是一组权限。'),
   'investigation-backup-03-final': simple('investigation-backup-03-final', '调查备份_03.txt', 'text', '周寻个人文件', '我终于明白了。\n\n他们不是删除一个人。\n\n他们只是修改系统里的状态。\n\n只要权限足够。\n\n一个人可以从系统里消失。\n\n但是现在出现了新的目标。\n\n2024010307。\n\n这是你的账号。'),
+  'investigation-backup-04': simple('investigation-backup-04', '调查备份_04.txt', 'text', '周寻个人文件', 'ADMIN_03开始关注林默。\n\n不是因为林默做了什么。\n\n是因为他登录了我的账号。'),
+  'investigation-backup-04-final': simple('investigation-backup-04-final', '调查备份_04.txt', 'text', '周寻个人文件', '我把三个账号串起来了。\n\n沈栀最后使用过TERM-OLD-03。\n\n我后来也从那里登录过。\n\n现在，系统把林默标记成了新的关联对象。\n\n它不是在寻找某一个人。\n\n它在追踪接触过这些记录的人。\n\n那台终端已经停用。\n\n但它还在上线。\n\n草稿修改时间也不对。\n\n如果最后一次登录不是我——\n\n那是谁？\n\n下一步：找到TERM-OLD-03。'),
 }
 
 export function getVirtualFile(id: string | null): VirtualFileDefinition | null { return id ? virtualFiles[id] ?? null : null }

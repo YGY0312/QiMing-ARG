@@ -8,12 +8,13 @@ import { InvestigationLog } from '../game/InvestigationLog'
 import { ChapterEnding, ChapterTwoEnding } from '../game/ChapterEnding'
 import { ChapterThreeEnding } from '../game/ChapterThreeEnding'
 import { ChapterFourEnding } from '../game/ChapterFourEnding'
+import { ChapterFiveEnding } from '../game/ChapterFiveEnding'
 import { EvidenceSidebar } from '../game/EvidenceSidebar'
 
 export function BrowserShell() {
   const {
     state, route, activeTab, canGoBack, canGoForward, navigate, goBack, goForward, refresh,
-    openStudentTab, focusSchoolTab, switchTab, closeTab, returnToTitle, resetGame, finishAddressGlitch, finishChapterTwoAddressGlitch,
+    openStudentTab, focusSchoolTab, switchTab, closeTab, returnToTitle, resetGame, finishAddressGlitch, finishChapterTwoAddressGlitch, finishChapterFiveSessionGlitch,
   } = useGame()
   const [address, setAddress] = useState(route.url)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -32,6 +33,11 @@ export function BrowserShell() {
     const timer = window.setTimeout(() => { setAddress(route.url); finishChapterTwoAddressGlitch() }, 1200)
     return () => window.clearTimeout(timer)
   }, [state.chapterTwoAddressGlitchActive, route.url, finishChapterTwoAddressGlitch])
+  useEffect(() => {
+    if (!state.chapterFiveSessionGlitchActive) return
+    const timer = window.setTimeout(finishChapterFiveSessionGlitch, 1000)
+    return () => window.clearTimeout(timer)
+  }, [state.chapterFiveSessionGlitchActive, finishChapterFiveSessionGlitch])
 
   const submitAddress = (event: FormEvent) => { event.preventDefault(); navigate(address) }
   const confirmReset = () => {
@@ -86,6 +92,7 @@ export function BrowserShell() {
       {state.chapterTwoEndingVisible && <ChapterTwoEnding />}
       {state.chapterThreeEndingVisible && <ChapterThreeEnding />}
       {state.chapterFourEndingVisible && <ChapterFourEnding />}
+      {state.chapterFiveEndingVisible && <ChapterFiveEnding />}
     </main>
   )
 }

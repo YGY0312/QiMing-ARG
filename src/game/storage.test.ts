@@ -128,6 +128,18 @@ describe('v5 本地存档', () => {
     expect(migrated?.triggeredEvents).toContain('chapter_four_completed')
   })
 
+  it('旧 v5 自动补第五章线索，并兼容 chapter-five-final-read 完成标记', () => {
+    const state = makeState()
+    state.triggeredEvents = ['chapter_one_completed', 'chapter_two_started', 'chapter_two_completed', 'chapter_three_started', 'chapter_three_final_unlocked', 'chapter_three_completed', 'chapter_four_started', 'chapter_four_admin_unlocked', 'chapter_four_final_unlocked', 'chapter_four_completed', 'chapter_five_started', 'chapter_five_final_unlocked']
+    state.revealedFileSections = ['chapter-five-final-read']
+    const raw = createSave(state) as unknown as { clues: Record<string, unknown> }
+    delete raw.clues.account_relation_warning
+    const migrated = migrateSave(raw)
+    expect(migrated?.schemaVersion).toBe(5)
+    expect(migrated?.clues.account_relation_warning.discovered).toBe(false)
+    expect(migrated?.triggeredEvents).toContain('chapter_five_completed')
+  })
+
   it('损坏数据安全回退', () => {
     localStorage.setItem(SAVE_KEY, '{bad json'); expect(readSave()).toBeNull()
   })

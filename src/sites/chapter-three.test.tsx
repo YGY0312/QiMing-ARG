@@ -87,6 +87,7 @@ describe('第三章页面与账号权限', () => {
     await waitFor(() => expect(readSave()?.triggeredEvents).toContain('chapter_three_completed'))
 
     await user.click(screen.getByRole('button', { name: '继续浏览' }))
+    await waitFor(() => expect(readSave()?.revealedFileSections).toContain('chapter-three-ending-played'))
     const reopenedRow = screen.getByText('调查备份_02.txt').closest('.story-download')
     await user.click(within(reopenedRow as HTMLElement).getByRole('button', { name: '打开' }))
     await user.click(screen.getByRole('button', { name: '关闭' }))
@@ -101,6 +102,22 @@ describe('第三章页面与账号权限', () => {
     render(<GameProvider><LaunchScreen /></GameProvider>)
     expect(screen.getByText('第三章《值班记录》已完成')).toBeInTheDocument()
     expect(screen.queryByRole('dialog', { name: '值班记录' })).not.toBeInTheDocument()
+  })
+
+  it('Esc关闭第三章最终文件时仍能识别closingFileId并显示结尾', async () => {
+    const user = userEvent.setup()
+    const state = chapterThreeState('zhou_xun', 'stu.qiming-high.edu.cn/downloads')
+    state.triggeredEvents.push('chapter_three_final_unlocked')
+    state.unlockedFileIds.push(CHAPTER_THREE_FINAL_FILE_ID)
+    writeSave(state)
+    render(<GameProvider><BrowserShell /></GameProvider>)
+    await user.click(within(screen.getByText('调查备份_02.txt').closest('.story-download') as HTMLElement).getByRole('button', { name: '打开' }))
+    await user.keyboard('{Escape}')
+    expect(await screen.findByRole('dialog', { name: '值班记录' })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(readSave()?.tabs.find((tab) => tab.id === 'student-1')?.openVirtualFileId).toBeNull()
+      expect(readSave()?.triggeredEvents).toContain('chapter_three_completed')
+    })
   })
 
   it.each([

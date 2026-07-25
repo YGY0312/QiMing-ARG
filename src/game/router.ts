@@ -47,6 +47,11 @@ const studentRoutes: RouteDefinition[] = [
   { pattern: /^\/admin-attempts$/, componentKey: 'student-admin-attempts', pageTitle: '访问失败记录 - 学生信息系统' },
   { pattern: /^\/system-help\/permission-request$/, componentKey: 'student-permission-help', pageTitle: '权限申请说明 - 学生信息系统' },
   { pattern: /^\/admin\/history$/, componentKey: 'student-admin-history', pageTitle: '历史查询 - 学生信息系统' },
+  { pattern: /^\/security\/devices$/, componentKey: 'student-login-devices', pageTitle: '登录与设备 - 学生信息系统' },
+  { pattern: /^\/security\/device\/TERM-OLD-03$/i, componentKey: 'student-device-detail', pageTitle: '维护终端03 - 学生信息系统' },
+  { pattern: /^\/files\/student-cache-2024010318\/recover$/, componentKey: 'student-cache-recovery', pageTitle: '缓存恢复 - 学生信息系统' },
+  { pattern: /^\/investigation\/account-relations$/, componentKey: 'student-account-relations', pageTitle: '账号关联查询 - 学生信息系统' },
+  { pattern: /^\/security\/activity$/, componentKey: 'student-last-activity', pageTitle: '最后活动 - 学生信息系统' },
   { pattern: /^\/downloads$/, componentKey: 'student-downloads', pageTitle: '文件下载 - 学生信息系统' },
   { pattern: /^\/student\/2024010318$/, componentKey: 'student-missing', pageTitle: '沈栀' },
 ]

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { APP_VERSION, APP_VERSION_LABEL, PROJECT_CREATOR, SAVE_SCHEMA_VERSION } from '../config/app'
-import { chapterFourClueIds, chapterThreeClueIds, chapterTwoClueIds, clueDefinitions } from '../data/story'
+import { chapterFiveClueIds, chapterFourClueIds, chapterThreeClueIds, chapterTwoClueIds, clueDefinitions } from '../data/story'
 import { SAVE_KEY } from '../game/constants'
 import { useGame } from '../game/GameContext'
 import { createSave, writeSave } from '../game/storage'
@@ -21,7 +21,7 @@ export function TestConsole({ onExitTestMode }: Props) {
     state, activeTab, navigate, openStudentTab, focusSchoolTab, loginStudent, logoutStudent,
     addSavedAccount, removeSavedAccount, discoverClue, clearClue, forceEvent, resetChapterOne,
     resetChapterTwo, resetGame, revealFileSection, setEvidenceSidebarCollapsed,
-    beginChapterEnding, playChapterTwoEnding, startGame,
+    beginChapterEnding, playChapterTwoEnding, playChapterThreeEnding, playChapterFourEnding, playChapterFiveEnding, resetChapterFive, startGame,
   } = game
   const [open, setOpen] = useState(false)
   const [saveText, setSaveText] = useState('')
@@ -32,7 +32,9 @@ export function TestConsole({ onExitTestMode }: Props) {
   const [description, setDescription] = useState('')
 
   const discoveredCount = Object.values(state.clues).filter((clue) => clue.discovered).length
-  const chapterLabel = state.triggeredEvents.includes('chapter_four_completed') ? '第四章《权限不足》调查完成'
+  const chapterLabel = state.triggeredEvents.includes('chapter_five_completed') ? '第五章《最后登录》调查完成'
+    : state.triggeredEvents.includes('chapter_five_started') ? '第五章《最后登录》调查中'
+    : state.triggeredEvents.includes('chapter_four_completed') ? '第四章《权限不足》调查完成'
     : state.triggeredEvents.includes('chapter_four_started') ? '第四章《权限不足》调查中'
     : state.triggeredEvents.includes('chapter_three_completed') ? '第三章《值班记录》调查完成'
     : state.triggeredEvents.includes('chapter_three_started') ? '第三章《值班记录》调查中'
@@ -116,6 +118,7 @@ export function TestConsole({ onExitTestMode }: Props) {
             <div><dt>第二章</dt><dd>{state.chapterTwoCompleted ? '已完成' : state.chapterTwoStarted ? '进行中' : '未开始'}</dd></div>
             <div><dt>第三章</dt><dd>{state.triggeredEvents.includes('chapter_three_completed') ? '已完成' : state.triggeredEvents.includes('chapter_three_started') ? '进行中' : '未开始'}</dd></div>
             <div><dt>第四章</dt><dd>{state.triggeredEvents.includes('chapter_four_completed') ? '已完成' : state.triggeredEvents.includes('chapter_four_started') ? '进行中' : '未开始'}</dd></div>
+            <div><dt>第五章</dt><dd>{state.triggeredEvents.includes('chapter_five_completed') ? '已完成' : state.triggeredEvents.includes('chapter_five_started') ? '进行中' : '未开始'}</dd></div>
             <div><dt>线索 / 事件</dt><dd>{discoveredCount} / {state.triggeredEvents.length}</dd></div>
             <div><dt>保存账号</dt><dd>{state.savedStudentAccounts.map((account) => account.displayName).join('、') || '无'}</dd></div>
             <div><dt>关键事实侧栏</dt><dd>{state.evidenceSidebarCollapsed ? '已收起' : '已展开'}</dd></div>
@@ -146,6 +149,10 @@ export function TestConsole({ onExitTestMode }: Props) {
             <button type="button" onClick={() => openAccountPage('zhou_xun', 'stu.qiming-high.edu.cn/system-search')}>第四章系统检索</button>
             <button type="button" onClick={() => navigate('www.qiming-high.edu.cn/services/information-center/system-services')}>第四章系统服务</button>
             <button type="button" onClick={() => openAccountPage('zhou_xun', 'stu.qiming-high.edu.cn/admin/history')}>第四章历史查询</button>
+            <button type="button" onClick={() => openAccountPage('lin_mo', 'stu.qiming-high.edu.cn/messages')}>第五章林默安全提醒</button>
+            <button type="button" onClick={() => openAccountPage('zhou_xun', 'stu.qiming-high.edu.cn/security/devices')}>第五章登录与设备</button>
+            <button type="button" onClick={() => openAccountPage('zhou_xun', 'stu.qiming-high.edu.cn/files/student-cache-2024010318/recover')}>第五章DAT恢复</button>
+            <button type="button" onClick={() => openAccountPage('zhou_xun', 'stu.qiming-high.edu.cn/investigation/account-relations')}>第五章账号关联</button>
           </div>
         </section>
 
@@ -195,12 +202,31 @@ export function TestConsole({ onExitTestMode }: Props) {
         <ClueSection title="第三章测试" ids={chapterThreeClueIds} state={state} onToggle={toggleClue}>
           <button type="button" onClick={() => forceEvent('chapter_three_started')}>开启第三章</button>
           <button type="button" onClick={() => forceEvent('chapter_three_final_unlocked')}>解锁最终备份</button>
+          <button type="button" disabled={!state.triggeredEvents.includes('chapter_three_completed')} onClick={playChapterThreeEnding}>播放第三章结尾</button>
         </ClueSection>
 
         <ClueSection title="第四章测试" ids={chapterFourClueIds} state={state} onToggle={toggleClue}>
           <button type="button" onClick={() => forceEvent('chapter_four_started')}>开启第四章</button>
           <button type="button" onClick={() => forceEvent('chapter_four_admin_unlocked')}>解锁历史查询</button>
           <button type="button" onClick={() => forceEvent('chapter_four_final_unlocked')}>解锁最终备份</button>
+          <button type="button" disabled={!state.triggeredEvents.includes('chapter_four_completed')} onClick={playChapterFourEnding}>播放第四章结尾</button>
+        </ClueSection>
+
+        <ClueSection title="第五章测试" ids={chapterFiveClueIds} state={state} onToggle={toggleClue}>
+          <button type="button" onClick={() => forceEvent('chapter_five_started')}>开始第五章</button>
+          <button type="button" onClick={() => { discoverClue('zhou_post_disappearance_login'); revealFileSection('chapter-five-login-comparison') }}>注入异常登录记录核对</button>
+          <button type="button" onClick={() => discoverClue('decommissioned_terminal_activity')}>标记终端状态核对</button>
+          <button type="button" onClick={() => forceEvent('chapter_five_cache_unlocked')}>解锁DAT恢复</button>
+          <button type="button" onClick={() => revealFileSection('cache-recovery-fields-filled')}>填充正确恢复字段</button>
+          <button type="button" onClick={() => { revealFileSection('cache-recovery-completed'); discoverClue('shenzhi_cache_recovered') }}>标记缓存恢复</button>
+          <button type="button" onClick={() => { discoverClue('shenzhi_cache_recovered'); discoverClue('shenzhi_zhou_terminal_link') }}>解锁账号关联查询</button>
+          <button type="button" onClick={() => discoverClue('three_account_relation')}>注入三个账号比对</button>
+          <button type="button" onClick={() => revealFileSection('chapter-five-last-activity-reviewed')}>解锁周寻最后草稿</button>
+          <button type="button" onClick={() => discoverClue('draft_modified_after_logout')}>标记草稿时间比对完成</button>
+          <button type="button" onClick={() => forceEvent('chapter_five_final_unlocked')}>解锁调查备份04</button>
+          <button type="button" onClick={() => confirmAction('确定标记第五章完成吗？', () => forceEvent('chapter_five_completed'))}>标记第五章完成</button>
+          <button type="button" disabled={!state.triggeredEvents.includes('chapter_five_completed')} onClick={playChapterFiveEnding}>播放第五章结尾</button>
+          <button type="button" className="danger" onClick={() => confirmAction('确定只重置第五章进度吗？', resetChapterFive)}>重置第五章</button>
         </ClueSection>
 
         <section>

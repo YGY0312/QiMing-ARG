@@ -2,6 +2,8 @@ import {
   BACKUP_FILE_ID,
   CHAPTER_FOUR_BACKUP_FILE_ID,
   CHAPTER_FOUR_FINAL_FILE_ID,
+  CHAPTER_FIVE_BACKUP_FILE_ID,
+  CHAPTER_FIVE_FINAL_FILE_ID,
   CHAPTER_THREE_BACKUP_FILE_ID,
   CHAPTER_THREE_FINAL_FILE_ID,
   CHAPTER_TWO_FINAL_FILE_ID,
@@ -12,9 +14,11 @@ import {
   SHENZHI_CACHE_FILE_ID,
   ZHOU_CREDENTIALS_MESSAGE_ID,
   ZHOU_MESSAGE_ID,
+  ACCOUNT_SECURITY_MESSAGE_ID,
+  TERM_OLD_03_HISTORY_URL,
 } from './constants'
-import { chapterFourClueIds, chapterThreeClueIds, chapterTwoClueIds, createEmptyClues, shenzhiCacheEvidenceIds, storyEventRequirements } from '../data/story'
-import type { ChapterFourEvidenceAction, ChapterThreeEvidenceAction, ClueId, GameState, StoryEventId } from '../types/game'
+import { chapterFiveClueIds, chapterFourClueIds, chapterThreeClueIds, chapterTwoClueIds, createEmptyClues, shenzhiCacheEvidenceIds, storyEventRequirements } from '../data/story'
+import type { ChapterFiveEvidenceAction, ChapterFourEvidenceAction, ChapterThreeEvidenceAction, ClueId, GameState, StoryEventId } from '../types/game'
 
 function allDiscovered(state: GameState, clueIds: ClueId[]): boolean {
   return clueIds.every((id) => state.clues[id].discovered)
@@ -73,6 +77,19 @@ export function evaluateStoryEvents(state: GameState, now = new Date().toISOStri
   trigger('chapter_four_final_unlocked', next.triggeredEvents.includes('chapter_four_admin_unlocked') && allDiscovered(next, storyEventRequirements.chapter_four_final_unlocked), (current) => ({
     ...current,
     unlockedFileIds: [...new Set([...current.unlockedFileIds, CHAPTER_FOUR_FINAL_FILE_ID])],
+  }))
+  trigger('chapter_five_started', next.triggeredEvents.includes('chapter_four_completed'), (current) => ({
+    ...current,
+    unreadMessageIds: current.readMessageIds.includes(ACCOUNT_SECURITY_MESSAGE_ID)
+      ? current.unreadMessageIds
+      : [...new Set([...current.unreadMessageIds, ACCOUNT_SECURITY_MESSAGE_ID])],
+    unlockedFileIds: [...new Set([...current.unlockedFileIds, CHAPTER_FIVE_BACKUP_FILE_ID])],
+  }))
+  trigger('chapter_five_cache_unlocked', next.triggeredEvents.includes('chapter_five_started') && allDiscovered(next, storyEventRequirements.chapter_five_cache_unlocked), (current) => current)
+  trigger('chapter_five_relation_unlocked', next.triggeredEvents.includes('chapter_five_cache_unlocked') && allDiscovered(next, storyEventRequirements.chapter_five_relation_unlocked), (current) => current)
+  trigger('chapter_five_final_unlocked', next.triggeredEvents.includes('chapter_five_relation_unlocked') && allDiscovered(next, storyEventRequirements.chapter_five_final_unlocked), (current) => ({
+    ...current,
+    unlockedFileIds: [...new Set([...current.unlockedFileIds, CHAPTER_FIVE_FINAL_FILE_ID])],
   }))
   return next
 }
@@ -156,10 +173,51 @@ export function recordChapterFourEvidence(
 export function completeChapterFour(state: GameState): GameState {
   if (!state.triggeredEvents.includes('chapter_four_final_unlocked')) return state
   if (state.triggeredEvents.includes('chapter_four_completed')) return state
-  return {
+  return evaluateStoryEvents({
     ...state,
     triggeredEvents: [...state.triggeredEvents, 'chapter_four_completed'],
     chapterFourEndingVisible: true,
+  })
+}
+
+export function recordChapterFiveEvidence(
+  state: GameState,
+  action: ChapterFiveEvidenceAction,
+  sourceUrl: string,
+  now = new Date().toISOString(),
+): GameState {
+  if (!state.triggeredEvents.includes('chapter_five_started')) return state
+  const clueByAction: Record<ChapterFiveEvidenceAction, ClueId> = {
+    'account-warning': 'account_relation_warning',
+    'post-disappearance-login': 'zhou_post_disappearance_login',
+    'terminal-status': 'decommissioned_terminal_activity',
+    'cache-recovered': 'shenzhi_cache_recovered',
+    'terminal-link': 'shenzhi_zhou_terminal_link',
+    'account-relation': 'three_account_relation',
+    'last-draft': 'zhou_last_draft',
+    'draft-time': 'draft_modified_after_logout',
+  }
+  return discoverStoryClue(state, clueByAction[action], sourceUrl, now)
+}
+
+export function completeChapterFive(state: GameState, now = new Date().toISOString()): GameState {
+  if (!state.triggeredEvents.includes('chapter_five_final_unlocked')) return state
+  if (state.triggeredEvents.includes('chapter_five_completed')) return state
+  const withSummary = discoverStoryClue(state, 'zhou_last_login_summary', 'stu.qiming-high.edu.cn/downloads', now)
+  const active = withSummary.tabs.find((tab) => tab.id === withSummary.activeTabId)
+  if (!active) return withSummary
+  const historyAdded = withSummary.revealedFileSections.includes('chapter-five-terminal-history-added')
+  const history = historyAdded ? active.history : [...active.history.slice(0, active.historyIndex + 1), TERM_OLD_03_HISTORY_URL]
+  const tabs = withSummary.tabs.map((tab) => tab.id === active.id
+    ? { ...tab, history, pageTitle: '会话已在其他设备重新建立' }
+    : tab)
+  return {
+    ...withSummary,
+    tabs,
+    triggeredEvents: [...withSummary.triggeredEvents, 'chapter_five_completed'],
+    revealedFileSections: historyAdded ? withSummary.revealedFileSections : [...withSummary.revealedFileSections, 'chapter-five-terminal-history-added'],
+    chapterFiveEndingVisible: true,
+    chapterFiveSessionGlitchActive: true,
   }
 }
 
@@ -191,6 +249,7 @@ export function openInvestigationBackup(state: GameState, sourceUrl: string, now
 
 export function forceStoryEvent(state: GameState, eventId: StoryEventId): GameState {
   if (state.triggeredEvents.includes(eventId)) return state
+  if (eventId === 'chapter_five_completed') return completeChapterFive(forceStoryEvent(state, 'chapter_five_final_unlocked'))
   const base = { ...state, triggeredEvents: [...state.triggeredEvents, eventId] }
   if (eventId === 'investigation_backup_unlocked') return { ...base, unlockedFileIds: [...new Set([...base.unlockedFileIds, BACKUP_FILE_ID])] }
   if (eventId === 'chapter_one_completed') return { ...base, chapterOneCompleted: true, chapterOneCompletedAt: new Date().toISOString() }
@@ -203,6 +262,15 @@ export function forceStoryEvent(state: GameState, eventId: StoryEventId): GameSt
   if (eventId === 'chapter_three_final_unlocked') return { ...base, unlockedFileIds: [...new Set([...base.unlockedFileIds, CHAPTER_THREE_FINAL_FILE_ID])] }
   if (eventId === 'chapter_four_started') return { ...base, unlockedFileIds: [...new Set([...base.unlockedFileIds, CHAPTER_FOUR_BACKUP_FILE_ID])] }
   if (eventId === 'chapter_four_final_unlocked') return { ...base, unlockedFileIds: [...new Set([...base.unlockedFileIds, CHAPTER_FOUR_FINAL_FILE_ID])] }
+  if (eventId === 'chapter_four_completed') return evaluateStoryEvents(base)
+  if (eventId === 'chapter_five_started') return {
+    ...base,
+    unreadMessageIds: base.readMessageIds.includes(ACCOUNT_SECURITY_MESSAGE_ID)
+      ? base.unreadMessageIds
+      : [...new Set([...base.unreadMessageIds, ACCOUNT_SECURITY_MESSAGE_ID])],
+    unlockedFileIds: [...new Set([...base.unlockedFileIds, CHAPTER_FIVE_BACKUP_FILE_ID])],
+  }
+  if (eventId === 'chapter_five_final_unlocked') return { ...base, unlockedFileIds: [...new Set([...base.unlockedFileIds, CHAPTER_FIVE_FINAL_FILE_ID])] }
   return base
 }
 
@@ -236,6 +304,7 @@ export function resetChapterProgress(state: GameState): GameState {
     chapterTwoStarted: false, chapterTwoCompleted: false, chapterTwoCompletedAt: null, chapterTwoEndingPlayed: false,
     searchResiduePlayed: false, classCountAnomalyPlayed: false, chapterTwoAnomalyHistoryAdded: false, revealedFileSections: [],
     chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false, chapterFourEndingVisible: false,
+    chapterFiveEndingVisible: false, chapterFiveSessionGlitchActive: false,
   }
 }
 
@@ -244,12 +313,46 @@ export function resetChapterTwoProgress(state: GameState): GameState {
   for (const id of chapterTwoClueIds) clues[id] = { ...clues[id], discovered: false, discoveredAt: null, sourceUrl: null }
   for (const id of chapterThreeClueIds) clues[id] = { ...clues[id], discovered: false, discoveredAt: null, sourceUrl: null }
   for (const id of chapterFourClueIds) clues[id] = { ...clues[id], discovered: false, discoveredAt: null, sourceUrl: null }
-  const chapterTwoEvents: StoryEventId[] = ['chapter_two_started', 'shenzhi_cache_unlocked', 'old_building_access_unlocked', 'chapter_two_final_file_unlocked', 'chapter_two_completed', 'chapter_three_started', 'chapter_three_final_unlocked', 'chapter_three_completed', 'chapter_four_started', 'chapter_four_admin_unlocked', 'chapter_four_final_unlocked', 'chapter_four_completed']
+  for (const id of chapterFiveClueIds) clues[id] = { ...clues[id], discovered: false, discoveredAt: null, sourceUrl: null }
+  const chapterTwoEvents: StoryEventId[] = ['chapter_two_started', 'shenzhi_cache_unlocked', 'old_building_access_unlocked', 'chapter_two_final_file_unlocked', 'chapter_two_completed', 'chapter_three_started', 'chapter_three_final_unlocked', 'chapter_three_completed', 'chapter_four_started', 'chapter_four_admin_unlocked', 'chapter_four_final_unlocked', 'chapter_four_completed', 'chapter_five_started', 'chapter_five_cache_unlocked', 'chapter_five_relation_unlocked', 'chapter_five_final_unlocked', 'chapter_five_completed']
   return evaluateStoryEvents({
     ...state, clues, triggeredEvents: state.triggeredEvents.filter((id) => !chapterTwoEvents.includes(id)),
-    unlockedFileIds: state.unlockedFileIds.filter((id) => ![SHENZHI_CACHE_FILE_ID, OLD_BUILDING_ACCESS_FILE_ID, CHAPTER_TWO_FINAL_FILE_ID, CHAPTER_THREE_BACKUP_FILE_ID, CHAPTER_THREE_FINAL_FILE_ID, CHAPTER_FOUR_BACKUP_FILE_ID, CHAPTER_FOUR_FINAL_FILE_ID].includes(id)),
+    unlockedFileIds: state.unlockedFileIds.filter((id) => ![SHENZHI_CACHE_FILE_ID, OLD_BUILDING_ACCESS_FILE_ID, CHAPTER_TWO_FINAL_FILE_ID, CHAPTER_THREE_BACKUP_FILE_ID, CHAPTER_THREE_FINAL_FILE_ID, CHAPTER_FOUR_BACKUP_FILE_ID, CHAPTER_FOUR_FINAL_FILE_ID, CHAPTER_FIVE_BACKUP_FILE_ID, CHAPTER_FIVE_FINAL_FILE_ID].includes(id)),
     chapterTwoStarted: false, chapterTwoCompleted: false, chapterTwoCompletedAt: null, chapterTwoEndingPlayed: false,
     searchResiduePlayed: false, classCountAnomalyPlayed: false, chapterTwoAnomalyHistoryAdded: false, revealedFileSections: [],
     chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false, chapterFourEndingVisible: false,
+    chapterFiveEndingVisible: false, chapterFiveSessionGlitchActive: false,
+  })
+}
+
+export function resetChapterFiveProgress(state: GameState): GameState {
+  const clues = { ...state.clues }
+  for (const id of chapterFiveClueIds) clues[id] = { ...clues[id], discovered: false, discoveredAt: null, sourceUrl: null }
+  const events: StoryEventId[] = ['chapter_five_started', 'chapter_five_cache_unlocked', 'chapter_five_relation_unlocked', 'chapter_five_final_unlocked', 'chapter_five_completed']
+  const sections = state.revealedFileSections.filter((key) => !key.startsWith('chapter-five-') && !key.startsWith('chapter_five_') && !key.startsWith('cache-recovery-'))
+  const tabs = state.tabs.map((tab) => {
+    const history = [...tab.history]
+    if (state.revealedFileSections.includes('chapter-five-terminal-history-added')) {
+      const index = history.lastIndexOf(TERM_OLD_03_HISTORY_URL)
+      if (index >= 0) history.splice(index, 1)
+    }
+    return {
+      ...tab,
+      history: history.length ? history : [tab.currentUrl],
+      historyIndex: Math.min(tab.historyIndex, Math.max(history.length - 1, 0)),
+      openVirtualFileId: [CHAPTER_FIVE_BACKUP_FILE_ID, CHAPTER_FIVE_FINAL_FILE_ID].includes(tab.openVirtualFileId ?? '') ? null : tab.openVirtualFileId,
+    }
+  })
+  return evaluateStoryEvents({
+    ...state,
+    tabs,
+    clues,
+    triggeredEvents: state.triggeredEvents.filter((id) => !events.includes(id)),
+    unlockedFileIds: state.unlockedFileIds.filter((id) => ![CHAPTER_FIVE_BACKUP_FILE_ID, CHAPTER_FIVE_FINAL_FILE_ID].includes(id)),
+    unreadMessageIds: state.unreadMessageIds.filter((id) => id !== ACCOUNT_SECURITY_MESSAGE_ID),
+    readMessageIds: state.readMessageIds.filter((id) => id !== ACCOUNT_SECURITY_MESSAGE_ID),
+    revealedFileSections: sections,
+    chapterFiveEndingVisible: false,
+    chapterFiveSessionGlitchActive: false,
   })
 }

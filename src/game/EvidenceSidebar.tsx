@@ -22,7 +22,9 @@ export function EvidenceSidebar() {
         <button type="button" onClick={() => setEvidenceSidebarCollapsed(true)} aria-label="收起关键事实">收起</button>
       </header>
       <div className="evidence-list">
-        {state.triggeredEvents.includes('chapter_four_started') && !state.triggeredEvents.includes('chapter_four_completed')
+        {state.triggeredEvents.includes('chapter_five_started') && !state.triggeredEvents.includes('chapter_five_completed')
+          ? <p className="evidence-direction">第五章《最后登录》：确认周寻失踪后的账号活动</p>
+          : state.triggeredEvents.includes('chapter_four_started') && !state.triggeredEvents.includes('chapter_four_completed')
           ? <p className="evidence-direction">第四章《权限不足》：确认谁拥有修改记录的权限</p>
           : state.triggeredEvents.includes('chapter_three_started') && !state.triggeredEvents.includes('chapter_three_completed')
           ? <p className="evidence-direction">第三章《值班记录》：查明6月16日晚旧实验楼发生了什么</p>
