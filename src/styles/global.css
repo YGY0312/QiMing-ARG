@@ -332,3 +332,27 @@ button { border: 0; }
   .test-session-list article { grid-template-columns: 1fr; }
   .test-session-list article div { justify-content: flex-start; }
 }
+.floor-plan {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .65rem;
+  max-width: 100%;
+  margin: 1rem 0;
+}
+.floor-plan button {
+  min-height: 5rem;
+  border: 2px solid #8a96a3;
+  background: #f7f9fb;
+  color: #263442;
+  border-radius: .35rem;
+  cursor: pointer;
+}
+.floor-plan button.selected {
+  border-color: #164f7a;
+  outline: 2px solid #164f7a;
+  outline-offset: 2px;
+  font-weight: 700;
+}
+@media (max-width: 720px) {
+  .floor-plan { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

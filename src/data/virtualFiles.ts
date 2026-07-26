@@ -36,6 +36,8 @@ export const virtualFiles: Record<string, VirtualFileDefinition> = {
   'investigation-backup-03-final': simple('investigation-backup-03-final', '调查备份_03.txt', 'text', '周寻个人文件', '我终于明白了。\n\n他们不是删除一个人。\n\n他们只是修改系统里的状态。\n\n只要权限足够。\n\n一个人可以从系统里消失。\n\n但是现在出现了新的目标。\n\n2024010307。\n\n这是你的账号。'),
   'investigation-backup-04': simple('investigation-backup-04', '调查备份_04.txt', 'text', '周寻个人文件', 'ADMIN_03开始关注林默。\n\n不是因为林默做了什么。\n\n是因为他登录了我的账号。'),
   'investigation-backup-04-final': simple('investigation-backup-04-final', '调查备份_04.txt', 'text', '周寻个人文件', '我把三个账号串起来了。\n\n沈栀最后使用过TERM-OLD-03。\n\n我后来也从那里登录过。\n\n现在，系统把林默标记成了新的关联对象。\n\n它不是在寻找某一个人。\n\n它在追踪接触过这些记录的人。\n\n那台终端已经停用。\n\n但它还在上线。\n\n草稿修改时间也不对。\n\n如果最后一次登录不是我——\n\n那是谁？\n\n下一步：找到TERM-OLD-03。'),
+  'investigation-backup-05': simple('investigation-backup-05', '调查备份_05.txt', 'text', '周寻个人文件', 'TERM-OLD-03没有被移走。\n\n它一直连接着旧实验楼三层的网络端口。'),
+  'investigation-backup-05-final': simple('investigation-backup-05-final', '调查备份_05.txt', 'text', '周寻个人文件', '我找到终端的位置了。\n\n旧实验楼三层。\n\nA-302、广播设备室和设备间，\n都连接在同一个交换节点上。\n\n沈栀借走的摄像设备，\n最后也把数据写进了这台终端。\n\n终端里有三个等待同步的对象：\n\n2024010318\n2024010312\n2024010307\n\n沈栀。\n我。\n还有你。\n\n但我的记录里，多了一句话：\n\n不要从系统里找我。\n\n如果这句话真的是我留下的——\n\n那就说明答案不在学生系统里。\n\n下一步：找到终端之外的记录。'),
 }
 
 export function getVirtualFile(id: string | null): VirtualFileDefinition | null { return id ? virtualFiles[id] ?? null : null }

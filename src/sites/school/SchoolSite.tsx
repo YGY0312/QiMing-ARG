@@ -8,6 +8,7 @@ import { getVirtualFile } from '../../data/virtualFiles'
 import { VirtualFileViewer } from '../../components/VirtualFileViewer'
 import { isShenzhiSearch, searchSchoolContent } from '../../data/chapterTwo'
 import { queryDutyLogs, queryDutySchedule, queryMaintenanceTickets } from '../../data/chapterThree'
+import { AssetDecommissionPage, NetworkArchivePage } from './ChapterSixSchoolPages'
 
 interface Props {
   route: GameRoute
@@ -91,6 +92,8 @@ function SchoolContent({ route, onNavigate, onOpenStudentTab }: Props) {
     case 'school-maintenance-ticket': return <MaintenanceTicketPage onNavigate={onNavigate} />
     case 'school-system-services': return <SystemServicesPage onNavigate={onNavigate} />
     case 'school-admin-denied': return <AdminDeniedPage onNavigate={onNavigate} />
+    case 'school-assets': return <AssetDecommissionPage />
+    case 'school-network-archive': return <NetworkArchivePage />
     default:
       return <SchoolNotFound onNavigate={onNavigate} />
   }
@@ -251,6 +254,7 @@ function LaboratoryManagement({ onNavigate }: Pick<Props, 'onNavigate'>) {
     <section className="school-list-page"><h2>实验室管理<small>LABORATORY SERVICES</small></h2><ul>
       <li><button type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/laboratory/duty-june-2026')}><strong>2026年6月实验楼值班安排</strong><span>实验中心值班与巡查安排</span></button><time>2026-06</time></li>
       <li><button type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/laboratory/duty-log')}><strong>实验楼值班日志.txt</strong><span>按日期检索实验楼值班日志</span></button><time>日志</time></li>
+      {state.triggeredEvents.includes('chapter_six_started') && <li><button type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/assets')}><strong>资产与设备 · 设备报废公示</strong><span>检索校内设备处置记录</span></button><time>资产</time></li>}
     </ul></section>
   </div></main>
 }
@@ -307,6 +311,7 @@ function InformationCenterPage({ onNavigate }: Pick<Props, 'onNavigate'>) {
     <section className="school-list-page"><h2>信息中心<small>INFORMATION CENTER</small></h2><ul>
       <li><button type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/information-center/maintenance')}><strong>系统维护记录</strong><span>按工单编号查询历史维护任务</span></button><time>查询</time></li>
       {state.triggeredEvents.includes('chapter_four_started') && <li><button type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/information-center/system-services')}><strong>系统服务</strong><span>校园系统升级说明与兼容服务</span></button><time>服务</time></li>}
+      {state.triggeredEvents.includes('chapter_six_started') && <li><button type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/information-center/network-archive')}><strong>网络归档检索</strong><span>查询停用交换节点与历史覆盖范围</span></button><time>归档</time></li>}
     </ul></section>
   </div></main>
 }

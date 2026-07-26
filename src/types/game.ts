@@ -14,6 +14,9 @@ export type ComponentKey =
   | 'student-system-search' | 'student-admin-attempts' | 'student-permission-help' | 'student-admin-history'
   | 'student-login-devices' | 'student-device-detail' | 'student-cache-recovery'
   | 'student-account-relations' | 'student-last-activity'
+  | 'school-assets' | 'school-network-archive'
+  | 'student-floor-plan' | 'student-network-access' | 'student-camera-recovery'
+  | 'student-media-metadata' | 'student-terminal-cache' | 'student-pending-detail' | 'student-sync-status'
 
 export interface GameRoute { hostname: string; pathname: string; url: string; pageTitle: string; siteType: SiteType; componentKey: ComponentKey; params?: { id?: string } }
 export interface StudentTabSession { accountId: StudentAccountId | null }
@@ -45,7 +48,12 @@ export type ChapterFiveClueId =
   | 'account_relation_warning' | 'zhou_post_disappearance_login' | 'decommissioned_terminal_activity'
   | 'shenzhi_cache_recovered' | 'shenzhi_zhou_terminal_link' | 'three_account_relation'
   | 'zhou_last_draft' | 'draft_modified_after_logout' | 'zhou_last_login_summary'
-export type ClueId = ChapterOneClueId | ChapterTwoClueId | ChapterThreeClueId | ChapterFourClueId | ChapterFiveClueId
+export type ChapterSixClueId =
+  | 'terminal_status_fluctuation' | 'terminal_decommission_record' | 'third_floor_route'
+  | 'terminal_same_network_port' | 'network_port_location' | 'camera_storage_index'
+  | 'damaged_recording_metadata' | 'pending_object_records' | 'zhou_local_session_note'
+  | 'terminal03_summary'
+export type ClueId = ChapterOneClueId | ChapterTwoClueId | ChapterThreeClueId | ChapterFourClueId | ChapterFiveClueId | ChapterSixClueId
 
 export type ChapterOneEventId = 'old_building_contradiction' | 'zhou_draft_revealed' | 'investigation_backup_unlocked' | 'chapter_one_completed'
 export type ChapterTwoEventId = 'chapter_two_started' | 'shenzhi_cache_unlocked' | 'old_building_access_unlocked' | 'chapter_two_final_file_unlocked' | 'chapter_two_completed'
@@ -54,7 +62,10 @@ export type ChapterFourEventId = 'chapter_four_started' | 'chapter_four_admin_un
 export type ChapterFiveEventId =
   | 'chapter_five_started' | 'chapter_five_cache_unlocked' | 'chapter_five_relation_unlocked'
   | 'chapter_five_final_unlocked' | 'chapter_five_completed'
-export type StoryEventId = ChapterOneEventId | ChapterTwoEventId | ChapterThreeEventId | ChapterFourEventId | ChapterFiveEventId
+export type ChapterSixEventId =
+  | 'chapter_six_started' | 'chapter_six_map_unlocked' | 'chapter_six_media_unlocked'
+  | 'chapter_six_terminal_cache_unlocked' | 'chapter_six_final_unlocked' | 'chapter_six_completed'
+export type StoryEventId = ChapterOneEventId | ChapterTwoEventId | ChapterThreeEventId | ChapterFourEventId | ChapterFiveEventId | ChapterSixEventId
 
 export type ChapterThreeEvidenceAction =
   | 'duty-record' | 'access-log' | 'admin-trace' | 'system-upgrade'
@@ -65,6 +76,10 @@ export type ChapterFourEvidenceAction =
 export type ChapterFiveEvidenceAction =
   | 'account-warning' | 'post-disappearance-login' | 'terminal-status' | 'cache-recovered'
   | 'terminal-link' | 'account-relation' | 'last-draft' | 'draft-time'
+export type ChapterSixEvidenceAction =
+  | 'status-fluctuation' | 'decommission-record' | 'floor-route' | 'same-network-port'
+  | 'network-port-location' | 'camera-storage-index' | 'recording-metadata'
+  | 'pending-objects' | 'local-session-note'
 
 export type ClueCategory =
   | '公开资料' | '学生档案' | '系统记录' | '私人信息' | '身份痕迹' | '班级资料'
@@ -98,4 +113,6 @@ export interface GameState extends Omit<GameSaveV5, 'schemaVersion' | 'prototype
   chapterFourEndingVisible: boolean
   chapterFiveEndingVisible?: boolean
   chapterFiveSessionGlitchActive?: boolean
+  chapterSixEndingVisible?: boolean
+  chapterSixSyncGlitchActive?: boolean
 }

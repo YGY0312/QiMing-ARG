@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useGame, PROTOTYPE_VERSION } from '../game/GameContext'
-import { SCHOOL_HOME_URL, SHENZHI_ANOMALY_URL, SHENZHI_STUDENT_ANOMALY_URL } from '../game/constants'
+import { SCHOOL_HOME_URL, SHENZHI_ANOMALY_URL, SHENZHI_STUDENT_ANOMALY_URL, TERM_OLD_03_SYNC_HISTORY_URL } from '../game/constants'
 import { SchoolSite } from '../sites/school/SchoolSite'
 import { StudentSite } from '../sites/student/StudentSite'
 import { UnknownSiteError } from './UnknownSiteError'
@@ -9,12 +9,13 @@ import { ChapterEnding, ChapterTwoEnding } from '../game/ChapterEnding'
 import { ChapterThreeEnding } from '../game/ChapterThreeEnding'
 import { ChapterFourEnding } from '../game/ChapterFourEnding'
 import { ChapterFiveEnding } from '../game/ChapterFiveEnding'
+import { ChapterSixEnding } from '../game/ChapterSixEnding'
 import { EvidenceSidebar } from '../game/EvidenceSidebar'
 
 export function BrowserShell() {
   const {
     state, route, activeTab, canGoBack, canGoForward, navigate, goBack, goForward, refresh,
-    openStudentTab, focusSchoolTab, switchTab, closeTab, returnToTitle, resetGame, finishAddressGlitch, finishChapterTwoAddressGlitch, finishChapterFiveSessionGlitch,
+    openStudentTab, focusSchoolTab, switchTab, closeTab, returnToTitle, resetGame, finishAddressGlitch, finishChapterTwoAddressGlitch, finishChapterFiveSessionGlitch, finishChapterSixSyncGlitch,
   } = useGame()
   const [address, setAddress] = useState(route.url)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -38,6 +39,12 @@ export function BrowserShell() {
     const timer = window.setTimeout(finishChapterFiveSessionGlitch, 1000)
     return () => window.clearTimeout(timer)
   }, [state.chapterFiveSessionGlitchActive, finishChapterFiveSessionGlitch])
+  useEffect(() => {
+    if (!state.chapterSixSyncGlitchActive) return
+    setAddress(TERM_OLD_03_SYNC_HISTORY_URL)
+    const timer = window.setTimeout(() => { setAddress(route.url); finishChapterSixSyncGlitch() }, 1000)
+    return () => window.clearTimeout(timer)
+  }, [state.chapterSixSyncGlitchActive, route.url, finishChapterSixSyncGlitch])
 
   const submitAddress = (event: FormEvent) => { event.preventDefault(); navigate(address) }
   const confirmReset = () => {
@@ -79,9 +86,12 @@ export function BrowserShell() {
         </header>
         <div className={`browser-workspace ${state.evidenceSidebarCollapsed ? 'evidence-collapsed' : ''}`}>
           <div className="browser-page" key={`${activeTab.id}-${activeTab.refreshToken}`}>
+            {state.chapterSixSyncGlitchActive && <main className="student-main"><div className="student-page-header"><h1>同步状态</h1><p>对象：2024010307</p></div><div className="system-complete-note">状态：未开始<br />设备位置：无法确认</div></main>}
+            {!state.chapterSixSyncGlitchActive && <>
             {route.siteType === 'school' && <SchoolSite route={route} onNavigate={navigate} onOpenStudentTab={openStudentTab} />}
             {route.siteType === 'student' && <StudentSite route={route} onNavigate={navigate} onReturnSchoolTab={focusSchoolTab} />}
             {route.siteType === 'unknown' && <UnknownSiteError hostname={route.hostname} />}
+            </>}
           </div>
           <EvidenceSidebar />
         </div>
@@ -93,6 +103,7 @@ export function BrowserShell() {
       {state.chapterThreeEndingVisible && <ChapterThreeEnding />}
       {state.chapterFourEndingVisible && <ChapterFourEnding />}
       {state.chapterFiveEndingVisible && <ChapterFiveEnding />}
+      {state.chapterSixEndingVisible && <ChapterSixEnding />}
     </main>
   )
 }

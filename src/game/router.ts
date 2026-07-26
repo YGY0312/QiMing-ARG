@@ -24,6 +24,8 @@ const schoolRoutes: RouteDefinition[] = [
   { pattern: /^\/services\/information-center\/maintenance$/, componentKey: 'school-maintenance-ticket', pageTitle: '系统维护记录 - 启明市第一中学' },
   { pattern: /^\/services\/information-center\/system-services$/, componentKey: 'school-system-services', pageTitle: '系统服务 - 启明市第一中学' },
   { pattern: /^\/admin$/, componentKey: 'school-admin-denied', pageTitle: '403 Forbidden' },
+  { pattern: /^\/services\/assets$/, componentKey: 'school-assets', pageTitle: '设备报废公示 - 启明市第一中学' },
+  { pattern: /^\/services\/information-center\/network-archive$/, componentKey: 'school-network-archive', pageTitle: '网络归档检索 - 启明市第一中学' },
   { pattern: /^\/student\/shenzhi$/, componentKey: 'not-found', pageTitle: '未找到的学生' },
 ]
 
@@ -53,6 +55,13 @@ const studentRoutes: RouteDefinition[] = [
   { pattern: /^\/investigation\/account-relations$/, componentKey: 'student-account-relations', pageTitle: '账号关联查询 - 学生信息系统' },
   { pattern: /^\/security\/activity$/, componentKey: 'student-last-activity', pageTitle: '最后活动 - 学生信息系统' },
   { pattern: /^\/downloads$/, componentKey: 'student-downloads', pageTitle: '文件下载 - 学生信息系统' },
+  { pattern: /^\/investigation\/floor-plan$/, componentKey: 'student-floor-plan', pageTitle: '旧实验楼三层平面图 - 学生信息系统' },
+  { pattern: /^\/investigation\/network-access$/, componentKey: 'student-network-access', pageTitle: '网络接入记录 - 学生信息系统' },
+  { pattern: /^\/files\/camera-cache\/recover$/, componentKey: 'student-camera-recovery', pageTitle: 'CAM-07缓存恢复 - 学生信息系统' },
+  { pattern: /^\/files\/camera-cache\/media\/([^/]+)$/, componentKey: 'student-media-metadata', pageTitle: '媒体元数据 - 学生信息系统' },
+  { pattern: /^\/terminal\/TERM-OLD-03\/cache$/, componentKey: 'student-terminal-cache', pageTitle: '终端缓存目录 - 学生信息系统' },
+  { pattern: /^\/terminal\/TERM-OLD-03\/pending\/2024010307$/, componentKey: 'student-sync-status', pageTitle: '同步状态' },
+  { pattern: /^\/terminal\/TERM-OLD-03\/pending\/([^/]+)$/, componentKey: 'student-pending-detail', pageTitle: '待同步对象属性 - 学生信息系统' },
   { pattern: /^\/student\/2024010318$/, componentKey: 'student-missing', pageTitle: '沈栀' },
 ]
 

@@ -3,7 +3,7 @@ import type { GameRoute, StudentAccountId } from '../../types/game'
 import { authenticateSavedStudent, authenticateStudent, generateCaptcha, generateDifferentCaptcha, getStudentAccount } from '../../utils/auth'
 import { formatSavedAccountLabel } from '../../game/savedAccounts'
 import { useGame } from '../../game/GameContext'
-import { ACCOUNT_SECURITY_MESSAGE_ID, BACKUP_FILE_ID, CHAPTER_FIVE_BACKUP_FILE_ID, CHAPTER_FIVE_FINAL_FILE_ID, CHAPTER_FOUR_BACKUP_FILE_ID, CHAPTER_FOUR_FINAL_FILE_ID, CHAPTER_THREE_BACKUP_FILE_ID, CHAPTER_THREE_FINAL_FILE_ID, CHAPTER_TWO_FINAL_FILE_ID, GUYAN_DRAFT_MESSAGE_ID, OLD_BUILDING_ACCESS_FILE_ID, SHENZHI_CACHE_FILE_ID, ZHOU_CREDENTIALS_MESSAGE_ID, ZHOU_MESSAGE_ID } from '../../game/constants'
+import { ACCOUNT_SECURITY_MESSAGE_ID, BACKUP_FILE_ID, CHAPTER_FIVE_BACKUP_FILE_ID, CHAPTER_FIVE_FINAL_FILE_ID, CHAPTER_FOUR_BACKUP_FILE_ID, CHAPTER_FOUR_FINAL_FILE_ID, CHAPTER_SIX_BACKUP_FILE_ID, CHAPTER_SIX_FINAL_FILE_ID, CHAPTER_THREE_BACKUP_FILE_ID, CHAPTER_THREE_FINAL_FILE_ID, CHAPTER_TWO_FINAL_FILE_ID, GUYAN_DRAFT_MESSAGE_ID, OLD_BUILDING_ACCESS_FILE_ID, SHENZHI_CACHE_FILE_ID, ZHOU_CREDENTIALS_MESSAGE_ID, ZHOU_MESSAGE_ID } from '../../game/constants'
 import { isBackupPasswordValid } from '../../game/story'
 import { ModalFrame } from '../../components/ModalFrame'
 import { VirtualFileViewer } from '../../components/VirtualFileViewer'
@@ -20,6 +20,7 @@ import {
 import { isAdminReferenceQuery, queryAdminHistory, type AdminHistoryResult } from '../../data/chapterFour'
 import { draftTimes, isDraftTimeAnomaly, type DraftTimeKey } from '../../data/chapterFive'
 import { AccountRelationsPage, CacheRecoveryPage, DeviceDetailPage, LastActivityPage, LoginDevicesPage } from './ChapterFivePages'
+import { CameraRecoveryPage, FloorPlanPage, MediaMetadataPage, NetworkAccessPage, PendingDetailPage, SyncStatusPage, TerminalCachePage } from './ChapterSixPages'
 
 interface Props {
   route: GameRoute
@@ -154,6 +155,11 @@ function StudentSystem({ route, onNavigate, onReturnSchoolTab }: Props) {
               {state.triggeredEvents.includes('chapter_five_relation_unlocked') && <button className={route.pathname === '/investigation/account-relations' ? 'active' : ''} type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/investigation/account-relations')}><span aria-hidden="true">▪</span>账号关联查询</button>}
               {state.clues.three_account_relation.discovered && <button className={route.pathname === '/security/activity' ? 'active' : ''} type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/security/activity')}><span aria-hidden="true">▪</span>最后活动</button>}
             </>}
+            {accountId === 'zhou_xun' && state.triggeredEvents.includes('chapter_six_started') && <><span className="student-menu-section">终端03调查</span>
+              <button className={route.pathname === '/investigation/network-access' ? 'active' : ''} type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/investigation/network-access')}><span aria-hidden="true">▪</span>网络接入记录</button>
+              {state.triggeredEvents.includes('chapter_six_map_unlocked') && <button className={route.pathname === '/investigation/floor-plan' ? 'active' : ''} type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/investigation/floor-plan')}><span aria-hidden="true">▪</span>三层平面图</button>}
+              {state.triggeredEvents.includes('chapter_six_media_unlocked') && <button className={route.pathname === '/files/camera-cache/recover' ? 'active' : ''} type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/files/camera-cache/recover')}><span aria-hidden="true">▪</span>CAM-07缓存恢复</button>}
+            </>}
             {inactiveMenu.map((label) => <span className="student-menu-placeholder" key={label}><i aria-hidden="true">▪</i>{label}</span>)}
           </nav>
           <button className="back-school" type="button" onClick={() => onReturnSchoolTab ? onReturnSchoolTab() : onNavigate('www.qiming-high.edu.cn/')}>返回学校官网</button>
@@ -190,11 +196,18 @@ function StudentPage({ route, onNavigate, accountId }: Props & { accountId: Stud
     case 'student-permission-help': return <PermissionHelpPage accountId={accountId} />
     case 'student-admin-history': return <AdminHistoryPage accountId={accountId} />
     case 'student-login-devices': return <LoginDevicesPage accountId={accountId} onNavigate={onNavigate} />
-    case 'student-device-detail': return <DeviceDetailPage accountId={accountId} />
+    case 'student-device-detail': return <DeviceDetailPage accountId={accountId} onNavigate={onNavigate} />
     case 'student-cache-recovery': return <CacheRecoveryPage accountId={accountId} />
     case 'student-account-relations': return <AccountRelationsPage accountId={accountId} />
     case 'student-last-activity': return <LastActivityPage accountId={accountId} onNavigate={onNavigate} />
     case 'student-downloads': return <Downloads accountId={accountId} onNavigate={onNavigate} />
+    case 'student-floor-plan': return <FloorPlanPage accountId={accountId} />
+    case 'student-network-access': return <NetworkAccessPage accountId={accountId} />
+    case 'student-camera-recovery': return <CameraRecoveryPage accountId={accountId} onNavigate={onNavigate} />
+    case 'student-media-metadata': return <MediaMetadataPage accountId={accountId} fileName={route.params?.id} />
+    case 'student-terminal-cache': return <TerminalCachePage accountId={accountId} onNavigate={onNavigate} />
+    case 'student-pending-detail': return <PendingDetailPage accountId={accountId} objectId={route.params?.id} />
+    case 'student-sync-status': return <SyncStatusPage accountId={accountId} />
     case 'student-missing': return <MissingStudentRecord onNavigate={onNavigate} />
     default: return <StudentNotFound onNavigate={onNavigate} />
   }
@@ -584,6 +597,12 @@ function Downloads({ accountId, onNavigate }: { accountId: StudentAccountId; onN
     openVirtualFile(id)
     revealFileSection(finalized ? 'chapter_five_final_opened' : 'chapter-five-backup-read')
   }
+  const openChapterSixBackup = () => {
+    const finalized = state.unlockedFileIds.includes(CHAPTER_SIX_FINAL_FILE_ID)
+    const id = finalized ? CHAPTER_SIX_FINAL_FILE_ID : CHAPTER_SIX_BACKUP_FILE_ID
+    openVirtualFile(id)
+    revealFileSection(finalized ? 'chapter_six_final_opened' : 'chapter-six-backup-read')
+  }
   const chapterFiles = [
     ['chapter-two-search-note', '检索记录.txt'], ['seat-chart-may', '高二（3）班座位表_五月.pdf'], ['midterm-grades', '高二三班期中成绩汇总.csv'],
   ] as const
@@ -595,6 +614,7 @@ function Downloads({ accountId, onNavigate }: { accountId: StudentAccountId; onN
     {accountId === 'zhou_xun' && state.unlockedFileIds.includes(CHAPTER_THREE_BACKUP_FILE_ID) && (() => { const finalized = state.unlockedFileIds.includes(CHAPTER_THREE_FINAL_FILE_ID); const file = getVirtualFile(finalized ? CHAPTER_THREE_FINAL_FILE_ID : CHAPTER_THREE_BACKUP_FILE_ID)!; return <div className={finalized ? 'story-download unlocked' : 'story-download'}><span className="file-icon">TXT</span><span><strong>{file.name}</strong><small>{finalized ? '调查记录已更新 · 只读' : '周寻个人文件 · 只读'}</small></span><button type="button" onClick={openChapterThreeBackup}>打开</button></div> })()}
     {accountId === 'zhou_xun' && state.unlockedFileIds.includes(CHAPTER_FOUR_BACKUP_FILE_ID) && (() => { const finalized = state.unlockedFileIds.includes(CHAPTER_FOUR_FINAL_FILE_ID); const file = getVirtualFile(finalized ? CHAPTER_FOUR_FINAL_FILE_ID : CHAPTER_FOUR_BACKUP_FILE_ID)!; return <div className={finalized ? 'story-download unlocked' : 'story-download'}><span className="file-icon">TXT</span><span><strong>{file.name}</strong><small>{finalized ? '权限调查已更新 · 只读' : '周寻个人文件 · 只读'}</small></span><button type="button" onClick={openChapterFourBackup}>打开</button></div> })()}
     {accountId === 'zhou_xun' && state.unlockedFileIds.includes(CHAPTER_FIVE_BACKUP_FILE_ID) && (() => { const finalized = state.unlockedFileIds.includes(CHAPTER_FIVE_FINAL_FILE_ID); const file = getVirtualFile(finalized ? CHAPTER_FIVE_FINAL_FILE_ID : CHAPTER_FIVE_BACKUP_FILE_ID)!; return <div className={finalized ? 'story-download unlocked' : 'story-download'}><span className="file-icon">TXT</span><span><strong>{file.name}</strong><small>{finalized ? '登录调查已更新 · 只读' : '周寻个人文件 · 只读'}</small></span><button type="button" onClick={openChapterFiveBackup}>打开</button></div> })()}
+    {accountId === 'zhou_xun' && state.unlockedFileIds.includes(CHAPTER_SIX_BACKUP_FILE_ID) && (() => { const finalized = state.unlockedFileIds.includes(CHAPTER_SIX_FINAL_FILE_ID); const file = getVirtualFile(finalized ? CHAPTER_SIX_FINAL_FILE_ID : CHAPTER_SIX_BACKUP_FILE_ID)!; return <div className={finalized ? 'story-download unlocked' : 'story-download'}><span className="file-icon">TXT</span><span><strong>{file.name}</strong><small>{finalized ? '终端调查已更新 · 只读' : '周寻个人文件 · 只读'}</small></span><button type="button" onClick={openChapterSixBackup}>打开</button></div> })()}
     {baseDownloads.map((file) => <div key={file.id}><span className="file-icon">{file.name.split('.').pop()?.toUpperCase()}</span><span><strong>{file.name}</strong><small>{file.meta}</small></span><button type="button" onClick={() => openVirtualFile(file.id)}>打开</button></div>)}
   </div></Panel>
   {passwordOpen && <ModalFrame title="加密文件验证" onClose={() => setPasswordOpen(false)} className="password-modal"><form className="backup-password-form" onSubmit={submitPassword}><p>请输入四位数字密码。</p><label>密码<input type="password" inputMode="numeric" aria-label="调查备份密码" value={password} onChange={(event) => setPassword(event.target.value)} autoFocus /></label>{error && <p className="password-error" role="alert">{error}</p>}<button type="submit">解锁并打开</button></form></ModalFrame>}

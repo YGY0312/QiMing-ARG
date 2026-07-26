@@ -14,6 +14,7 @@ import {
 } from '../../data/chapterFive'
 import { useGame } from '../../game/GameContext'
 import type { StudentAccountId } from '../../types/game'
+import { TerminalStatusInvestigation } from './ChapterSixPages'
 
 function PageHeader({ title, description }: { title: string; description: string }) {
   return <div className="student-page-header"><h1>{title}</h1><p>{description}</p></div>
@@ -73,7 +74,7 @@ export function LoginDevicesPage({ accountId, onNavigate }: { accountId: Student
   </Panel></>
 }
 
-export function DeviceDetailPage({ accountId }: { accountId: StudentAccountId }) {
+export function DeviceDetailPage({ accountId, onNavigate }: { accountId: StudentAccountId; onNavigate: (url: string) => void }) {
   const { state, recordChapterFiveEvidence } = useGame()
   const [checked, setChecked] = useState(state.clues.decommissioned_terminal_activity.discovered)
   if (accountId !== 'zhou_xun' || !state.triggeredEvents.includes('chapter_five_started')) return <Denied title="设备详情" />
@@ -86,6 +87,7 @@ export function DeviceDetailPage({ accountId }: { accountId: StudentAccountId })
     <button className="record-inspect" type="button" disabled={checked} onClick={inspect}>{checked ? '设备状态已核对' : '核对设备状态'}</button>
     {checked && <p className="record-note">停用设备仍存在后续活动记录。</p>}
     {state.triggeredEvents.includes('chapter_five_completed') && <p className="system-complete-note">在线记录：设备位置无法确认。</p>}
+    <TerminalStatusInvestigation accountId={accountId} onNavigate={onNavigate} />
   </Panel></>
 }
 

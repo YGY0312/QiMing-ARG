@@ -1,4 +1,4 @@
-import type { ChapterFiveClueId, ChapterFourClueId, ChapterThreeClueId, ChapterTwoClueId, ClueId, ClueProgress, ClueProgressMap, StoryEventId } from '../types/game'
+import type { ChapterFiveClueId, ChapterFourClueId, ChapterSixClueId, ChapterThreeClueId, ChapterTwoClueId, ClueId, ClueProgress, ClueProgressMap, StoryEventId } from '../types/game'
 
 export interface ClueDefinition extends Omit<ClueProgress, 'discovered' | 'discoveredAt' | 'sourceUrl'> { title: string; source: string; description: string; sidebarFacts: string[] }
 
@@ -22,6 +22,11 @@ export const chapterFiveClueIds: ChapterFiveClueId[] = [
   'account_relation_warning', 'zhou_post_disappearance_login', 'decommissioned_terminal_activity',
   'shenzhi_cache_recovered', 'shenzhi_zhou_terminal_link', 'three_account_relation',
   'zhou_last_draft', 'draft_modified_after_logout', 'zhou_last_login_summary',
+]
+export const chapterSixClueIds: ChapterSixClueId[] = [
+  'terminal_status_fluctuation', 'terminal_decommission_record', 'third_floor_route',
+  'terminal_same_network_port', 'network_port_location', 'camera_storage_index',
+  'damaged_recording_metadata', 'pending_object_records', 'zhou_local_session_note', 'terminal03_summary',
 ]
 
 export const clueDefinitions: Record<ClueId, ClueDefinition> = {
@@ -76,6 +81,16 @@ export const clueDefinitions: Record<ClueId, ClueDefinition> = {
   zhou_last_draft: { id: 'zhou_last_draft', title: '周寻最后的草稿', source: '周寻未发送草稿', description: '周寻警告林默，继续使用他的账号会让系统把两人关联起来。', category: '周寻草稿', isKeyClue: true, sidebarFacts: ['状态：草稿 · 未发送', '继续查询会建立账号关联'] },
   draft_modified_after_logout: { id: 'draft_modified_after_logout', title: '草稿时间异常', source: '草稿时间比对', description: '周寻账号会话中断以后，草稿仍发生修改。', category: '时间异常', isKeyClue: true, sidebarFacts: ['会话中断：00:02', '草稿修改：00:04'] },
   zhou_last_login_summary: { id: 'zhou_last_login_summary', title: '最后登录', source: '调查备份_04.txt', description: '周寻失踪后账号仍在停用终端活动，最后一次操作身份无法确认。', category: '登录记录', isKeyClue: true, sidebarFacts: ['失踪后账号仍在TERM-OLD-03活动', '最后一次操作身份无法确认'] },
+  terminal_status_fluctuation: { id: 'terminal_status_fluctuation', title: '终端状态波动', source: 'TERM-OLD-03状态变化记录', description: 'TERM-OLD-03已登记停用，但仍产生在线心跳。', category: '设备状态', isKeyClue: true, sidebarFacts: ['公开状态：已停用', '心跳记录：仍有在线状态'] },
+  terminal_decommission_record: { id: 'terminal_decommission_record', title: '终端报废记录', source: '设备报废公示', description: 'TERM-OLD-03未被搬离，而是原地封存。', category: '公开资料', isKeyClue: true, sidebarFacts: ['封存位置：旧实验楼三层设备间'] },
+  third_floor_route: { id: 'third_floor_route', title: '三层调查路径', source: '旧实验楼三层平面图', description: '三个区域形成连续调查路径。', category: '旧实验楼', isKeyClue: true, sidebarFacts: ['A-302 → 广播设备室 → 三层设备间'] },
+  terminal_same_network_port: { id: 'terminal_same_network_port', title: '相同网络节点', source: '网络接入记录', description: 'TERM-OLD-03在六月和九月通过相同节点接入。', category: '系统记录', isKeyClue: true, sidebarFacts: ['OLD-BLDG-3F-SW02'] },
+  network_port_location: { id: 'network_port_location', title: '端口覆盖区域', source: '信息中心网络归档', description: '网络端口覆盖三个关键房间。', category: '公开资料', isKeyClue: true, sidebarFacts: ['A-302', '广播设备室', '三层设备间'] },
+  camera_storage_index: { id: 'camera_storage_index', title: '摄像设备缓存', source: '设备归还缓存_CAM-07.dat', description: 'CAM-07留下四个媒体文件。', category: '缓存恢复', isKeyClue: true, sidebarFacts: ['CAM-07留下四个媒体文件'] },
+  damaged_recording_metadata: { id: 'damaged_recording_metadata', title: '损坏录音元数据', source: 'CAM-07媒体元数据', description: '22:19后出现门锁、人声和“终端”残片，随后中断。', category: '系统记录', isKeyClue: true, sidebarFacts: ['22:19 后出现门锁、人声和“终端”残片'] },
+  pending_object_records: { id: 'pending_object_records', title: '待同步对象', source: 'TERM-OLD-03缓存目录', description: 'pending目录中同时存在三个等待同步对象。', category: '系统记录', isKeyClue: true, sidebarFacts: ['2024010318', '2024010312', '2024010307'] },
+  zhou_local_session_note: { id: 'zhou_local_session_note', title: '周寻的本地备注', source: '2024010312.pending', description: '本地会话残留备注，但写入者身份无法确认。', category: '私人信息', isKeyClue: true, sidebarFacts: ['不要从系统里找我'] },
+  terminal03_summary: { id: 'terminal03_summary', title: '终端03', source: '调查备份_05.txt', description: 'TERM-OLD-03位于旧实验楼三层，并保存着三个待同步对象。', category: '设备状态', isKeyClue: true, sidebarFacts: ['旧实验楼三层', '三个待同步对象'] },
 }
 
 export interface EvidenceFactGroup { id: ClueId; title: string; source: string; facts: string[] }
@@ -121,6 +136,16 @@ export const storyEventRequirements: Record<StoryEventId, ClueId[]> = {
     'zhou_last_draft', 'draft_modified_after_logout',
   ],
   chapter_five_completed: [],
+  chapter_six_started: [],
+  chapter_six_map_unlocked: ['terminal_status_fluctuation', 'terminal_decommission_record'],
+  chapter_six_media_unlocked: ['third_floor_route', 'terminal_same_network_port', 'network_port_location'],
+  chapter_six_terminal_cache_unlocked: ['camera_storage_index', 'damaged_recording_metadata', 'network_port_location'],
+  chapter_six_final_unlocked: [
+    'terminal_status_fluctuation', 'terminal_decommission_record', 'third_floor_route',
+    'terminal_same_network_port', 'network_port_location', 'camera_storage_index',
+    'damaged_recording_metadata', 'pending_object_records', 'zhou_local_session_note',
+  ],
+  chapter_six_completed: [],
 }
 
 export const shenzhiCacheEvidenceIds: ClueId[] = ['class_size_mismatch', 'seat_chart_shenzhi', 'hidden_grade_row', 'shenzhi_essay', 'shenzhi_removed_from_group']

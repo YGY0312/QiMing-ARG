@@ -45,7 +45,7 @@ export function createSave(state: GameState): GameSaveV5 {
 
 function stringArray(value: unknown): string[] { return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [] }
 function storyEvents(value: unknown): StoryEventId[] {
-  const allowed: StoryEventId[] = ['old_building_contradiction', 'zhou_draft_revealed', 'investigation_backup_unlocked', 'chapter_one_completed', 'chapter_two_started', 'shenzhi_cache_unlocked', 'old_building_access_unlocked', 'chapter_two_final_file_unlocked', 'chapter_two_completed', 'chapter_three_started', 'chapter_three_final_unlocked', 'chapter_three_completed', 'chapter_four_started', 'chapter_four_admin_unlocked', 'chapter_four_final_unlocked', 'chapter_four_completed', 'chapter_five_started', 'chapter_five_cache_unlocked', 'chapter_five_relation_unlocked', 'chapter_five_final_unlocked', 'chapter_five_completed']
+  const allowed: StoryEventId[] = ['old_building_contradiction', 'zhou_draft_revealed', 'investigation_backup_unlocked', 'chapter_one_completed', 'chapter_two_started', 'shenzhi_cache_unlocked', 'old_building_access_unlocked', 'chapter_two_final_file_unlocked', 'chapter_two_completed', 'chapter_three_started', 'chapter_three_final_unlocked', 'chapter_three_completed', 'chapter_four_started', 'chapter_four_admin_unlocked', 'chapter_four_final_unlocked', 'chapter_four_completed', 'chapter_five_started', 'chapter_five_cache_unlocked', 'chapter_five_relation_unlocked', 'chapter_five_final_unlocked', 'chapter_five_completed', 'chapter_six_started', 'chapter_six_map_unlocked', 'chapter_six_media_unlocked', 'chapter_six_terminal_cache_unlocked', 'chapter_six_final_unlocked', 'chapter_six_completed']
   return stringArray(value).map((id) => id === 'zhou_message_unlocked' ? 'zhou_draft_revealed' : id).filter((id): id is StoryEventId => allowed.includes(id as StoryEventId))
 }
 
@@ -135,6 +135,9 @@ export function migrateSave(value: unknown): GameSaveV5 | null {
     }
     if (chapterDefaults.revealedFileSections.includes('chapter-five-final-read') && !triggeredEvents.includes('chapter_five_completed')) {
       triggeredEvents.push('chapter_five_completed')
+    }
+    if (chapterDefaults.revealedFileSections.includes('chapter-six-final-read') && !triggeredEvents.includes('chapter_six_completed')) {
+      triggeredEvents.push('chapter_six_completed')
     }
     return {
       schemaVersion: 5, prototypeVersion: PROTOTYPE_VERSION, isStarted: Boolean(raw.isStarted), tabs, activeTabId,
