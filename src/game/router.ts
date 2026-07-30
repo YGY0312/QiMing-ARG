@@ -2,6 +2,7 @@ import type { ComponentKey, GameRoute, SiteType } from '../types/game'
 
 const SCHOOL_HOST = 'www.qiming-high.edu.cn'
 const STUDENT_HOST = 'stu.qiming-high.edu.cn'
+const ARCHIVE_HOST = 'archive.qm-node.local'
 
 interface RouteDefinition {
   pattern: RegExp
@@ -26,6 +27,8 @@ const schoolRoutes: RouteDefinition[] = [
   { pattern: /^\/admin$/, componentKey: 'school-admin-denied', pageTitle: '403 Forbidden' },
   { pattern: /^\/services\/assets$/, componentKey: 'school-assets', pageTitle: '设备报废公示 - 启明市第一中学' },
   { pattern: /^\/services\/information-center\/network-archive$/, componentKey: 'school-network-archive', pageTitle: '网络归档检索 - 启明市第一中学' },
+  { pattern: /^\/services\/legacy-archive$/, componentKey: 'school-legacy-archive', pageTitle: '校园旧服务归档 - 启明市第一中学' },
+  { pattern: /^\/services\/legacy-archive\/CLS-ARCHIVE-18$/i, componentKey: 'school-legacy-index', pageTitle: '高二（3）班公共资料索引' },
   { pattern: /^\/student\/shenzhi$/, componentKey: 'not-found', pageTitle: '未找到的学生' },
 ]
 
@@ -62,7 +65,17 @@ const studentRoutes: RouteDefinition[] = [
   { pattern: /^\/terminal\/TERM-OLD-03\/cache$/, componentKey: 'student-terminal-cache', pageTitle: '终端缓存目录 - 学生信息系统' },
   { pattern: /^\/terminal\/TERM-OLD-03\/pending\/2024010307$/, componentKey: 'student-sync-status', pageTitle: '同步状态' },
   { pattern: /^\/terminal\/TERM-OLD-03\/pending\/([^/]+)$/, componentKey: 'student-pending-detail', pageTitle: '待同步对象属性 - 学生信息系统' },
+  { pattern: /^\/investigation\/class-archive$/, componentKey: 'student-class-archive', pageTitle: '原始班级名单恢复 - 学生信息系统' },
+  { pattern: /^\/investigation\/monitor-records$/, componentKey: 'student-monitor-records', pageTitle: '班长缓存记录 - 学生信息系统' },
+  { pattern: /^\/investigation\/data-transfer$/, componentKey: 'student-transfer-records', pageTitle: '数据传输记录 - 学生信息系统' },
   { pattern: /^\/student\/2024010318$/, componentKey: 'student-missing', pageTitle: '沈栀' },
+]
+
+const archiveRoutes: RouteDefinition[] = [
+  { pattern: /^\/EXT-BACKUP-QM-0616$/, componentKey: 'archive-home', pageTitle: '外部归档节点' },
+  { pattern: /^\/EXT-BACKUP-QM-0616\/manifest$/, componentKey: 'archive-manifest', pageTitle: '外部备份清单' },
+  { pattern: /^\/EXT-BACKUP-QM-0616\/plan$/, componentKey: 'archive-plan', pageTitle: '计划目录' },
+  { pattern: /^\/EXT-BACKUP-QM-0616\/incident\/0616$/, componentKey: 'archive-incident', pageTitle: '0616事件记录' },
 ]
 
 function cleanInput(input: string): { hostname: string; pathname: string } {
@@ -110,6 +123,7 @@ export function parseGameUrl(input: string): GameRoute {
   const { hostname, pathname } = cleanInput(input)
   if (hostname === SCHOOL_HOST) return matchRoute(hostname, pathname, 'school', schoolRoutes)
   if (hostname === STUDENT_HOST) return matchRoute(hostname, pathname, 'student', studentRoutes)
+  if (hostname === ARCHIVE_HOST) return matchRoute(hostname, pathname, 'archive', archiveRoutes)
   return {
     hostname,
     pathname,

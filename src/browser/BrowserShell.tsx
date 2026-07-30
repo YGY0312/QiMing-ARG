@@ -10,7 +10,9 @@ import { ChapterThreeEnding } from '../game/ChapterThreeEnding'
 import { ChapterFourEnding } from '../game/ChapterFourEnding'
 import { ChapterFiveEnding } from '../game/ChapterFiveEnding'
 import { ChapterSixEnding } from '../game/ChapterSixEnding'
+import { ChapterSevenEnding } from '../game/ChapterSevenEnding'
 import { EvidenceSidebar } from '../game/EvidenceSidebar'
+import { ArchiveSite } from '../sites/archive/ArchiveSite'
 
 export function BrowserShell() {
   const {
@@ -90,6 +92,7 @@ export function BrowserShell() {
             {!state.chapterSixSyncGlitchActive && <>
             {route.siteType === 'school' && <SchoolSite route={route} onNavigate={navigate} onOpenStudentTab={openStudentTab} />}
             {route.siteType === 'student' && <StudentSite route={route} onNavigate={navigate} onReturnSchoolTab={focusSchoolTab} />}
+            {route.siteType === 'archive' && <ArchiveSite route={route} onNavigate={navigate} />}
             {route.siteType === 'unknown' && <UnknownSiteError hostname={route.hostname} />}
             </>}
           </div>
@@ -104,6 +107,7 @@ export function BrowserShell() {
       {state.chapterFourEndingVisible && <ChapterFourEnding />}
       {state.chapterFiveEndingVisible && <ChapterFiveEnding />}
       {state.chapterSixEndingVisible && <ChapterSixEnding />}
+      {state.chapterSevenEndingVisible && <ChapterSevenEnding />}
     </main>
   )
 }

@@ -38,6 +38,8 @@ export const virtualFiles: Record<string, VirtualFileDefinition> = {
   'investigation-backup-04-final': simple('investigation-backup-04-final', '调查备份_04.txt', 'text', '周寻个人文件', '我把三个账号串起来了。\n\n沈栀最后使用过TERM-OLD-03。\n\n我后来也从那里登录过。\n\n现在，系统把林默标记成了新的关联对象。\n\n它不是在寻找某一个人。\n\n它在追踪接触过这些记录的人。\n\n那台终端已经停用。\n\n但它还在上线。\n\n草稿修改时间也不对。\n\n如果最后一次登录不是我——\n\n那是谁？\n\n下一步：找到TERM-OLD-03。'),
   'investigation-backup-05': simple('investigation-backup-05', '调查备份_05.txt', 'text', '周寻个人文件', 'TERM-OLD-03没有被移走。\n\n它一直连接着旧实验楼三层的网络端口。'),
   'investigation-backup-05-final': simple('investigation-backup-05-final', '调查备份_05.txt', 'text', '周寻个人文件', '我找到终端的位置了。\n\n旧实验楼三层。\n\nA-302、广播设备室和设备间，\n都连接在同一个交换节点上。\n\n沈栀借走的摄像设备，\n最后也把数据写进了这台终端。\n\n终端里有三个等待同步的对象：\n\n2024010318\n2024010312\n2024010307\n\n沈栀。\n我。\n还有你。\n\n但我的记录里，多了一句话：\n\n不要从系统里找我。\n\n如果这句话真的是我留下的——\n\n那就说明答案不在学生系统里。\n\n下一步：找到终端之外的记录。'),
+  'investigation-backup-06': simple('investigation-backup-06', '调查备份_06.txt', 'text', '周寻个人文件', '终端里的记录不可信。\n\n但它留下了一个指向系统之外的索引。\n\n班长可能还保留着最早的名单。'),
+  'investigation-backup-06-final': simple('investigation-backup-06-final', '调查备份_06.txt', 'text', '周寻个人文件', '班长保留了最早的名单。\n\n六月十六日晚上，\n沈栀仍然是班里的第十八个人。\n\n第二天早上，\n学校要求重新提交名单。\n\n新的名单只有十七个人。\n\n班长没有见过沈栀的退学申请，\n也没有见过她的转学手续。\n\n周寻后来找过他。\n\n他问的不是沈栀为什么离开，\n而是谁让班长删掉她。\n\n终端之外还有一份备份。\n\n里面有原始名单，\nCAM-07的媒体索引，\n以及一份内部计划目录。\n\n计划的名字是：\n\n启明学生风险干预计划。\n\n启明不是学校的名字。\n\n它是一个计划的名字。\n\n备份里还有一个没有打开的目录：\n\nincident/0616\n\n下一步：\n\n还原六月十六日。'),
 }
 
 export function getVirtualFile(id: string | null): VirtualFileDefinition | null { return id ? virtualFiles[id] ?? null : null }

@@ -1,4 +1,4 @@
-import type { ChapterFiveClueId, ChapterFourClueId, ChapterSixClueId, ChapterThreeClueId, ChapterTwoClueId, ClueId, ClueProgress, ClueProgressMap, StoryEventId } from '../types/game'
+import type { ChapterFiveClueId, ChapterFourClueId, ChapterSevenClueId, ChapterSixClueId, ChapterThreeClueId, ChapterTwoClueId, ClueId, ClueProgress, ClueProgressMap, StoryEventId } from '../types/game'
 
 export interface ClueDefinition extends Omit<ClueProgress, 'discovered' | 'discoveredAt' | 'sourceUrl'> { title: string; source: string; description: string; sidebarFacts: string[] }
 
@@ -27,6 +27,11 @@ export const chapterSixClueIds: ChapterSixClueId[] = [
   'terminal_status_fluctuation', 'terminal_decommission_record', 'third_floor_route',
   'terminal_same_network_port', 'network_port_location', 'camera_storage_index',
   'damaged_recording_metadata', 'pending_object_records', 'zhou_local_session_note', 'terminal03_summary',
+]
+export const chapterSevenClueIds: ChapterSevenClueId[] = [
+  'original_class_roster', 'monitor_resubmission_notice', 'shenzhi_removed_after_incident',
+  'zhou_questioned_monitor', 'monitor_unsent_statement', 'terminal_external_export',
+  'external_backup_index', 'qiming_plan_name', 'external_backup_verified', 'outside_system_summary',
 ]
 
 export const clueDefinitions: Record<ClueId, ClueDefinition> = {
@@ -91,6 +96,16 @@ export const clueDefinitions: Record<ClueId, ClueDefinition> = {
   pending_object_records: { id: 'pending_object_records', title: '待同步对象', source: 'TERM-OLD-03缓存目录', description: 'pending目录中同时存在三个等待同步对象。', category: '系统记录', isKeyClue: true, sidebarFacts: ['2024010318', '2024010312', '2024010307'] },
   zhou_local_session_note: { id: 'zhou_local_session_note', title: '周寻的本地备注', source: '2024010312.pending', description: '本地会话残留备注，但写入者身份无法确认。', category: '私人信息', isKeyClue: true, sidebarFacts: ['不要从系统里找我'] },
   terminal03_summary: { id: 'terminal03_summary', title: '终端03', source: '调查备份_05.txt', description: 'TERM-OLD-03位于旧实验楼三层，并保存着三个待同步对象。', category: '设备状态', isKeyClue: true, sidebarFacts: ['旧实验楼三层', '三个待同步对象'] },
+  original_class_roster: { id: 'original_class_roster', title: '原始班级名单', source: '高二（3）班原始信息核对表', description: '6月16日晚保存的原始名单中，沈栀仍是班级正式成员。', category: '班级资料', isKeyClue: true, sidebarFacts: ['2026-06-16晚', '人数18', '包含沈栀'] },
+  monitor_resubmission_notice: { id: 'monitor_resubmission_notice', title: '重新提交名单的通知', source: '班级名单重新提交通知', description: '沈栀失联后的第二天早晨，班长被要求按照系统当前名单重新提交班级材料。', category: '班级资料', isKeyClue: true, sidebarFacts: ['2026-06-17早晨', '要求以系统当前名单重新提交'] },
+  shenzhi_removed_after_incident: { id: 'shenzhi_removed_after_incident', title: '事故后的名单删除', source: '新旧班级名单比对', description: '沈栀在旧实验楼异常事件后被从重新提交的名单中删除。', category: '班级资料', isKeyClue: true, sidebarFacts: ['原始版：18人', '提交版：17人', '删除：2024010318 沈栀'] },
+  zhou_questioned_monitor: { id: 'zhou_questioned_monitor', title: '周寻询问班长', source: '班长与周寻聊天缓存', description: '周寻追问是谁要求重新提交名单，并要求班长保留原始文件。', category: '人物关系', isKeyClue: true, sidebarFacts: ['周寻追问：是谁要求重新提交名单'] },
+  monitor_unsent_statement: { id: 'monitor_unsent_statement', title: '班长未发送的说明', source: '班长未发送说明', description: '班长承认未见离校手续，只是按照通知重新提交名单。', category: '私人信息', isKeyClue: true, sidebarFacts: ['未见退学申请', '未见转学手续'] },
+  terminal_external_export: { id: 'terminal_external_export', title: '终端外部导出', source: 'TERM-OLD-03数据传输记录', description: '周寻最后一次本地会话期间，终端将ARCHIVE_0616导出至校外节点。', category: '系统记录', isKeyClue: true, sidebarFacts: ['TERM-OLD-03 → EXT-NODE-04', '对象：ARCHIVE_0616'] },
+  external_backup_index: { id: 'external_backup_index', title: '系统外备份索引', source: '校园旧服务归档', description: '周寻利用旧服务留下了不属于学生系统的外部备份编号。', category: '外部归档', isKeyClue: true, sidebarFacts: ['EXT-BACKUP-QM-0616', '旧站不走学生系统'] },
+  qiming_plan_name: { id: 'qiming_plan_name', title: '启明计划', source: '外部备份计划目录', description: '“启明”也是一个内部试运行计划的名称。', category: '外部归档', isKeyClue: true, sidebarFacts: ['启明学生风险干预计划', '项目代号QM'] },
+  external_backup_verified: { id: 'external_backup_verified', title: '外部备份验证', source: '外部备份manifest', description: 'TERM-OLD-03导出的外部备份真实存在，完整性为71%。', category: '外部归档', isKeyClue: true, sidebarFacts: ['ARCHIVE_0616', '完整性71%', '包含名单、媒体、计划和事件索引'] },
+  outside_system_summary: { id: 'outside_system_summary', title: '系统之外', source: '调查备份_06.txt', description: '原始名单与校外备份证明，真正的记录被保存在校园系统之外。', category: '外部归档', isKeyClue: true, sidebarFacts: ['原始名单仍有18人', '终端之外存在备份', 'incident/0616等待验证'] },
 }
 
 export interface EvidenceFactGroup { id: ClueId; title: string; source: string; facts: string[] }
@@ -146,6 +161,17 @@ export const storyEventRequirements: Record<StoryEventId, ClueId[]> = {
     'damaged_recording_metadata', 'pending_object_records', 'zhou_local_session_note',
   ],
   chapter_six_completed: [],
+  chapter_seven_started: [],
+  chapter_seven_class_archive_unlocked: [],
+  chapter_seven_monitor_records_unlocked: ['original_class_roster', 'monitor_resubmission_notice', 'shenzhi_removed_after_incident'],
+  chapter_seven_external_index_unlocked: ['original_class_roster', 'monitor_resubmission_notice', 'zhou_questioned_monitor', 'monitor_unsent_statement'],
+  chapter_seven_external_backup_unlocked: ['external_backup_index', 'terminal_external_export'],
+  chapter_seven_final_unlocked: [
+    'original_class_roster', 'monitor_resubmission_notice', 'shenzhi_removed_after_incident',
+    'zhou_questioned_monitor', 'monitor_unsent_statement', 'terminal_external_export',
+    'external_backup_index', 'qiming_plan_name', 'external_backup_verified',
+  ],
+  chapter_seven_completed: [],
 }
 
 export const shenzhiCacheEvidenceIds: ClueId[] = ['class_size_mismatch', 'seat_chart_shenzhi', 'hidden_grade_row', 'shenzhi_essay', 'shenzhi_removed_from_group']

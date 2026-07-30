@@ -124,15 +124,16 @@ export function TerminalCachePage({ accountId, onNavigate }: { accountId: Studen
   </Panel></>
 }
 
-export function PendingDetailPage({ accountId, objectId }: { accountId: StudentAccountId; objectId?: string }) {
-  const { state, recordChapterSixEvidence } = useGame()
+export function PendingDetailPage({ accountId, objectId, onNavigate }: { accountId: StudentAccountId; objectId?: string; onNavigate?: (url: string) => void }) {
+  const { state, recordChapterSixEvidence, recordChapterSevenEvidence } = useGame()
   if (accountId !== 'zhou_xun') return <Denied title="待同步对象属性" />
   const object = pendingObjects.find((item) => item.id === objectId)
   if (!object) return <><Header title="待同步对象" text="对象不存在。" /></>
   return <><Header title={`${object.id}.pending`} text="待同步对象属性。" /><Panel title="属性">
     <dl className="info-grid"><div><dt>对象</dt><dd>{object.id}</dd></div><div><dt>来源</dt><dd>{object.source}</dd></div><div><dt>状态</dt><dd>{object.status}</dd></div>
-      {object.id === '2024010312' && <><div><dt>创建时间</dt><dd>2026-09-14 23:58</dd></div><div><dt>最后修改</dt><dd>2026-09-15 00:01</dd></div><div><dt>写入设备</dt><dd>TERM-OLD-03</dd></div><div><dt>写入来源</dt><dd>LOCAL_SESSION</dd></div><div><dt>残留备注</dt><dd>不要从系统里找我。</dd></div></>}</dl>
+      {object.id === '2024010312' && <><div><dt>创建时间</dt><dd>2026-09-14 23:58</dd></div><div><dt>最后修改</dt><dd>2026-09-15 00:01</dd></div><div><dt>写入设备</dt><dd>TERM-OLD-03</dd></div><div><dt>写入来源</dt><dd>LOCAL_SESSION</dd></div><div><dt>残留备注</dt><dd>不要从系统里找我。</dd></div>{state.triggeredEvents.includes('chapter_seven_started') && <><div><dt>附加索引</dt><dd>LOCAL_REF: CLS-ARCHIVE-18</dd></div><div><dt>状态</dt><dd>{state.revealedFileSections.includes('chapter-seven-local-reference-parsed') ? '已解析' : '未解析'}</dd></div></>}</>}</dl>
     {object.id === '2024010312' && <button type="button" className="primary-action" disabled={state.clues.zhou_local_session_note.discovered} onClick={() => recordChapterSixEvidence('local-session-note')}>记录本地会话备注</button>}
+    {object.id === '2024010312' && state.triggeredEvents.includes('chapter_seven_started') && <section className="comparison-box"><button type="button" className="primary-action" disabled={state.revealedFileSections.includes('chapter-seven-local-reference-parsed')} onClick={() => recordChapterSevenEvidence('local-reference')}>{state.revealedFileSections.includes('chapter-seven-local-reference-parsed') ? '本地索引已解析' : '解析本地索引'}</button>{state.revealedFileSections.includes('chapter-seven-local-reference-parsed') && <><p>索引类型：外部资料引用</p><p>关键词：CLASS / 18 / MONITOR</p><p>该索引不指向学生系统内部资源。</p>{onNavigate && <button type="button" className="record-inspect" onClick={() => onNavigate('www.qiming-high.edu.cn/services/legacy-archive')}>前往校园旧服务归档</button>}</>}</section>}
   </Panel></>
 }
 

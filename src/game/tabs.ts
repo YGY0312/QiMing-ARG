@@ -46,7 +46,8 @@ export function withStudentSession(tab: BrowserTabState, accountId: StudentAccou
 }
 
 function titleFor(tab: BrowserTabState, url: string): string {
-  return tab.siteType === 'student' ? studentTabTitle(tab.studentSession?.accountId ?? null) : parseGameUrl(url).pageTitle
+  const route = parseGameUrl(url)
+  return tab.siteType === 'student' && route.siteType === 'student' ? studentTabTitle(tab.studentSession?.accountId ?? null) : route.pageTitle
 }
 
 export function navigateTab(tab: BrowserTabState, url: string): BrowserTabState {

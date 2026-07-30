@@ -9,6 +9,7 @@ import { VirtualFileViewer } from '../../components/VirtualFileViewer'
 import { isShenzhiSearch, searchSchoolContent } from '../../data/chapterTwo'
 import { queryDutyLogs, queryDutySchedule, queryMaintenanceTickets } from '../../data/chapterThree'
 import { AssetDecommissionPage, NetworkArchivePage } from './ChapterSixSchoolPages'
+import { LegacyArchivePage, LegacyIndexPage } from './ChapterSevenSchoolPages'
 
 interface Props {
   route: GameRoute
@@ -94,6 +95,8 @@ function SchoolContent({ route, onNavigate, onOpenStudentTab }: Props) {
     case 'school-admin-denied': return <AdminDeniedPage onNavigate={onNavigate} />
     case 'school-assets': return <AssetDecommissionPage />
     case 'school-network-archive': return <NetworkArchivePage />
+    case 'school-legacy-archive': return <LegacyArchivePage onNavigate={onNavigate} />
+    case 'school-legacy-index': return <LegacyIndexPage onNavigate={onNavigate} />
     default:
       return <SchoolNotFound onNavigate={onNavigate} />
   }
@@ -255,6 +258,7 @@ function LaboratoryManagement({ onNavigate }: Pick<Props, 'onNavigate'>) {
       <li><button type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/laboratory/duty-june-2026')}><strong>2026年6月实验楼值班安排</strong><span>实验中心值班与巡查安排</span></button><time>2026-06</time></li>
       <li><button type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/laboratory/duty-log')}><strong>实验楼值班日志.txt</strong><span>按日期检索实验楼值班日志</span></button><time>日志</time></li>
       {state.triggeredEvents.includes('chapter_six_started') && <li><button type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/assets')}><strong>资产与设备 · 设备报废公示</strong><span>检索校内设备处置记录</span></button><time>资产</time></li>}
+      {state.triggeredEvents.includes('chapter_seven_started') && <li><button type="button" onClick={() => onNavigate('www.qiming-high.edu.cn/services/legacy-archive')}><strong>旧站与历史服务</strong><span>已停止维护的校园公共服务索引</span></button><time>旧站</time></li>}
     </ul></section>
   </div></main>
 }

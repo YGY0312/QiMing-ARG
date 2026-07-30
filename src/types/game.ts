@@ -1,4 +1,4 @@
-export type SiteType = 'school' | 'student' | 'unknown'
+export type SiteType = 'school' | 'student' | 'archive' | 'unknown'
 export type TabId = string
 export type StudentAccountId = string
 
@@ -17,6 +17,9 @@ export type ComponentKey =
   | 'school-assets' | 'school-network-archive'
   | 'student-floor-plan' | 'student-network-access' | 'student-camera-recovery'
   | 'student-media-metadata' | 'student-terminal-cache' | 'student-pending-detail' | 'student-sync-status'
+  | 'school-legacy-archive' | 'school-legacy-index'
+  | 'student-class-archive' | 'student-monitor-records' | 'student-transfer-records'
+  | 'archive-home' | 'archive-manifest' | 'archive-plan' | 'archive-incident'
 
 export interface GameRoute { hostname: string; pathname: string; url: string; pageTitle: string; siteType: SiteType; componentKey: ComponentKey; params?: { id?: string } }
 export interface StudentTabSession { accountId: StudentAccountId | null }
@@ -53,7 +56,12 @@ export type ChapterSixClueId =
   | 'terminal_same_network_port' | 'network_port_location' | 'camera_storage_index'
   | 'damaged_recording_metadata' | 'pending_object_records' | 'zhou_local_session_note'
   | 'terminal03_summary'
-export type ClueId = ChapterOneClueId | ChapterTwoClueId | ChapterThreeClueId | ChapterFourClueId | ChapterFiveClueId | ChapterSixClueId
+export type ChapterSevenClueId =
+  | 'original_class_roster' | 'monitor_resubmission_notice' | 'shenzhi_removed_after_incident'
+  | 'zhou_questioned_monitor' | 'monitor_unsent_statement' | 'terminal_external_export'
+  | 'external_backup_index' | 'qiming_plan_name' | 'external_backup_verified'
+  | 'outside_system_summary'
+export type ClueId = ChapterOneClueId | ChapterTwoClueId | ChapterThreeClueId | ChapterFourClueId | ChapterFiveClueId | ChapterSixClueId | ChapterSevenClueId
 
 export type ChapterOneEventId = 'old_building_contradiction' | 'zhou_draft_revealed' | 'investigation_backup_unlocked' | 'chapter_one_completed'
 export type ChapterTwoEventId = 'chapter_two_started' | 'shenzhi_cache_unlocked' | 'old_building_access_unlocked' | 'chapter_two_final_file_unlocked' | 'chapter_two_completed'
@@ -65,7 +73,11 @@ export type ChapterFiveEventId =
 export type ChapterSixEventId =
   | 'chapter_six_started' | 'chapter_six_map_unlocked' | 'chapter_six_media_unlocked'
   | 'chapter_six_terminal_cache_unlocked' | 'chapter_six_final_unlocked' | 'chapter_six_completed'
-export type StoryEventId = ChapterOneEventId | ChapterTwoEventId | ChapterThreeEventId | ChapterFourEventId | ChapterFiveEventId | ChapterSixEventId
+export type ChapterSevenEventId =
+  | 'chapter_seven_started' | 'chapter_seven_class_archive_unlocked' | 'chapter_seven_monitor_records_unlocked'
+  | 'chapter_seven_external_index_unlocked' | 'chapter_seven_external_backup_unlocked'
+  | 'chapter_seven_final_unlocked' | 'chapter_seven_completed'
+export type StoryEventId = ChapterOneEventId | ChapterTwoEventId | ChapterThreeEventId | ChapterFourEventId | ChapterFiveEventId | ChapterSixEventId | ChapterSevenEventId
 
 export type ChapterThreeEvidenceAction =
   | 'duty-record' | 'access-log' | 'admin-trace' | 'system-upgrade'
@@ -80,11 +92,16 @@ export type ChapterSixEvidenceAction =
   | 'status-fluctuation' | 'decommission-record' | 'floor-route' | 'same-network-port'
   | 'network-port-location' | 'camera-storage-index' | 'recording-metadata'
   | 'pending-objects' | 'local-session-note'
+export type ChapterSevenEvidenceAction =
+  | 'local-reference' | 'original-roster' | 'resubmission-notice' | 'roster-difference'
+  | 'monitor-chat' | 'monitor-statement' | 'external-index' | 'external-export'
+  | 'external-backup' | 'plan-name'
 
 export type ClueCategory =
   | '公开资料' | '学生档案' | '系统记录' | '私人信息' | '身份痕迹' | '班级资料'
   | '学籍记录' | '人物关系' | '旧实验楼' | '账号安全' | '登录记录' | '设备状态'
   | '缓存恢复' | '账号关联' | '周寻草稿' | '时间异常'
+  | '外部归档'
 export interface ClueProgress { id: ClueId; discovered: boolean; discoveredAt: string | null; sourceUrl: string | null; category: ClueCategory; isKeyClue: boolean }
 export type ClueProgressMap = Record<ClueId, ClueProgress>
 
@@ -115,4 +132,5 @@ export interface GameState extends Omit<GameSaveV5, 'schemaVersion' | 'prototype
   chapterFiveSessionGlitchActive?: boolean
   chapterSixEndingVisible?: boolean
   chapterSixSyncGlitchActive?: boolean
+  chapterSevenEndingVisible?: boolean
 }
