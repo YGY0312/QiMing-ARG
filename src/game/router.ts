@@ -75,7 +75,8 @@ const archiveRoutes: RouteDefinition[] = [
   { pattern: /^\/EXT-BACKUP-QM-0616$/, componentKey: 'archive-home', pageTitle: '外部归档节点' },
   { pattern: /^\/EXT-BACKUP-QM-0616\/manifest$/, componentKey: 'archive-manifest', pageTitle: '外部备份清单' },
   { pattern: /^\/EXT-BACKUP-QM-0616\/plan$/, componentKey: 'archive-plan', pageTitle: '计划目录' },
-  { pattern: /^\/EXT-BACKUP-QM-0616\/incident\/0616$/, componentKey: 'archive-incident', pageTitle: '0616事件记录' },
+  { pattern: /^\/EXT-BACKUP-QM-0616\/incident\/0616(?:\/(timeline|access|emergency|medical|internal|cleanup))?$/, componentKey: 'archive-incident', pageTitle: '0616事件记录' },
+  { pattern: /^\/EXT-BACKUP-QM-0616\/session\/0914$/, componentKey: 'archive-session', pageTitle: '0914本地会话' },
 ]
 
 function cleanInput(input: string): { hostname: string; pathname: string } {

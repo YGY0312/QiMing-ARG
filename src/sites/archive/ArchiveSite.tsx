@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { EXTERNAL_BACKUP_REF, externalManifest, externalNodeFields, qimingPlanIndex, validateExternalNode } from '../../data/chapterSeven'
 import { useGame } from '../../game/GameContext'
 import type { GameRoute } from '../../types/game'
+import { ChapterEightArchive, Session0914Page } from './ChapterEightArchive'
 
 export function ArchiveSite({ route, onNavigate }: { route: GameRoute; onNavigate: (url: string) => void }) {
   const { state, activeTab } = useGame()
@@ -16,6 +17,7 @@ function ArchivePage({ route, onNavigate }: { route: GameRoute; onNavigate: (url
   if (route.componentKey === 'archive-manifest') return <ManifestPage />
   if (route.componentKey === 'archive-plan') return <PlanPage />
   if (route.componentKey === 'archive-incident') return <IncidentPage />
+  if (route.componentKey === 'archive-session') return <Session0914Page />
   return <ArchiveHome onNavigate={onNavigate} />
 }
 
@@ -32,7 +34,7 @@ function ArchiveHome({ onNavigate }: { onNavigate: (url: string) => void }) {
   }
   return <main><p className="node-path">/{EXTERNAL_BACKUP_REF}/</p><h1>外部归档节点</h1><dl><div><dt>索引</dt><dd>{EXTERNAL_BACKUP_REF}</dd></div><div><dt>来源验证</dt><dd>TERM-OLD-03</dd></div><div><dt>状态</dt><dd>数据包存在</dd></div><div><dt>完整性</dt><dd>部分通过</dd></div></dl>
     {!verified && <form className="archive-verify-form" onSubmit={submit}><h2>请提交三项校验信息</h2><label>历史对象<input aria-label="外部节点历史对象" value={fields.historicalObject} onChange={(e) => setFields({ ...fields, historicalObject: e.target.value })} /></label><label>来源终端<input aria-label="外部节点来源终端" value={fields.sourceTerminal} onChange={(e) => setFields({ ...fields, sourceTerminal: e.target.value })} /></label><label>原始人数<input aria-label="外部节点原始人数" value={fields.originalCount} onChange={(e) => setFields({ ...fields, originalCount: e.target.value })} /></label><button type="submit">验证归档</button>{error && <p role="alert">校验信息不一致。</p>}</form>}
-    {verified && <section className="archive-directory"><h2>/backup/0616/</h2><button type="button" onClick={() => onNavigate(`archive.qm-node.local/${EXTERNAL_BACKUP_REF}/manifest`)}>/manifest/ <span>可读取</span></button><button type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/investigation/class-archive')}>/class/ <span>可读取</span></button><div>/media/ <span>索引可读取</span></div><button type="button" onClick={() => onNavigate(`archive.qm-node.local/${EXTERNAL_BACKUP_REF}/plan`)}>/plan/ <span>仅标题可读取</span></button><button type="button" onClick={() => onNavigate(`archive.qm-node.local/${EXTERNAL_BACKUP_REF}/incident/0616`)}>/incident/ <span>校验失败</span></button></section>}
+    {verified && <section className="archive-directory"><h2>/backup/0616/</h2><button type="button" onClick={() => onNavigate(`archive.qm-node.local/${EXTERNAL_BACKUP_REF}/manifest`)}>/manifest/ <span>可读取</span></button><button type="button" onClick={() => onNavigate('stu.qiming-high.edu.cn/investigation/class-archive')}>/class/ <span>可读取</span></button><div>/media/ <span>索引可读取</span></div><button type="button" onClick={() => onNavigate(`archive.qm-node.local/${EXTERNAL_BACKUP_REF}/plan`)}>/plan/ <span>仅标题可读取</span></button><button type="button" onClick={() => onNavigate(`archive.qm-node.local/${EXTERNAL_BACKUP_REF}/incident/0616`)}>/incident/ <span>{state.triggeredEvents.includes('chapter_eight_started') ? '可分段恢复' : '校验失败'}</span></button></section>}
   </main>
 }
 
@@ -49,5 +51,6 @@ function PlanPage() {
 }
 
 function IncidentPage() {
-  return <main><p className="node-path">/backup/0616/incident/</p><h1>0616事件记录</h1><dl><div><dt>状态</dt><dd>目录已锁定</dd></div><div><dt>验证</dt><dd>需要更多原始时间记录</dd></div></dl></main>
+  const { route, navigate } = useGame()
+  return <ChapterEightArchive route={route} onNavigate={navigate} />
 }

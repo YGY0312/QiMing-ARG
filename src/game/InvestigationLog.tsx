@@ -21,6 +21,9 @@ export function InvestigationLog({ onClose }: { onClose: () => void }) {
         {state.triggeredEvents.includes('chapter_three_completed') && <div className="log-completed">第三章调查已完成</div>}
         {state.triggeredEvents.includes('chapter_four_completed') && <div className="log-completed">第四章调查已完成</div>}
         {state.triggeredEvents.includes('chapter_five_completed') && <div className="log-completed">第五章调查已完成</div>}
+        {state.triggeredEvents.includes('chapter_six_completed') && <div className="log-completed">第六章调查已完成</div>}
+        {state.triggeredEvents.includes('chapter_seven_completed') && <div className="log-completed">第七章调查已完成</div>}
+        {state.triggeredEvents.includes('chapter_eight_completed') && <div className="log-completed">第八章调查已完成</div>}
       </aside>
     </div>
   )

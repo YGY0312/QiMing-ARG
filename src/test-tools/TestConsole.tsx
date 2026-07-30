@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { APP_VERSION, APP_VERSION_LABEL, PROJECT_CREATOR, SAVE_SCHEMA_VERSION } from '../config/app'
-import { chapterFiveClueIds, chapterFourClueIds, chapterSevenClueIds, chapterSixClueIds, chapterThreeClueIds, chapterTwoClueIds, clueDefinitions } from '../data/story'
+import { chapterEightClueIds, chapterFiveClueIds, chapterFourClueIds, chapterSevenClueIds, chapterSixClueIds, chapterThreeClueIds, chapterTwoClueIds, clueDefinitions } from '../data/story'
 import { SAVE_KEY } from '../game/constants'
 import { useGame } from '../game/GameContext'
 import { createSave, writeSave } from '../game/storage'
@@ -21,7 +21,7 @@ export function TestConsole({ onExitTestMode }: Props) {
     state, activeTab, navigate, openStudentTab, focusSchoolTab, loginStudent, logoutStudent,
     addSavedAccount, removeSavedAccount, discoverClue, clearClue, forceEvent, resetChapterOne,
     resetChapterTwo, resetGame, revealFileSection, setEvidenceSidebarCollapsed,
-    beginChapterEnding, playChapterTwoEnding, playChapterThreeEnding, playChapterFourEnding, playChapterFiveEnding, resetChapterFive, playChapterSixEnding, resetChapterSix, playChapterSevenEnding, resetChapterSeven, startGame,
+    beginChapterEnding, playChapterTwoEnding, playChapterThreeEnding, playChapterFourEnding, playChapterFiveEnding, resetChapterFive, playChapterSixEnding, resetChapterSix, playChapterSevenEnding, resetChapterSeven, playChapterEightEnding, resetChapterEight, startGame,
   } = game
   const [open, setOpen] = useState(false)
   const [saveText, setSaveText] = useState('')
@@ -32,7 +32,9 @@ export function TestConsole({ onExitTestMode }: Props) {
   const [description, setDescription] = useState('')
 
   const discoveredCount = Object.values(state.clues).filter((clue) => clue.discovered).length
-  const chapterLabel = state.triggeredEvents.includes('chapter_seven_completed') ? '第七章《系统之外》调查完成'
+  const chapterLabel = state.triggeredEvents.includes('chapter_eight_completed') ? '第八章《六月十六日》调查完成'
+    : state.triggeredEvents.includes('chapter_eight_started') ? '第八章《六月十六日》调查中'
+    : state.triggeredEvents.includes('chapter_seven_completed') ? '第七章《系统之外》调查完成'
     : state.triggeredEvents.includes('chapter_seven_started') ? '第七章《系统之外》调查中'
     : state.triggeredEvents.includes('chapter_six_completed') ? '第六章《终端03》调查完成'
     : state.triggeredEvents.includes('chapter_six_started') ? '第六章《终端03》调查中'
@@ -125,6 +127,7 @@ export function TestConsole({ onExitTestMode }: Props) {
             <div><dt>第五章</dt><dd>{state.triggeredEvents.includes('chapter_five_completed') ? '已完成' : state.triggeredEvents.includes('chapter_five_started') ? '进行中' : '未开始'}</dd></div>
             <div><dt>第六章</dt><dd>{state.triggeredEvents.includes('chapter_six_completed') ? '已完成' : state.triggeredEvents.includes('chapter_six_started') ? '进行中' : '未开始'}</dd></div>
             <div><dt>第七章</dt><dd>{state.triggeredEvents.includes('chapter_seven_completed') ? '已完成' : state.triggeredEvents.includes('chapter_seven_started') ? '进行中' : '未开始'}</dd></div>
+            <div><dt>第八章</dt><dd>{state.triggeredEvents.includes('chapter_eight_completed') ? '已完成' : state.triggeredEvents.includes('chapter_eight_started') ? '进行中' : '未开始'}</dd></div>
             <div><dt>线索 / 事件</dt><dd>{discoveredCount} / {state.triggeredEvents.length}</dd></div>
             <div><dt>保存账号</dt><dd>{state.savedStudentAccounts.map((account) => account.displayName).join('、') || '无'}</dd></div>
             <div><dt>关键事实侧栏</dt><dd>{state.evidenceSidebarCollapsed ? '已收起' : '已展开'}</dd></div>
@@ -241,6 +244,30 @@ export function TestConsole({ onExitTestMode }: Props) {
           <button type="button" onClick={() => confirmAction('确定标记第七章完成吗？', () => forceEvent('chapter_seven_completed'))}>标记第七章完成</button>
           <button type="button" disabled={!state.triggeredEvents.includes('chapter_seven_completed')} onClick={playChapterSevenEnding}>播放第七章结尾</button>
           <button type="button" className="danger" onClick={() => confirmAction('确定只重置第七章进度吗？', resetChapterSeven)}>重置第七章</button>
+        </ClueSection>
+
+        <ClueSection title="第八章测试" ids={chapterEightClueIds} state={state} onToggle={toggleClue}>
+          <button type="button" onClick={() => forceEvent('chapter_eight_started')}>开始第八章</button>
+          <button type="button" onClick={() => navigate('archive.qm-node.local/EXT-BACKUP-QM-0616/incident/0616')}>跳转incident/0616</button>
+          <button type="button" onClick={() => revealFileSection('chapter-eight-incident-fields-filled')}>填充正确目录校验</button>
+          <button type="button" onClick={() => forceEvent('chapter_eight_incident_unlocked')}>解锁事件目录</button>
+          <button type="button" onClick={() => discoverClue('shenzhi_last_route')}>注入正确最后路线</button>
+          <button type="button" onClick={() => discoverClue('equipment_room_override')}>标记门禁维护覆盖</button>
+          <button type="button" onClick={() => revealFileSection('chapter-eight-tmp-recovered')}>解锁222801.tmp</button>
+          <button type="button" onClick={() => discoverClue('cam_tmp_recovered')}>标记CAM临时记录</button>
+          <button type="button" onClick={() => forceEvent('chapter_eight_emergency_records_unlocked')}>解锁紧急记录</button>
+          <button type="button" onClick={() => discoverClue('emergency_signal_received')}>标记紧急信号</button>
+          <button type="button" onClick={() => discoverClue('external_rescue_delayed')}>标记急救延误</button>
+          <button type="button" onClick={() => forceEvent('chapter_eight_medical_records_unlocked')}>解锁医疗目录</button>
+          <button type="button" onClick={() => discoverClue('medical_identity_matched')}>填充医疗身份匹配</button>
+          <button type="button" onClick={() => discoverClue('shenzhi_death_confirmed')}>标记沈栀死亡确认</button>
+          <button type="button" onClick={() => discoverClue('incident_report_falsified')}>标记报告伪造</button>
+          <button type="button" onClick={() => forceEvent('chapter_eight_cleanup_records_unlocked')}>解锁cleanup目录</button>
+          <button type="button" onClick={() => discoverClue('post_incident_cleanup_order')}>标记事后清理命令</button>
+          <button type="button" onClick={() => forceEvent('chapter_eight_final_unlocked')}>解锁调查备份07</button>
+          <button type="button" onClick={() => confirmAction('确定标记第八章完成吗？', () => forceEvent('chapter_eight_completed'))}>标记第八章完成</button>
+          <button type="button" disabled={!state.triggeredEvents.includes('chapter_eight_completed')} onClick={playChapterEightEnding}>播放第八章结尾</button>
+          <button type="button" className="danger" onClick={() => confirmAction('确定只重置第八章进度吗？', resetChapterEight)}>重置第八章</button>
         </ClueSection>
 
         <ClueSection title="第二章测试" ids={chapterTwoClueIds} state={state} onToggle={toggleClue}>

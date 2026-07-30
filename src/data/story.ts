@@ -1,4 +1,4 @@
-import type { ChapterFiveClueId, ChapterFourClueId, ChapterSevenClueId, ChapterSixClueId, ChapterThreeClueId, ChapterTwoClueId, ClueId, ClueProgress, ClueProgressMap, StoryEventId } from '../types/game'
+import type { ChapterEightClueId, ChapterFiveClueId, ChapterFourClueId, ChapterSevenClueId, ChapterSixClueId, ChapterThreeClueId, ChapterTwoClueId, ClueId, ClueProgress, ClueProgressMap, StoryEventId } from '../types/game'
 
 export interface ClueDefinition extends Omit<ClueProgress, 'discovered' | 'discoveredAt' | 'sourceUrl'> { title: string; source: string; description: string; sidebarFacts: string[] }
 
@@ -32,6 +32,12 @@ export const chapterSevenClueIds: ChapterSevenClueId[] = [
   'original_class_roster', 'monitor_resubmission_notice', 'shenzhi_removed_after_incident',
   'zhou_questioned_monitor', 'monitor_unsent_statement', 'terminal_external_export',
   'external_backup_index', 'qiming_plan_name', 'external_backup_verified', 'outside_system_summary',
+]
+export const chapterEightClueIds: ChapterEightClueId[] = [
+  'shenzhi_last_route', 'equipment_room_override', 'emergency_signal_received',
+  'external_rescue_delayed', 'cam_tmp_recovered', 'medical_identity_matched',
+  'shenzhi_death_confirmed', 'incident_report_falsified',
+  'post_incident_cleanup_order', 'june_sixteenth_summary',
 ]
 
 export const clueDefinitions: Record<ClueId, ClueDefinition> = {
@@ -106,6 +112,16 @@ export const clueDefinitions: Record<ClueId, ClueDefinition> = {
   qiming_plan_name: { id: 'qiming_plan_name', title: '启明计划', source: '外部备份计划目录', description: '“启明”也是一个内部试运行计划的名称。', category: '外部归档', isKeyClue: true, sidebarFacts: ['启明学生风险干预计划', '项目代号QM'] },
   external_backup_verified: { id: 'external_backup_verified', title: '外部备份验证', source: '外部备份manifest', description: 'TERM-OLD-03导出的外部备份真实存在，完整性为71%。', category: '外部归档', isKeyClue: true, sidebarFacts: ['ARCHIVE_0616', '完整性71%', '包含名单、媒体、计划和事件索引'] },
   outside_system_summary: { id: 'outside_system_summary', title: '系统之外', source: '调查备份_06.txt', description: '原始名单与校外备份证明，真正的记录被保存在校园系统之外。', category: '外部归档', isKeyClue: true, sidebarFacts: ['原始名单仍有18人', '终端之外存在备份', 'incident/0616等待验证'] },
+  shenzhi_last_route: { id: 'shenzhi_last_route', title: '沈栀最后路线', source: 'incident/0616时间线', description: 'CAM-07与终端缓存还原了沈栀在旧实验楼内的最后路线。', category: '外部归档', isKeyClue: true, sidebarFacts: ['19:21 旧实验楼入口', '20:58 广播设备室', '22:19 三层设备间'] },
+  equipment_room_override: { id: 'equipment_room_override', title: '设备间维护覆盖', source: '旧实验楼门禁覆盖记录', description: '录音中断后，ADMIN_03权限锁定了设备间与封闭通道出口。', category: '系统记录', isKeyClue: true, sidebarFacts: ['22:21 维护覆盖', '权限：ADMIN_03', '状态：出口锁定'] },
+  emergency_signal_received: { id: 'emergency_signal_received', title: '紧急信号已接收', source: '封闭通道紧急按钮记录', description: '校园安保已查看紧急信号，但先按设备故障进行内部处置。', category: '系统记录', isKeyClue: true, sidebarFacts: ['22:31 触发', '22:32 安保查看', '外部急救：未呼叫'] },
+  external_rescue_delayed: { id: 'external_rescue_delayed', title: '外部急救延误', source: '安保与外部急救时间比对', description: '紧急按钮触发后14分34秒，外部急救才被呼叫。', category: '系统记录', isKeyClue: true, sidebarFacts: ['外部急救呼叫：22:46:18', '延误：14分34秒'] },
+  cam_tmp_recovered: { id: 'cam_tmp_recovered', title: 'CAM临时文件', source: '222801.tmp', description: '损坏缓存记录到求助、撞击与设备失稳。', category: '缓存恢复', isKeyClue: true, sidebarFacts: ['22:28 求助、撞击、设备失稳'] },
+  medical_identity_matched: { id: 'medical_identity_matched', title: '医疗身份匹配', source: '匿名医疗接收记录', description: '当晚从旧实验楼送医的未确认女学生已匹配为沈栀。', category: '身份痕迹', isKeyClue: true, sidebarFacts: ['患者：沈栀', '学号：2024010318', '来源：旧实验楼'] },
+  shenzhi_death_confirmed: { id: 'shenzhi_death_confirmed', title: '沈栀死亡确认', source: '医疗抢救结论', description: '沈栀于2026年6月16日23:58经抢救无效死亡。', category: '身份痕迹', isKeyClue: true, sidebarFacts: ['2026-06-16 23:58', '抢救无效死亡'] },
+  incident_report_falsified: { id: 'incident_report_falsified', title: '事件报告被伪造', source: '原始事件摘要与对外登记比对', description: '校内旧实验楼事件被改写为校外个人意外。', category: '系统记录', isKeyClue: true, sidebarFacts: ['校内旧实验楼事件 → 校外个人意外'] },
+  post_incident_cleanup_order: { id: 'post_incident_cleanup_order', title: '事后记录清理命令', source: 'SYS-0616清理任务', description: 'ADMIN_03权限参与清理名单、学籍、设备和事件记录。', category: '系统记录', isKeyClue: true, sidebarFacts: ['SYS-0616', 'ADMIN_03', '名单、学籍、设备与记录清理'] },
+  june_sixteenth_summary: { id: 'june_sixteenth_summary', title: '六月十六日', source: '调查备份_07.txt', description: '0616事件的路线、求助、急救、医疗与事后记录已形成完整证据链。', category: '外部归档', isKeyClue: true, sidebarFacts: ['0616事件时间线已恢复', '公开记录与内部记录冲突'] },
 }
 
 export interface EvidenceFactGroup { id: ClueId; title: string; source: string; facts: string[] }
@@ -172,6 +188,18 @@ export const storyEventRequirements: Record<StoryEventId, ClueId[]> = {
     'external_backup_index', 'qiming_plan_name', 'external_backup_verified',
   ],
   chapter_seven_completed: [],
+  chapter_eight_started: [],
+  chapter_eight_incident_unlocked: [],
+  chapter_eight_emergency_records_unlocked: ['equipment_room_override', 'cam_tmp_recovered'],
+  chapter_eight_medical_records_unlocked: ['shenzhi_last_route', 'cam_tmp_recovered', 'emergency_signal_received', 'external_rescue_delayed'],
+  chapter_eight_cleanup_records_unlocked: ['shenzhi_death_confirmed', 'incident_report_falsified'],
+  chapter_eight_final_unlocked: [
+    'shenzhi_last_route', 'equipment_room_override', 'emergency_signal_received',
+    'external_rescue_delayed', 'cam_tmp_recovered', 'medical_identity_matched',
+    'shenzhi_death_confirmed', 'incident_report_falsified', 'post_incident_cleanup_order',
+  ],
+  chapter_eight_final_opened: [],
+  chapter_eight_completed: [],
 }
 
 export const shenzhiCacheEvidenceIds: ClueId[] = ['class_size_mismatch', 'seat_chart_shenzhi', 'hidden_grade_row', 'shenzhi_essay', 'shenzhi_removed_from_group']

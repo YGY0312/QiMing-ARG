@@ -34,6 +34,9 @@ export function LaunchScreen() {
         {state.triggeredEvents.includes('chapter_seven_completed')
           ? <div className="chapter-complete-stamp">第七章《系统之外》已完成</div>
           : state.triggeredEvents.includes('chapter_seven_started') && <div className="chapter-complete-stamp">第七章《系统之外》调查中</div>}
+        {state.triggeredEvents.includes('chapter_eight_completed')
+          ? <div className="chapter-complete-stamp">第八章《六月十六日》已完成</div>
+          : state.triggeredEvents.includes('chapter_eight_started') && <div className="chapter-complete-stamp">第八章《六月十六日》调查中</div>}
         <p className="launch-intro">
           周寻已经数日没有出现。学校档案显示，他早已退学。<br />
           但你记得，在那个日期之后，你还见过他。
@@ -49,7 +52,7 @@ export function LaunchScreen() {
         <div className="launch-meta">
           <span>建议使用电脑端浏览器并佩戴耳机</span>
           <span>当前版本：{PROTOTYPE_VERSION}</span>
-          <span>当前章节：第七章《系统之外》</span>
+          <span>当前章节：第八章《六月十六日》</span>
         </div>
         <div className="launch-credits">
           <span>策划、设计与制作：{PROJECT_CREATOR}</span>

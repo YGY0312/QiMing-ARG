@@ -19,7 +19,7 @@ export type ComponentKey =
   | 'student-media-metadata' | 'student-terminal-cache' | 'student-pending-detail' | 'student-sync-status'
   | 'school-legacy-archive' | 'school-legacy-index'
   | 'student-class-archive' | 'student-monitor-records' | 'student-transfer-records'
-  | 'archive-home' | 'archive-manifest' | 'archive-plan' | 'archive-incident'
+  | 'archive-home' | 'archive-manifest' | 'archive-plan' | 'archive-incident' | 'archive-session'
 
 export interface GameRoute { hostname: string; pathname: string; url: string; pageTitle: string; siteType: SiteType; componentKey: ComponentKey; params?: { id?: string } }
 export interface StudentTabSession { accountId: StudentAccountId | null }
@@ -61,7 +61,12 @@ export type ChapterSevenClueId =
   | 'zhou_questioned_monitor' | 'monitor_unsent_statement' | 'terminal_external_export'
   | 'external_backup_index' | 'qiming_plan_name' | 'external_backup_verified'
   | 'outside_system_summary'
-export type ClueId = ChapterOneClueId | ChapterTwoClueId | ChapterThreeClueId | ChapterFourClueId | ChapterFiveClueId | ChapterSixClueId | ChapterSevenClueId
+export type ChapterEightClueId =
+  | 'shenzhi_last_route' | 'equipment_room_override' | 'emergency_signal_received'
+  | 'external_rescue_delayed' | 'cam_tmp_recovered' | 'medical_identity_matched'
+  | 'shenzhi_death_confirmed' | 'incident_report_falsified'
+  | 'post_incident_cleanup_order' | 'june_sixteenth_summary'
+export type ClueId = ChapterOneClueId | ChapterTwoClueId | ChapterThreeClueId | ChapterFourClueId | ChapterFiveClueId | ChapterSixClueId | ChapterSevenClueId | ChapterEightClueId
 
 export type ChapterOneEventId = 'old_building_contradiction' | 'zhou_draft_revealed' | 'investigation_backup_unlocked' | 'chapter_one_completed'
 export type ChapterTwoEventId = 'chapter_two_started' | 'shenzhi_cache_unlocked' | 'old_building_access_unlocked' | 'chapter_two_final_file_unlocked' | 'chapter_two_completed'
@@ -77,7 +82,12 @@ export type ChapterSevenEventId =
   | 'chapter_seven_started' | 'chapter_seven_class_archive_unlocked' | 'chapter_seven_monitor_records_unlocked'
   | 'chapter_seven_external_index_unlocked' | 'chapter_seven_external_backup_unlocked'
   | 'chapter_seven_final_unlocked' | 'chapter_seven_completed'
-export type StoryEventId = ChapterOneEventId | ChapterTwoEventId | ChapterThreeEventId | ChapterFourEventId | ChapterFiveEventId | ChapterSixEventId | ChapterSevenEventId
+export type ChapterEightEventId =
+  | 'chapter_eight_started' | 'chapter_eight_incident_unlocked'
+  | 'chapter_eight_emergency_records_unlocked' | 'chapter_eight_medical_records_unlocked'
+  | 'chapter_eight_cleanup_records_unlocked' | 'chapter_eight_final_unlocked'
+  | 'chapter_eight_final_opened' | 'chapter_eight_completed'
+export type StoryEventId = ChapterOneEventId | ChapterTwoEventId | ChapterThreeEventId | ChapterFourEventId | ChapterFiveEventId | ChapterSixEventId | ChapterSevenEventId | ChapterEightEventId
 
 export type ChapterThreeEvidenceAction =
   | 'duty-record' | 'access-log' | 'admin-trace' | 'system-upgrade'
@@ -96,6 +106,10 @@ export type ChapterSevenEvidenceAction =
   | 'local-reference' | 'original-roster' | 'resubmission-notice' | 'roster-difference'
   | 'monitor-chat' | 'monitor-statement' | 'external-index' | 'external-export'
   | 'external-backup' | 'plan-name'
+export type ChapterEightEvidenceAction =
+  | 'last-route' | 'equipment-override' | 'cam-tmp' | 'emergency-signal'
+  | 'rescue-delay' | 'medical-identity' | 'death-confirmation'
+  | 'report-falsification' | 'cleanup-order'
 
 export type ClueCategory =
   | '公开资料' | '学生档案' | '系统记录' | '私人信息' | '身份痕迹' | '班级资料'
@@ -133,4 +147,5 @@ export interface GameState extends Omit<GameSaveV5, 'schemaVersion' | 'prototype
   chapterSixEndingVisible?: boolean
   chapterSixSyncGlitchActive?: boolean
   chapterSevenEndingVisible?: boolean
+  chapterEightEndingVisible?: boolean
 }
