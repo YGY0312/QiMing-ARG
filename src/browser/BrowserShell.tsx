@@ -12,6 +12,7 @@ import { ChapterFiveEnding } from '../game/ChapterFiveEnding'
 import { ChapterSixEnding } from '../game/ChapterSixEnding'
 import { ChapterSevenEnding } from '../game/ChapterSevenEnding'
 import { ChapterEightEnding } from '../game/ChapterEightEnding'
+import { ChapterNineEnding } from '../game/ChapterNineEnding'
 import { EvidenceSidebar } from '../game/EvidenceSidebar'
 import { ArchiveSite } from '../sites/archive/ArchiveSite'
 
@@ -110,6 +111,7 @@ export function BrowserShell() {
       {state.chapterSixEndingVisible && <ChapterSixEnding />}
       {state.chapterSevenEndingVisible && <ChapterSevenEnding />}
       {state.chapterEightEndingVisible && <ChapterEightEnding />}
+      {state.chapterNineEndingVisible && <ChapterNineEnding />}
     </main>
   )
 }

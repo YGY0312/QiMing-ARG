@@ -2,7 +2,8 @@ import { useState, type FormEvent } from 'react'
 import { EXTERNAL_BACKUP_REF, externalManifest, externalNodeFields, qimingPlanIndex, validateExternalNode } from '../../data/chapterSeven'
 import { useGame } from '../../game/GameContext'
 import type { GameRoute } from '../../types/game'
-import { ChapterEightArchive, Session0914Page } from './ChapterEightArchive'
+import { ChapterEightArchive } from './ChapterEightArchive'
+import { ChapterNineArchive } from './ChapterNineArchive'
 
 export function ArchiveSite({ route, onNavigate }: { route: GameRoute; onNavigate: (url: string) => void }) {
   const { state, activeTab } = useGame()
@@ -17,7 +18,7 @@ function ArchivePage({ route, onNavigate }: { route: GameRoute; onNavigate: (url
   if (route.componentKey === 'archive-manifest') return <ManifestPage />
   if (route.componentKey === 'archive-plan') return <PlanPage />
   if (route.componentKey === 'archive-incident') return <IncidentPage />
-  if (route.componentKey === 'archive-session') return <Session0914Page />
+  if (route.componentKey === 'archive-session') return <ChapterNineArchive route={route} onNavigate={onNavigate} />
   return <ArchiveHome onNavigate={onNavigate} />
 }
 

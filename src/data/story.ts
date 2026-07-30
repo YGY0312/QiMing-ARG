@@ -1,4 +1,4 @@
-import type { ChapterEightClueId, ChapterFiveClueId, ChapterFourClueId, ChapterSevenClueId, ChapterSixClueId, ChapterThreeClueId, ChapterTwoClueId, ClueId, ClueProgress, ClueProgressMap, StoryEventId } from '../types/game'
+import type { ChapterEightClueId, ChapterFiveClueId, ChapterFourClueId, ChapterNineClueId, ChapterSevenClueId, ChapterSixClueId, ChapterThreeClueId, ChapterTwoClueId, ClueId, ClueProgress, ClueProgressMap, StoryEventId } from '../types/game'
 
 export interface ClueDefinition extends Omit<ClueProgress, 'discovered' | 'discoveredAt' | 'sourceUrl'> { title: string; source: string; description: string; sidebarFacts: string[] }
 
@@ -38,6 +38,12 @@ export const chapterEightClueIds: ChapterEightClueId[] = [
   'external_rescue_delayed', 'cam_tmp_recovered', 'medical_identity_matched',
   'shenzhi_death_confirmed', 'incident_report_falsified',
   'post_incident_cleanup_order', 'june_sixteenth_summary',
+]
+export const chapterNineClueIds: ChapterNineClueId[] = [
+  'zhou_local_session_verified', 'zhou_export_completed', 'delayed_verification_tasks',
+  'admin_proxy_session', 'admin03_operator_identified', 'monitoring_target_linmo',
+  'monitor_last_sighting', 'external_alive_signature', 'zhou_alive_and_departed',
+  'last_account_summary',
 ]
 
 export const clueDefinitions: Record<ClueId, ClueDefinition> = {
@@ -122,6 +128,16 @@ export const clueDefinitions: Record<ClueId, ClueDefinition> = {
   incident_report_falsified: { id: 'incident_report_falsified', title: '事件报告被伪造', source: '原始事件摘要与对外登记比对', description: '校内旧实验楼事件被改写为校外个人意外。', category: '系统记录', isKeyClue: true, sidebarFacts: ['校内旧实验楼事件 → 校外个人意外'] },
   post_incident_cleanup_order: { id: 'post_incident_cleanup_order', title: '事后记录清理命令', source: 'SYS-0616清理任务', description: 'ADMIN_03权限参与清理名单、学籍、设备和事件记录。', category: '系统记录', isKeyClue: true, sidebarFacts: ['SYS-0616', 'ADMIN_03', '名单、学籍、设备与记录清理'] },
   june_sixteenth_summary: { id: 'june_sixteenth_summary', title: '六月十六日', source: '调查备份_07.txt', description: '0616事件的路线、求助、急救、医疗与事后记录已形成完整证据链。', category: '外部归档', isKeyClue: true, sidebarFacts: ['0616事件时间线已恢复', '公开记录与内部记录冲突'] },
+  zhou_local_session_verified: { id: 'zhou_local_session_verified', title: '周寻本地会话', source: '0914本地会话时间线', description: '9月14日23:48至次日00:02的TERM-OLD-03本地会话由周寻本人完成。', category: '登录记录', isKeyClue: true, sidebarFacts: ['23:48至00:02', 'TERM-OLD-03', 'LOCAL_SESSION'] },
+  zhou_export_completed: { id: 'zhou_export_completed', title: '外部导出完成', source: 'ARCHIVE_0616导出记录', description: '周寻在会话中断前完成外部导出并写入个人校验密钥。', category: '外部归档', isKeyClue: true, sidebarFacts: ['ARCHIVE_0616 → EXT-NODE-04', 'ZX-KEY-01已写入'] },
+  delayed_verification_tasks: { id: 'delayed_verification_tasks', title: '预设验证任务', source: 'ZX-VERIFY-01任务组', description: '周寻提前建立条件任务，让证据核对者逐步取得外部材料。', category: '系统记录', isKeyClue: true, sidebarFacts: ['任务组：ZX-VERIFY-01', '来源：周寻预设'] },
+  admin_proxy_session: { id: 'admin_proxy_session', title: '管理员代理会话', source: 'ADMIN_03代理会话', description: '周寻本地会话中断后，ADMIN_03从IC-SEC-02建立代理会话。', category: '登录记录', isKeyClue: true, sidebarFacts: ['00:03以后', 'IC-SEC-02', 'ADMIN_03'] },
+  admin03_operator_identified: { id: 'admin03_operator_identified', title: 'ADMIN_03关键操作者', source: '门禁、设备与授权成员比对', description: '三类记录共同指向信息中心技术负责人许承安。', category: '人物关系', isKeyClue: true, sidebarFacts: ['许承安', '信息中心副主任', '启明计划技术负责人'] },
+  monitoring_target_linmo: { id: 'monitoring_target_linmo', title: '林默被加入监测', source: '周寻草稿隐藏追踪标记', description: 'ADMIN_03通过固定剧情追踪字段确认林默继续调查，并将其加入监测队列。', category: '账号安全', isKeyClue: true, sidebarFacts: ['TRACE_TARGET → 2024010307', '监测状态：等待同步'] },
+  monitor_last_sighting: { id: 'monitor_last_sighting', title: '班长最后目击', source: '顾言未发送说明', description: '顾言在东门外见到清醒并能自主行动的周寻。', category: '人物关系', isKeyClue: true, sidebarFacts: ['9月15日00:37', '学校东门外', '周寻清醒并能自主行动'] },
+  external_alive_signature: { id: 'external_alive_signature', title: '系统外存活签名', source: 'EXT-NODE-04签名消息', description: '周寻离校三天后使用预先写入的密钥发出有效消息。', category: '外部归档', isKeyClue: true, sidebarFacts: ['9月18日04:12', 'ZX-KEY-01', '验证通过'] },
+  zhou_alive_and_departed: { id: 'zhou_alive_and_departed', title: '周寻仍然活着', source: '目击、投递与签名证据链', description: '证据确认周寻仍然活着并已离开学校，具体位置未公开。', category: '身份痕迹', isKeyClue: true, sidebarFacts: ['确认存活', '已离开学校', '具体位置未公开'] },
+  last_account_summary: { id: 'last_account_summary', title: '最后一个账号', source: '调查备份_08.txt', description: '周寻本人、预设任务和ADMIN_03代理活动已经被明确区分。', category: '外部归档', isKeyClue: true, sidebarFacts: ['00:02前：周寻本人', '00:03后：管理员代理', '周寻确认存活'] },
 }
 
 export interface EvidenceFactGroup { id: ClueId; title: string; source: string; facts: string[] }
@@ -200,6 +216,20 @@ export const storyEventRequirements: Record<StoryEventId, ClueId[]> = {
   ],
   chapter_eight_final_opened: [],
   chapter_eight_completed: [],
+  chapter_nine_started: [],
+  chapter_nine_session_unlocked: [],
+  chapter_nine_source_classification_unlocked: ['zhou_local_session_verified', 'zhou_export_completed'],
+  chapter_nine_admin_trace_unlocked: ['delayed_verification_tasks'],
+  chapter_nine_witness_unlocked: ['admin_proxy_session', 'monitoring_target_linmo'],
+  chapter_nine_alive_check_unlocked: ['monitor_last_sighting', 'zhou_export_completed'],
+  chapter_nine_certificate_chain_unlocked: ['zhou_alive_and_departed', 'admin03_operator_identified', 'monitoring_target_linmo'],
+  chapter_nine_final_unlocked: [
+    'zhou_local_session_verified', 'zhou_export_completed', 'delayed_verification_tasks',
+    'admin_proxy_session', 'admin03_operator_identified', 'monitoring_target_linmo',
+    'monitor_last_sighting', 'external_alive_signature', 'zhou_alive_and_departed',
+  ],
+  chapter_nine_final_opened: [],
+  chapter_nine_completed: [],
 }
 
 export const shenzhiCacheEvidenceIds: ClueId[] = ['class_size_mismatch', 'seat_chart_shenzhi', 'hidden_grade_row', 'shenzhi_essay', 'shenzhi_removed_from_group']

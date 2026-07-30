@@ -22,7 +22,9 @@ export function EvidenceSidebar() {
         <button type="button" onClick={() => setEvidenceSidebarCollapsed(true)} aria-label="收起关键事实">收起</button>
       </header>
       <div className="evidence-list">
-        {state.triggeredEvents.includes('chapter_eight_started') && !state.triggeredEvents.includes('chapter_eight_completed')
+        {state.triggeredEvents.includes('chapter_nine_started') && !state.triggeredEvents.includes('chapter_nine_completed')
+          ? <p className="evidence-direction">第九章《最后一个账号》：区分周寻本人、预设任务与管理员代理活动</p>
+          : state.triggeredEvents.includes('chapter_eight_started') && !state.triggeredEvents.includes('chapter_eight_completed')
           ? <p className="evidence-direction">第八章《六月十六日》：还原0616事件的完整时间线</p>
           : state.triggeredEvents.includes('chapter_seven_started') && !state.triggeredEvents.includes('chapter_seven_completed')
           ? <p className="evidence-direction">第七章《系统之外》：寻找未被校园系统同步的原始记录</p>

@@ -1,12 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { createEmptyClues } from '../data/story'
-import { BACKUP_FILE_ID, CHAPTER_EIGHT_FINAL_FILE_ID, CHAPTER_EIGHT_SESSION_HISTORY_URL, CHAPTER_FIVE_FINAL_FILE_ID, CHAPTER_FOUR_FINAL_FILE_ID, CHAPTER_SEVEN_FINAL_FILE_ID, CHAPTER_SIX_FINAL_FILE_ID, CHAPTER_THREE_FINAL_FILE_ID, CHAPTER_TWO_FINAL_FILE_ID, PROTOTYPE_VERSION, SCHOOL_HOME_URL, SHENZHI_STUDENT_ANOMALY_URL, ZHOU_CREDENTIALS_MESSAGE_ID } from './constants'
+import { BACKUP_FILE_ID, CHAPTER_EIGHT_FINAL_FILE_ID, CHAPTER_EIGHT_SESSION_HISTORY_URL, CHAPTER_FIVE_FINAL_FILE_ID, CHAPTER_FOUR_FINAL_FILE_ID, CHAPTER_NINE_CERTIFICATE_HISTORY_URL, CHAPTER_NINE_FINAL_FILE_ID, CHAPTER_SEVEN_FINAL_FILE_ID, CHAPTER_SIX_FINAL_FILE_ID, CHAPTER_THREE_FINAL_FILE_ID, CHAPTER_TWO_FINAL_FILE_ID, PROTOTYPE_VERSION, SCHOOL_HOME_URL, SHENZHI_STUDENT_ANOMALY_URL, ZHOU_CREDENTIALS_MESSAGE_ID } from './constants'
 import { parseGameUrl } from './router'
 import { addSavedStudentAccount, createDefaultSavedAccounts, removeSavedStudentAccount } from './savedAccounts'
 import { createStudentAccountStates, readSave, resetGameStorage, writeSave } from './storage'
 import { createNextStudentTab, createSchoolTab, goBackInTab, goForwardInTab, navigateTab, refreshTab, replaceTab, SCHOOL_TAB_ID, withStudentSession } from './tabs'
-import { appendChapterAnomaly, appendChapterTwoAnomaly, clearStoryClue, completeChapterEight as completeChapterEightStory, completeChapterFive as completeChapterFiveStory, completeChapterFour as completeChapterFourStory, completeChapterSeven as completeChapterSevenStory, completeChapterSix as completeChapterSixStory, completeChapterThree as completeChapterThreeStory, discoverStoryClue, evaluateStoryEvents, forceStoryEvent, openChapterEightFinal as openChapterEightFinalStory, openInvestigationBackup, readStoryMessage, recordAccessQuery as recordStoryAccessQuery, recordChapterEightEvidence as recordStoryChapterEightEvidence, recordChapterFiveEvidence as recordStoryChapterFiveEvidence, recordChapterFourEvidence as recordStoryChapterFourEvidence, recordChapterSevenEvidence as recordStoryChapterSevenEvidence, recordChapterSixEvidence as recordStoryChapterSixEvidence, recordChapterThreeEvidence as recordStoryChapterThreeEvidence, resetChapterEightProgress, resetChapterFiveProgress, resetChapterProgress, resetChapterSevenProgress, resetChapterSixProgress, resetChapterTwoProgress, unlockChapterEightIncident as unlockChapterEightIncidentStory } from './story'
-import type { BrowserTabState, ChapterEightEvidenceAction, ChapterFiveEvidenceAction, ChapterFourEvidenceAction, ChapterSevenEvidenceAction, ChapterSixEvidenceAction, ChapterThreeEvidenceAction, ClueId, GameRoute, GameState, StoryEventId, StudentAccountId, TabId } from '../types/game'
+import { appendChapterAnomaly, appendChapterTwoAnomaly, clearStoryClue, completeChapterEight as completeChapterEightStory, completeChapterFive as completeChapterFiveStory, completeChapterFour as completeChapterFourStory, completeChapterNine as completeChapterNineStory, completeChapterSeven as completeChapterSevenStory, completeChapterSix as completeChapterSixStory, completeChapterThree as completeChapterThreeStory, discoverStoryClue, evaluateStoryEvents, forceStoryEvent, openChapterEightFinal as openChapterEightFinalStory, openChapterNineFinal as openChapterNineFinalStory, openInvestigationBackup, readStoryMessage, recordAccessQuery as recordStoryAccessQuery, recordChapterEightEvidence as recordStoryChapterEightEvidence, recordChapterFiveEvidence as recordStoryChapterFiveEvidence, recordChapterFourEvidence as recordStoryChapterFourEvidence, recordChapterNineEvidence as recordStoryChapterNineEvidence, recordChapterSevenEvidence as recordStoryChapterSevenEvidence, recordChapterSixEvidence as recordStoryChapterSixEvidence, recordChapterThreeEvidence as recordStoryChapterThreeEvidence, resetChapterEightProgress, resetChapterFiveProgress, resetChapterNineProgress, resetChapterProgress, resetChapterSevenProgress, resetChapterSixProgress, resetChapterTwoProgress, unlockChapterEightIncident as unlockChapterEightIncidentStory, unlockChapterNineSession as unlockChapterNineSessionStory } from './story'
+import type { BrowserTabState, ChapterEightEvidenceAction, ChapterFiveEvidenceAction, ChapterFourEvidenceAction, ChapterNineEvidenceAction, ChapterSevenEvidenceAction, ChapterSixEvidenceAction, ChapterThreeEvidenceAction, ClueId, GameRoute, GameState, StoryEventId, StudentAccountId, TabId } from '../types/game'
 
 interface GameContextValue {
   state: GameState
@@ -53,6 +53,8 @@ interface GameContextValue {
   recordChapterSevenEvidence: (action: ChapterSevenEvidenceAction) => void
   recordChapterEightEvidence: (action: ChapterEightEvidenceAction) => void
   unlockChapterEightIncident: () => void
+  recordChapterNineEvidence: (action: ChapterNineEvidenceAction) => void
+  unlockChapterNineSession: () => void
   markSearchResiduePlayed: () => void
   markClassCountAnomalyPlayed: () => void
   beginChapterEnding: () => void
@@ -81,6 +83,9 @@ interface GameContextValue {
   dismissChapterEightEnding: () => void
   playChapterEightEnding: () => void
   resetChapterEight: () => void
+  dismissChapterNineEnding: () => void
+  playChapterNineEnding: () => void
+  resetChapterNine: () => void
   playChapterTwoEnding: () => void
   clearChapterTwoAnomalyHistory: () => void
 }
@@ -112,13 +117,14 @@ function emptyState(): GameState {
     chapterSixEndingVisible: false, chapterSixSyncGlitchActive: false,
     chapterSevenEndingVisible: false,
     chapterEightEndingVisible: false,
+    chapterNineEndingVisible: false,
   }
 }
 
 function initialState(): GameState {
   const saved = readSave()
   if (!saved) return emptyState()
-  return evaluateStoryEvents(syncActiveTab({ ...emptyState(), ...saved, isStarted: false, hasSave: true, studentTabCaptchas: {}, addressGlitchActive: false, chapterEndingVisible: false, chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false, chapterFourEndingVisible: false, chapterFiveEndingVisible: false, chapterFiveSessionGlitchActive: false, chapterSixEndingVisible: false, chapterSixSyncGlitchActive: false, chapterSevenEndingVisible: false, chapterEightEndingVisible: false }))
+  return evaluateStoryEvents(syncActiveTab({ ...emptyState(), ...saved, isStarted: false, hasSave: true, studentTabCaptchas: {}, addressGlitchActive: false, chapterEndingVisible: false, chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false, chapterFourEndingVisible: false, chapterFiveEndingVisible: false, chapterFiveSessionGlitchActive: false, chapterSixEndingVisible: false, chapterSixSyncGlitchActive: false, chapterSevenEndingVisible: false, chapterEightEndingVisible: false, chapterNineEndingVisible: false }))
 }
 
 function withVisited(state: GameState): GameState {
@@ -159,12 +165,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (current.chapterSixEndingVisible && !played.includes('chapter-six-ending-played')) played.push('chapter-six-ending-played')
     if (current.chapterSevenEndingVisible && !played.includes('chapter-seven-ending-played')) played.push('chapter-seven-ending-played')
     if (current.chapterEightEndingVisible && !played.includes('chapter-eight-ending-played')) played.push('chapter-eight-ending-played')
+    if (current.chapterNineEndingVisible && !played.includes('chapter-nine-ending-played')) played.push('chapter-nine-ending-played')
     const active = activeTabOf(current.tabs, current.activeTabId)
-    const history = current.chapterEightEndingVisible && !active.history.includes(CHAPTER_EIGHT_SESSION_HISTORY_URL)
+    let history = current.chapterEightEndingVisible && !active.history.includes(CHAPTER_EIGHT_SESSION_HISTORY_URL)
       ? [...active.history.slice(0, active.historyIndex + 1), CHAPTER_EIGHT_SESSION_HISTORY_URL]
       : active.history
+    if (current.chapterNineEndingVisible && !history.includes(CHAPTER_NINE_CERTIFICATE_HISTORY_URL)) history = [...history, CHAPTER_NINE_CERTIFICATE_HISTORY_URL]
     const tabs = history === active.history ? current.tabs : replaceTab(current.tabs, { ...active, history })
-    return syncActiveTab({ ...current, isStarted: false, revealedFileSections: played, chapterEndingVisible: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false, chapterFourEndingVisible: false, chapterFiveEndingVisible: false, chapterSixEndingVisible: false, chapterSevenEndingVisible: false, chapterEightEndingVisible: false }, tabs)
+    return syncActiveTab({ ...current, isStarted: false, revealedFileSections: played, chapterEndingVisible: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false, chapterFourEndingVisible: false, chapterFiveEndingVisible: false, chapterSixEndingVisible: false, chapterSevenEndingVisible: false, chapterEightEndingVisible: false, chapterNineEndingVisible: false }, tabs)
   }), [])
   const goBack = useCallback(() => setState((current) => { const updated = goBackInTab(activeTabOf(current.tabs, current.activeTabId)); return updated.historyIndex === current.historyIndex ? current : withVisited(syncActiveTab(current, replaceTab(current.tabs, updated))) }), [])
   const goForward = useCallback(() => setState((current) => { const updated = goForwardInTab(activeTabOf(current.tabs, current.activeTabId)); return updated.historyIndex === current.historyIndex ? current : withVisited(syncActiveTab(current, replaceTab(current.tabs, updated))) }), [])
@@ -224,7 +232,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const openVirtualFile = useCallback((id: string) => setState((current) => {
     const tab = activeTabOf(current.tabs, current.activeTabId)
     const opened = syncActiveTab(current, replaceTab(current.tabs, { ...tab, openVirtualFileId: id }))
-    return id === CHAPTER_EIGHT_FINAL_FILE_ID ? openChapterEightFinalStory(opened) : opened
+    if (id === CHAPTER_EIGHT_FINAL_FILE_ID) return openChapterEightFinalStory(opened)
+    if (id === CHAPTER_NINE_FINAL_FILE_ID) return openChapterNineFinalStory(opened)
+    return opened
   }), [])
   const closeVirtualFile = useCallback(() => setState((current) => { const tab = activeTabOf(current.tabs, current.activeTabId); return syncActiveTab(current, replaceTab(current.tabs, { ...tab, openVirtualFileId: null })) }), [])
   const closeVirtualFileWithEnding = useCallback(() => setState((current) => {
@@ -239,6 +249,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (closingFileId === CHAPTER_SIX_FINAL_FILE_ID) return completeChapterSixStory(closed)
     if (closingFileId === CHAPTER_SEVEN_FINAL_FILE_ID) return completeChapterSevenStory(closed)
     if (closingFileId === CHAPTER_EIGHT_FINAL_FILE_ID) return completeChapterEightStory(closed)
+    if (closingFileId === CHAPTER_NINE_FINAL_FILE_ID) return completeChapterNineStory(closed)
     return closed
   }), [])
   const forceEvent = useCallback((id: StoryEventId) => setState((current) => forceStoryEvent(current, id)), [])
@@ -246,7 +257,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const resetChapterTwo = useCallback(() => setState(resetChapterTwoProgress), [])
   const revealFileSection = useCallback((key: string, clueId?: ClueId) => setState((current) => {
     const next = current.revealedFileSections.includes(key) ? current : { ...current, revealedFileSections: [...current.revealedFileSections, key] }
-    return clueId ? discoverStoryClue(next, clueId, current.currentUrl) : next
+    return clueId ? discoverStoryClue(next, clueId, current.currentUrl) : evaluateStoryEvents(next)
   }), [])
   const recordAccessQuery = useCallback((direction: '进入' | '离开') => setState((current) => (
     recordStoryAccessQuery(current, direction, current.currentUrl)
@@ -270,6 +281,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     recordStoryChapterEightEvidence(current, action, current.currentUrl)
   )), [])
   const unlockChapterEightIncident = useCallback(() => setState(unlockChapterEightIncidentStory), [])
+  const recordChapterNineEvidence = useCallback((action: ChapterNineEvidenceAction) => setState((current) => (
+    recordStoryChapterNineEvidence(current, action, current.currentUrl)
+  )), [])
+  const unlockChapterNineSession = useCallback(() => setState(unlockChapterNineSessionStory), [])
   const markSearchResiduePlayed = useCallback(() => setState((current) => ({ ...current, searchResiduePlayed: true })), [])
   const markClassCountAnomalyPlayed = useCallback(() => setState((current) => ({ ...current, classCountAnomalyPlayed: true })), [])
   const beginChapterEnding = useCallback(() => setState(appendChapterAnomaly), [])
@@ -331,6 +346,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }), [])
   const playChapterEightEnding = useCallback(() => setState((current) => current.triggeredEvents.includes('chapter_eight_completed') ? { ...current, chapterEightEndingVisible: true } : current), [])
   const resetChapterEight = useCallback(() => setState(resetChapterEightProgress), [])
+  const dismissChapterNineEnding = useCallback(() => setState((current) => {
+    const played = current.revealedFileSections.includes('chapter-nine-ending-played')
+      ? current.revealedFileSections : [...current.revealedFileSections, 'chapter-nine-ending-played']
+    const active = activeTabOf(current.tabs, current.activeTabId)
+    const history = active.history.includes(CHAPTER_NINE_CERTIFICATE_HISTORY_URL)
+      ? active.history : [...active.history.slice(0, active.historyIndex + 1), CHAPTER_NINE_CERTIFICATE_HISTORY_URL]
+    return syncActiveTab({ ...current, chapterNineEndingVisible: false, revealedFileSections: played }, replaceTab(current.tabs, { ...active, history }))
+  }), [])
+  const playChapterNineEnding = useCallback(() => setState((current) => current.triggeredEvents.includes('chapter_nine_completed') ? { ...current, chapterNineEndingVisible: true } : current), [])
+  const resetChapterNine = useCallback(() => setState(resetChapterNineProgress), [])
   const playChapterTwoEnding = useCallback(() => setState((current) => appendChapterTwoAnomaly(forceStoryEvent({ ...current, chapterTwoEndingPlayed: false }, 'chapter_two_completed'))), [])
   const clearChapterTwoAnomalyHistory = useCallback(() => setState((current) => {
     const tabs = current.tabs.map((tab) => {
@@ -349,10 +374,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     startGame, returnToTitle, navigate, goBack, goForward, refresh, openStudentTab, focusSchoolTab, switchTab, closeTab, resetTabs,
     loginStudent, logoutStudent, resetStudentSessions, addSavedAccount, removeSavedAccount, setStudentTabCaptcha, clearStudentTabCaptcha, setEvidenceSidebarCollapsed, resetGame,
     discoverClue, clearClue, readMessage, openBackup, openVirtualFile, closeVirtualFile, closeVirtualFileWithEnding, forceEvent, resetChapterOne, resetChapterTwo,
-    revealFileSection, recordAccessQuery, recordChapterThreeEvidence, recordChapterFourEvidence, recordChapterFiveEvidence, recordChapterSixEvidence, recordChapterSevenEvidence, recordChapterEightEvidence, unlockChapterEightIncident, markSearchResiduePlayed, markClassCountAnomalyPlayed,
+    revealFileSection, recordAccessQuery, recordChapterThreeEvidence, recordChapterFourEvidence, recordChapterFiveEvidence, recordChapterSixEvidence, recordChapterSevenEvidence, recordChapterEightEvidence, unlockChapterEightIncident, recordChapterNineEvidence, unlockChapterNineSession, markSearchResiduePlayed, markClassCountAnomalyPlayed,
     beginChapterEnding, finishAddressGlitch, dismissChapterEnding,
-    beginChapterTwoEnding, finishChapterTwoAddressGlitch, dismissChapterTwoEnding, completeChapterThree, dismissChapterThreeEnding, playChapterThreeEnding, completeChapterFour, dismissChapterFourEnding, playChapterFourEnding, dismissChapterFiveEnding, playChapterFiveEnding, finishChapterFiveSessionGlitch, resetChapterFive, dismissChapterSixEnding, playChapterSixEnding, finishChapterSixSyncGlitch, resetChapterSix, dismissChapterSevenEnding, playChapterSevenEnding, resetChapterSeven, dismissChapterEightEnding, playChapterEightEnding, resetChapterEight, playChapterTwoEnding, clearChapterTwoAnomalyHistory,
-  }), [state, route, activeTab, startGame, returnToTitle, navigate, goBack, goForward, refresh, openStudentTab, focusSchoolTab, switchTab, closeTab, resetTabs, loginStudent, logoutStudent, resetStudentSessions, addSavedAccount, removeSavedAccount, setStudentTabCaptcha, clearStudentTabCaptcha, setEvidenceSidebarCollapsed, resetGame, discoverClue, clearClue, readMessage, openBackup, openVirtualFile, closeVirtualFile, closeVirtualFileWithEnding, forceEvent, resetChapterOne, resetChapterTwo, revealFileSection, recordAccessQuery, recordChapterThreeEvidence, recordChapterFourEvidence, recordChapterFiveEvidence, recordChapterSixEvidence, recordChapterSevenEvidence, recordChapterEightEvidence, unlockChapterEightIncident, markSearchResiduePlayed, markClassCountAnomalyPlayed, beginChapterEnding, finishAddressGlitch, dismissChapterEnding, beginChapterTwoEnding, finishChapterTwoAddressGlitch, dismissChapterTwoEnding, completeChapterThree, dismissChapterThreeEnding, playChapterThreeEnding, completeChapterFour, dismissChapterFourEnding, playChapterFourEnding, dismissChapterFiveEnding, playChapterFiveEnding, finishChapterFiveSessionGlitch, resetChapterFive, dismissChapterSixEnding, playChapterSixEnding, finishChapterSixSyncGlitch, resetChapterSix, dismissChapterSevenEnding, playChapterSevenEnding, resetChapterSeven, dismissChapterEightEnding, playChapterEightEnding, resetChapterEight, playChapterTwoEnding, clearChapterTwoAnomalyHistory])
+    beginChapterTwoEnding, finishChapterTwoAddressGlitch, dismissChapterTwoEnding, completeChapterThree, dismissChapterThreeEnding, playChapterThreeEnding, completeChapterFour, dismissChapterFourEnding, playChapterFourEnding, dismissChapterFiveEnding, playChapterFiveEnding, finishChapterFiveSessionGlitch, resetChapterFive, dismissChapterSixEnding, playChapterSixEnding, finishChapterSixSyncGlitch, resetChapterSix, dismissChapterSevenEnding, playChapterSevenEnding, resetChapterSeven, dismissChapterEightEnding, playChapterEightEnding, resetChapterEight, dismissChapterNineEnding, playChapterNineEnding, resetChapterNine, playChapterTwoEnding, clearChapterTwoAnomalyHistory,
+  }), [state, route, activeTab, startGame, returnToTitle, navigate, goBack, goForward, refresh, openStudentTab, focusSchoolTab, switchTab, closeTab, resetTabs, loginStudent, logoutStudent, resetStudentSessions, addSavedAccount, removeSavedAccount, setStudentTabCaptcha, clearStudentTabCaptcha, setEvidenceSidebarCollapsed, resetGame, discoverClue, clearClue, readMessage, openBackup, openVirtualFile, closeVirtualFile, closeVirtualFileWithEnding, forceEvent, resetChapterOne, resetChapterTwo, revealFileSection, recordAccessQuery, recordChapterThreeEvidence, recordChapterFourEvidence, recordChapterFiveEvidence, recordChapterSixEvidence, recordChapterSevenEvidence, recordChapterEightEvidence, unlockChapterEightIncident, recordChapterNineEvidence, unlockChapterNineSession, markSearchResiduePlayed, markClassCountAnomalyPlayed, beginChapterEnding, finishAddressGlitch, dismissChapterEnding, beginChapterTwoEnding, finishChapterTwoAddressGlitch, dismissChapterTwoEnding, completeChapterThree, dismissChapterThreeEnding, playChapterThreeEnding, completeChapterFour, dismissChapterFourEnding, playChapterFourEnding, dismissChapterFiveEnding, playChapterFiveEnding, finishChapterFiveSessionGlitch, resetChapterFive, dismissChapterSixEnding, playChapterSixEnding, finishChapterSixSyncGlitch, resetChapterSix, dismissChapterSevenEnding, playChapterSevenEnding, resetChapterSeven, dismissChapterEightEnding, playChapterEightEnding, resetChapterEight, dismissChapterNineEnding, playChapterNineEnding, resetChapterNine, playChapterTwoEnding, clearChapterTwoAnomalyHistory])
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>
 }

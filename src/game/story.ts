@@ -11,6 +11,8 @@ import {
   CHAPTER_SEVEN_INCIDENT_HISTORY_URL,
   CHAPTER_EIGHT_BACKUP_FILE_ID,
   CHAPTER_EIGHT_FINAL_FILE_ID,
+  CHAPTER_NINE_BACKUP_FILE_ID,
+  CHAPTER_NINE_FINAL_FILE_ID,
   CHAPTER_THREE_BACKUP_FILE_ID,
   CHAPTER_THREE_FINAL_FILE_ID,
   CHAPTER_TWO_FINAL_FILE_ID,
@@ -25,8 +27,8 @@ import {
   TERM_OLD_03_HISTORY_URL,
   TERM_OLD_03_SYNC_HISTORY_URL,
 } from './constants'
-import { chapterEightClueIds, chapterFiveClueIds, chapterFourClueIds, chapterSevenClueIds, chapterSixClueIds, chapterThreeClueIds, chapterTwoClueIds, createEmptyClues, shenzhiCacheEvidenceIds, storyEventRequirements } from '../data/story'
-import type { ChapterEightEvidenceAction, ChapterFiveEvidenceAction, ChapterFourEvidenceAction, ChapterSevenEvidenceAction, ChapterSixEvidenceAction, ChapterThreeEvidenceAction, ClueId, GameState, StoryEventId } from '../types/game'
+import { chapterEightClueIds, chapterFiveClueIds, chapterFourClueIds, chapterNineClueIds, chapterSevenClueIds, chapterSixClueIds, chapterThreeClueIds, chapterTwoClueIds, createEmptyClues, shenzhiCacheEvidenceIds, storyEventRequirements } from '../data/story'
+import type { ChapterEightEvidenceAction, ChapterFiveEvidenceAction, ChapterFourEvidenceAction, ChapterNineEvidenceAction, ChapterSevenEvidenceAction, ChapterSixEvidenceAction, ChapterThreeEvidenceAction, ClueId, GameState, StoryEventId } from '../types/game'
 
 function allDiscovered(state: GameState, clueIds: ClueId[]): boolean {
   return clueIds.every((id) => state.clues[id].discovered)
@@ -125,6 +127,17 @@ export function evaluateStoryEvents(state: GameState, now = new Date().toISOStri
   trigger('chapter_eight_cleanup_records_unlocked', next.triggeredEvents.includes('chapter_eight_incident_unlocked') && allDiscovered(next, storyEventRequirements.chapter_eight_cleanup_records_unlocked), (current) => current)
   trigger('chapter_eight_final_unlocked', next.triggeredEvents.includes('chapter_eight_incident_unlocked') && allDiscovered(next, storyEventRequirements.chapter_eight_final_unlocked), (current) => ({
     ...current, unlockedFileIds: [...new Set([...current.unlockedFileIds, CHAPTER_EIGHT_FINAL_FILE_ID])],
+  }))
+  trigger('chapter_nine_started', next.triggeredEvents.includes('chapter_eight_completed'), (current) => ({
+    ...current, unlockedFileIds: [...new Set([...current.unlockedFileIds, CHAPTER_NINE_BACKUP_FILE_ID])],
+  }))
+  trigger('chapter_nine_source_classification_unlocked', next.triggeredEvents.includes('chapter_nine_session_unlocked') && allDiscovered(next, storyEventRequirements.chapter_nine_source_classification_unlocked), (current) => current)
+  trigger('chapter_nine_admin_trace_unlocked', next.triggeredEvents.includes('chapter_nine_source_classification_unlocked') && next.revealedFileSections.includes('chapter-nine-source-classified') && allDiscovered(next, storyEventRequirements.chapter_nine_admin_trace_unlocked), (current) => current)
+  trigger('chapter_nine_witness_unlocked', next.triggeredEvents.includes('chapter_nine_admin_trace_unlocked') && allDiscovered(next, storyEventRequirements.chapter_nine_witness_unlocked), (current) => current)
+  trigger('chapter_nine_alive_check_unlocked', next.triggeredEvents.includes('chapter_nine_witness_unlocked') && next.revealedFileSections.includes('chapter-nine-physical-package-verified') && allDiscovered(next, storyEventRequirements.chapter_nine_alive_check_unlocked), (current) => current)
+  trigger('chapter_nine_certificate_chain_unlocked', allDiscovered(next, storyEventRequirements.chapter_nine_certificate_chain_unlocked), (current) => current)
+  trigger('chapter_nine_final_unlocked', next.triggeredEvents.includes('chapter_nine_certificate_chain_unlocked') && allDiscovered(next, storyEventRequirements.chapter_nine_final_unlocked), (current) => ({
+    ...current, unlockedFileIds: [...new Set([...current.unlockedFileIds, CHAPTER_NINE_FINAL_FILE_ID])],
   }))
   return next
 }
@@ -364,6 +377,38 @@ export function completeChapterEight(state: GameState, now = new Date().toISOStr
   }
 }
 
+export function unlockChapterNineSession(state: GameState): GameState {
+  if (!state.triggeredEvents.includes('chapter_nine_started')) return state
+  return forceStoryEvent(state, 'chapter_nine_session_unlocked')
+}
+
+export function recordChapterNineEvidence(state: GameState, action: ChapterNineEvidenceAction, sourceUrl: string, now = new Date().toISOString()): GameState {
+  if (!state.triggeredEvents.includes('chapter_nine_session_unlocked')) return state
+  const clueByAction: Record<ChapterNineEvidenceAction, ClueId> = {
+    'local-session': 'zhou_local_session_verified',
+    'export-completed': 'zhou_export_completed',
+    'verification-tasks': 'delayed_verification_tasks',
+    'admin-proxy': 'admin_proxy_session',
+    'operator-identified': 'admin03_operator_identified',
+    'linmo-monitoring': 'monitoring_target_linmo',
+    'last-sighting': 'monitor_last_sighting',
+    'alive-signature': 'external_alive_signature',
+    'alive-departed': 'zhou_alive_and_departed',
+  }
+  return discoverStoryClue(state, clueByAction[action], sourceUrl, now)
+}
+
+export function openChapterNineFinal(state: GameState): GameState {
+  if (!state.triggeredEvents.includes('chapter_nine_final_unlocked')) return state
+  return forceStoryEvent(state, 'chapter_nine_final_opened')
+}
+
+export function completeChapterNine(state: GameState, now = new Date().toISOString()): GameState {
+  if (!state.triggeredEvents.includes('chapter_nine_final_opened') || state.triggeredEvents.includes('chapter_nine_completed')) return state
+  const withSummary = discoverStoryClue(state, 'last_account_summary', 'stu.qiming-high.edu.cn/downloads', now)
+  return { ...withSummary, triggeredEvents: [...withSummary.triggeredEvents, 'chapter_nine_completed'], chapterNineEndingVisible: true }
+}
+
 export function clearStoryClue(state: GameState, id: ClueId): GameState {
   return { ...state, clues: { ...state.clues, [id]: { ...state.clues[id], discovered: false, discoveredAt: null, sourceUrl: null } } }
 }
@@ -396,6 +441,7 @@ export function forceStoryEvent(state: GameState, eventId: StoryEventId): GameSt
   if (eventId === 'chapter_six_completed') return completeChapterSix(forceStoryEvent(state, 'chapter_six_final_unlocked'))
   if (eventId === 'chapter_seven_completed') return completeChapterSeven(forceStoryEvent(state, 'chapter_seven_final_unlocked'))
   if (eventId === 'chapter_eight_completed') return completeChapterEight(forceStoryEvent(state, 'chapter_eight_final_opened'))
+  if (eventId === 'chapter_nine_completed') return completeChapterNine(forceStoryEvent(state, 'chapter_nine_final_opened'))
   const base = { ...state, triggeredEvents: [...state.triggeredEvents, eventId] }
   if (eventId === 'investigation_backup_unlocked') return { ...base, unlockedFileIds: [...new Set([...base.unlockedFileIds, BACKUP_FILE_ID])] }
   if (eventId === 'chapter_one_completed') return { ...base, chapterOneCompleted: true, chapterOneCompletedAt: new Date().toISOString() }
@@ -423,6 +469,8 @@ export function forceStoryEvent(state: GameState, eventId: StoryEventId): GameSt
   if (eventId === 'chapter_seven_final_unlocked') return { ...base, unlockedFileIds: [...new Set([...base.unlockedFileIds, CHAPTER_SEVEN_FINAL_FILE_ID])] }
   if (eventId === 'chapter_eight_started') return { ...base, unlockedFileIds: [...new Set([...base.unlockedFileIds, CHAPTER_EIGHT_BACKUP_FILE_ID])] }
   if (eventId === 'chapter_eight_final_unlocked') return { ...base, unlockedFileIds: [...new Set([...base.unlockedFileIds, CHAPTER_EIGHT_FINAL_FILE_ID])] }
+  if (eventId === 'chapter_nine_started') return { ...base, unlockedFileIds: [...new Set([...base.unlockedFileIds, CHAPTER_NINE_BACKUP_FILE_ID])] }
+  if (eventId === 'chapter_nine_final_unlocked') return { ...base, unlockedFileIds: [...new Set([...base.unlockedFileIds, CHAPTER_NINE_FINAL_FILE_ID])] }
   return base
 }
 
@@ -459,6 +507,8 @@ export function resetChapterProgress(state: GameState): GameState {
     chapterFiveEndingVisible: false, chapterFiveSessionGlitchActive: false,
     chapterSixEndingVisible: false, chapterSixSyncGlitchActive: false,
     chapterSevenEndingVisible: false,
+    chapterEightEndingVisible: false,
+    chapterNineEndingVisible: false,
   }
 }
 
@@ -471,10 +521,11 @@ export function resetChapterTwoProgress(state: GameState): GameState {
   for (const id of chapterSixClueIds) clues[id] = { ...clues[id], discovered: false, discoveredAt: null, sourceUrl: null }
   for (const id of chapterSevenClueIds) clues[id] = { ...clues[id], discovered: false, discoveredAt: null, sourceUrl: null }
   for (const id of chapterEightClueIds) clues[id] = { ...clues[id], discovered: false, discoveredAt: null, sourceUrl: null }
-  const chapterTwoEvents: StoryEventId[] = ['chapter_two_started', 'shenzhi_cache_unlocked', 'old_building_access_unlocked', 'chapter_two_final_file_unlocked', 'chapter_two_completed', 'chapter_three_started', 'chapter_three_final_unlocked', 'chapter_three_completed', 'chapter_four_started', 'chapter_four_admin_unlocked', 'chapter_four_final_unlocked', 'chapter_four_completed', 'chapter_five_started', 'chapter_five_cache_unlocked', 'chapter_five_relation_unlocked', 'chapter_five_final_unlocked', 'chapter_five_completed', 'chapter_six_started', 'chapter_six_map_unlocked', 'chapter_six_media_unlocked', 'chapter_six_terminal_cache_unlocked', 'chapter_six_final_unlocked', 'chapter_six_completed', 'chapter_seven_started', 'chapter_seven_class_archive_unlocked', 'chapter_seven_monitor_records_unlocked', 'chapter_seven_external_index_unlocked', 'chapter_seven_external_backup_unlocked', 'chapter_seven_final_unlocked', 'chapter_seven_completed', 'chapter_eight_started', 'chapter_eight_incident_unlocked', 'chapter_eight_emergency_records_unlocked', 'chapter_eight_medical_records_unlocked', 'chapter_eight_cleanup_records_unlocked', 'chapter_eight_final_unlocked', 'chapter_eight_final_opened', 'chapter_eight_completed']
+  for (const id of chapterNineClueIds) clues[id] = { ...clues[id], discovered: false, discoveredAt: null, sourceUrl: null }
+  const chapterTwoEvents: StoryEventId[] = ['chapter_two_started', 'shenzhi_cache_unlocked', 'old_building_access_unlocked', 'chapter_two_final_file_unlocked', 'chapter_two_completed', 'chapter_three_started', 'chapter_three_final_unlocked', 'chapter_three_completed', 'chapter_four_started', 'chapter_four_admin_unlocked', 'chapter_four_final_unlocked', 'chapter_four_completed', 'chapter_five_started', 'chapter_five_cache_unlocked', 'chapter_five_relation_unlocked', 'chapter_five_final_unlocked', 'chapter_five_completed', 'chapter_six_started', 'chapter_six_map_unlocked', 'chapter_six_media_unlocked', 'chapter_six_terminal_cache_unlocked', 'chapter_six_final_unlocked', 'chapter_six_completed', 'chapter_seven_started', 'chapter_seven_class_archive_unlocked', 'chapter_seven_monitor_records_unlocked', 'chapter_seven_external_index_unlocked', 'chapter_seven_external_backup_unlocked', 'chapter_seven_final_unlocked', 'chapter_seven_completed', 'chapter_eight_started', 'chapter_eight_incident_unlocked', 'chapter_eight_emergency_records_unlocked', 'chapter_eight_medical_records_unlocked', 'chapter_eight_cleanup_records_unlocked', 'chapter_eight_final_unlocked', 'chapter_eight_final_opened', 'chapter_eight_completed', 'chapter_nine_started', 'chapter_nine_session_unlocked', 'chapter_nine_source_classification_unlocked', 'chapter_nine_admin_trace_unlocked', 'chapter_nine_witness_unlocked', 'chapter_nine_alive_check_unlocked', 'chapter_nine_certificate_chain_unlocked', 'chapter_nine_final_unlocked', 'chapter_nine_final_opened', 'chapter_nine_completed']
   return evaluateStoryEvents({
     ...state, clues, triggeredEvents: state.triggeredEvents.filter((id) => !chapterTwoEvents.includes(id)),
-    unlockedFileIds: state.unlockedFileIds.filter((id) => ![SHENZHI_CACHE_FILE_ID, OLD_BUILDING_ACCESS_FILE_ID, CHAPTER_TWO_FINAL_FILE_ID, CHAPTER_THREE_BACKUP_FILE_ID, CHAPTER_THREE_FINAL_FILE_ID, CHAPTER_FOUR_BACKUP_FILE_ID, CHAPTER_FOUR_FINAL_FILE_ID, CHAPTER_FIVE_BACKUP_FILE_ID, CHAPTER_FIVE_FINAL_FILE_ID, CHAPTER_SIX_BACKUP_FILE_ID, CHAPTER_SIX_FINAL_FILE_ID, CHAPTER_SEVEN_BACKUP_FILE_ID, CHAPTER_SEVEN_FINAL_FILE_ID].includes(id)),
+    unlockedFileIds: state.unlockedFileIds.filter((id) => ![SHENZHI_CACHE_FILE_ID, OLD_BUILDING_ACCESS_FILE_ID, CHAPTER_TWO_FINAL_FILE_ID, CHAPTER_THREE_BACKUP_FILE_ID, CHAPTER_THREE_FINAL_FILE_ID, CHAPTER_FOUR_BACKUP_FILE_ID, CHAPTER_FOUR_FINAL_FILE_ID, CHAPTER_FIVE_BACKUP_FILE_ID, CHAPTER_FIVE_FINAL_FILE_ID, CHAPTER_SIX_BACKUP_FILE_ID, CHAPTER_SIX_FINAL_FILE_ID, CHAPTER_SEVEN_BACKUP_FILE_ID, CHAPTER_SEVEN_FINAL_FILE_ID, CHAPTER_EIGHT_BACKUP_FILE_ID, CHAPTER_EIGHT_FINAL_FILE_ID, CHAPTER_NINE_BACKUP_FILE_ID, CHAPTER_NINE_FINAL_FILE_ID].includes(id)),
     chapterTwoStarted: false, chapterTwoCompleted: false, chapterTwoCompletedAt: null, chapterTwoEndingPlayed: false,
     searchResiduePlayed: false, classCountAnomalyPlayed: false, chapterTwoAnomalyHistoryAdded: false, revealedFileSections: [],
     chapterTwoAddressGlitchActive: false, chapterTwoEndingVisible: false, chapterThreeEndingVisible: false, chapterFourEndingVisible: false,
@@ -482,6 +533,7 @@ export function resetChapterTwoProgress(state: GameState): GameState {
     chapterSixEndingVisible: false, chapterSixSyncGlitchActive: false,
     chapterSevenEndingVisible: false,
     chapterEightEndingVisible: false,
+    chapterNineEndingVisible: false,
   })
 }
 
@@ -522,26 +574,28 @@ export function resetChapterSixProgress(state: GameState): GameState {
   for (const id of chapterSixClueIds) clues[id] = { ...clues[id], discovered: false, discoveredAt: null, sourceUrl: null }
   for (const id of chapterSevenClueIds) clues[id] = { ...clues[id], discovered: false, discoveredAt: null, sourceUrl: null }
   for (const id of chapterEightClueIds) clues[id] = { ...clues[id], discovered: false, discoveredAt: null, sourceUrl: null }
-  const events: StoryEventId[] = ['chapter_six_started', 'chapter_six_map_unlocked', 'chapter_six_media_unlocked', 'chapter_six_terminal_cache_unlocked', 'chapter_six_final_unlocked', 'chapter_six_completed', 'chapter_seven_started', 'chapter_seven_class_archive_unlocked', 'chapter_seven_monitor_records_unlocked', 'chapter_seven_external_index_unlocked', 'chapter_seven_external_backup_unlocked', 'chapter_seven_final_unlocked', 'chapter_seven_completed', 'chapter_eight_started', 'chapter_eight_incident_unlocked', 'chapter_eight_emergency_records_unlocked', 'chapter_eight_medical_records_unlocked', 'chapter_eight_cleanup_records_unlocked', 'chapter_eight_final_unlocked', 'chapter_eight_final_opened', 'chapter_eight_completed']
-  const sections = state.revealedFileSections.filter((key) => !key.startsWith('chapter-six-') && !key.startsWith('chapter_six_') && !key.startsWith('chapter-seven-') && !key.startsWith('chapter_seven_'))
+  for (const id of chapterNineClueIds) clues[id] = { ...clues[id], discovered: false, discoveredAt: null, sourceUrl: null }
+  const events: StoryEventId[] = ['chapter_six_started', 'chapter_six_map_unlocked', 'chapter_six_media_unlocked', 'chapter_six_terminal_cache_unlocked', 'chapter_six_final_unlocked', 'chapter_six_completed', 'chapter_seven_started', 'chapter_seven_class_archive_unlocked', 'chapter_seven_monitor_records_unlocked', 'chapter_seven_external_index_unlocked', 'chapter_seven_external_backup_unlocked', 'chapter_seven_final_unlocked', 'chapter_seven_completed', 'chapter_eight_started', 'chapter_eight_incident_unlocked', 'chapter_eight_emergency_records_unlocked', 'chapter_eight_medical_records_unlocked', 'chapter_eight_cleanup_records_unlocked', 'chapter_eight_final_unlocked', 'chapter_eight_final_opened', 'chapter_eight_completed', 'chapter_nine_started', 'chapter_nine_session_unlocked', 'chapter_nine_source_classification_unlocked', 'chapter_nine_admin_trace_unlocked', 'chapter_nine_witness_unlocked', 'chapter_nine_alive_check_unlocked', 'chapter_nine_certificate_chain_unlocked', 'chapter_nine_final_unlocked', 'chapter_nine_final_opened', 'chapter_nine_completed']
+  const sections = state.revealedFileSections.filter((key) => !key.startsWith('chapter-six-') && !key.startsWith('chapter_six_') && !key.startsWith('chapter-seven-') && !key.startsWith('chapter_seven_') && !key.startsWith('chapter-eight-') && !key.startsWith('chapter_eight_') && !key.startsWith('chapter-nine-') && !key.startsWith('chapter_nine_'))
   const tabs = state.tabs.map((tab) => {
     const history = tab.history.filter((url) => url !== TERM_OLD_03_SYNC_HISTORY_URL)
     return {
       ...tab,
       history: history.length ? history : [tab.currentUrl],
       historyIndex: Math.min(tab.historyIndex, Math.max(history.length - 1, 0)),
-      openVirtualFileId: [CHAPTER_SIX_BACKUP_FILE_ID, CHAPTER_SIX_FINAL_FILE_ID, CHAPTER_SEVEN_BACKUP_FILE_ID, CHAPTER_SEVEN_FINAL_FILE_ID].includes(tab.openVirtualFileId ?? '') ? null : tab.openVirtualFileId,
+      openVirtualFileId: [CHAPTER_SIX_BACKUP_FILE_ID, CHAPTER_SIX_FINAL_FILE_ID, CHAPTER_SEVEN_BACKUP_FILE_ID, CHAPTER_SEVEN_FINAL_FILE_ID, CHAPTER_EIGHT_BACKUP_FILE_ID, CHAPTER_EIGHT_FINAL_FILE_ID, CHAPTER_NINE_BACKUP_FILE_ID, CHAPTER_NINE_FINAL_FILE_ID].includes(tab.openVirtualFileId ?? '') ? null : tab.openVirtualFileId,
     }
   })
   return evaluateStoryEvents({
     ...state, tabs, clues,
     triggeredEvents: state.triggeredEvents.filter((id) => !events.includes(id)),
-    unlockedFileIds: state.unlockedFileIds.filter((id) => ![CHAPTER_SIX_BACKUP_FILE_ID, CHAPTER_SIX_FINAL_FILE_ID, CHAPTER_SEVEN_BACKUP_FILE_ID, CHAPTER_SEVEN_FINAL_FILE_ID].includes(id)),
+    unlockedFileIds: state.unlockedFileIds.filter((id) => ![CHAPTER_SIX_BACKUP_FILE_ID, CHAPTER_SIX_FINAL_FILE_ID, CHAPTER_SEVEN_BACKUP_FILE_ID, CHAPTER_SEVEN_FINAL_FILE_ID, CHAPTER_EIGHT_BACKUP_FILE_ID, CHAPTER_EIGHT_FINAL_FILE_ID, CHAPTER_NINE_BACKUP_FILE_ID, CHAPTER_NINE_FINAL_FILE_ID].includes(id)),
     revealedFileSections: sections,
     chapterSixEndingVisible: false,
     chapterSixSyncGlitchActive: false,
     chapterSevenEndingVisible: false,
     chapterEightEndingVisible: false,
+    chapterNineEndingVisible: false,
   })
 }
 
@@ -549,42 +603,76 @@ export function resetChapterSevenProgress(state: GameState): GameState {
   const clues = { ...state.clues }
   for (const id of chapterSevenClueIds) clues[id] = { ...clues[id], discovered: false, discoveredAt: null, sourceUrl: null }
   for (const id of chapterEightClueIds) clues[id] = { ...clues[id], discovered: false, discoveredAt: null, sourceUrl: null }
-  const events: StoryEventId[] = ['chapter_seven_started', 'chapter_seven_class_archive_unlocked', 'chapter_seven_monitor_records_unlocked', 'chapter_seven_external_index_unlocked', 'chapter_seven_external_backup_unlocked', 'chapter_seven_final_unlocked', 'chapter_seven_completed', 'chapter_eight_started', 'chapter_eight_incident_unlocked', 'chapter_eight_emergency_records_unlocked', 'chapter_eight_medical_records_unlocked', 'chapter_eight_cleanup_records_unlocked', 'chapter_eight_final_unlocked', 'chapter_eight_final_opened', 'chapter_eight_completed']
+  for (const id of chapterNineClueIds) clues[id] = { ...clues[id], discovered: false, discoveredAt: null, sourceUrl: null }
+  const events: StoryEventId[] = ['chapter_seven_started', 'chapter_seven_class_archive_unlocked', 'chapter_seven_monitor_records_unlocked', 'chapter_seven_external_index_unlocked', 'chapter_seven_external_backup_unlocked', 'chapter_seven_final_unlocked', 'chapter_seven_completed', 'chapter_eight_started', 'chapter_eight_incident_unlocked', 'chapter_eight_emergency_records_unlocked', 'chapter_eight_medical_records_unlocked', 'chapter_eight_cleanup_records_unlocked', 'chapter_eight_final_unlocked', 'chapter_eight_final_opened', 'chapter_eight_completed', 'chapter_nine_started', 'chapter_nine_session_unlocked', 'chapter_nine_source_classification_unlocked', 'chapter_nine_admin_trace_unlocked', 'chapter_nine_witness_unlocked', 'chapter_nine_alive_check_unlocked', 'chapter_nine_certificate_chain_unlocked', 'chapter_nine_final_unlocked', 'chapter_nine_final_opened', 'chapter_nine_completed']
   const tabs = state.tabs.map((tab) => {
     const history = tab.history.filter((url) => url !== CHAPTER_SEVEN_INCIDENT_HISTORY_URL)
-    return { ...tab, history: history.length ? history : [tab.currentUrl], historyIndex: Math.min(tab.historyIndex, Math.max(history.length - 1, 0)), openVirtualFileId: [CHAPTER_SEVEN_BACKUP_FILE_ID, CHAPTER_SEVEN_FINAL_FILE_ID].includes(tab.openVirtualFileId ?? '') ? null : tab.openVirtualFileId }
+    return { ...tab, history: history.length ? history : [tab.currentUrl], historyIndex: Math.min(tab.historyIndex, Math.max(history.length - 1, 0)), openVirtualFileId: [CHAPTER_SEVEN_BACKUP_FILE_ID, CHAPTER_SEVEN_FINAL_FILE_ID, CHAPTER_EIGHT_BACKUP_FILE_ID, CHAPTER_EIGHT_FINAL_FILE_ID, CHAPTER_NINE_BACKUP_FILE_ID, CHAPTER_NINE_FINAL_FILE_ID].includes(tab.openVirtualFileId ?? '') ? null : tab.openVirtualFileId }
   })
   return evaluateStoryEvents({
     ...state, tabs, clues,
     triggeredEvents: state.triggeredEvents.filter((id) => !events.includes(id)),
-    unlockedFileIds: state.unlockedFileIds.filter((id) => ![CHAPTER_SEVEN_BACKUP_FILE_ID, CHAPTER_SEVEN_FINAL_FILE_ID, CHAPTER_EIGHT_BACKUP_FILE_ID, CHAPTER_EIGHT_FINAL_FILE_ID].includes(id)),
-    revealedFileSections: state.revealedFileSections.filter((key) => !key.startsWith('chapter-seven-') && !key.startsWith('chapter_seven_') && !key.startsWith('chapter-eight-') && !key.startsWith('chapter_eight_')),
+    unlockedFileIds: state.unlockedFileIds.filter((id) => ![CHAPTER_SEVEN_BACKUP_FILE_ID, CHAPTER_SEVEN_FINAL_FILE_ID, CHAPTER_EIGHT_BACKUP_FILE_ID, CHAPTER_EIGHT_FINAL_FILE_ID, CHAPTER_NINE_BACKUP_FILE_ID, CHAPTER_NINE_FINAL_FILE_ID].includes(id)),
+    revealedFileSections: state.revealedFileSections.filter((key) => !key.startsWith('chapter-seven-') && !key.startsWith('chapter_seven_') && !key.startsWith('chapter-eight-') && !key.startsWith('chapter_eight_') && !key.startsWith('chapter-nine-') && !key.startsWith('chapter_nine_')),
     chapterSevenEndingVisible: false,
     chapterEightEndingVisible: false,
+    chapterNineEndingVisible: false,
   })
 }
 
 export function resetChapterEightProgress(state: GameState): GameState {
   const clues = { ...state.clues }
   for (const id of chapterEightClueIds) clues[id] = { ...clues[id], discovered: false, discoveredAt: null, sourceUrl: null }
+  for (const id of chapterNineClueIds) clues[id] = { ...clues[id], discovered: false, discoveredAt: null, sourceUrl: null }
   const events: StoryEventId[] = [
     'chapter_eight_started', 'chapter_eight_incident_unlocked',
     'chapter_eight_emergency_records_unlocked', 'chapter_eight_medical_records_unlocked',
     'chapter_eight_cleanup_records_unlocked', 'chapter_eight_final_unlocked',
     'chapter_eight_final_opened', 'chapter_eight_completed',
+    'chapter_nine_started', 'chapter_nine_session_unlocked', 'chapter_nine_source_classification_unlocked',
+    'chapter_nine_admin_trace_unlocked', 'chapter_nine_witness_unlocked', 'chapter_nine_alive_check_unlocked',
+    'chapter_nine_certificate_chain_unlocked', 'chapter_nine_final_unlocked', 'chapter_nine_final_opened', 'chapter_nine_completed',
   ]
   return evaluateStoryEvents({
     ...state,
     tabs: state.tabs.map((tab) => ({
       ...tab,
-      history: tab.history.filter((url) => !url.endsWith('/session/0914')),
-      historyIndex: Math.min(tab.historyIndex, Math.max(tab.history.filter((url) => !url.endsWith('/session/0914')).length - 1, 0)),
-      openVirtualFileId: [CHAPTER_EIGHT_BACKUP_FILE_ID, CHAPTER_EIGHT_FINAL_FILE_ID].includes(tab.openVirtualFileId ?? '') ? null : tab.openVirtualFileId,
+      history: tab.history.filter((url) => !url.endsWith('/session/0914') && !url.endsWith('/certificate-chain')),
+      historyIndex: Math.min(tab.historyIndex, Math.max(tab.history.filter((url) => !url.endsWith('/session/0914') && !url.endsWith('/certificate-chain')).length - 1, 0)),
+      openVirtualFileId: [CHAPTER_EIGHT_BACKUP_FILE_ID, CHAPTER_EIGHT_FINAL_FILE_ID, CHAPTER_NINE_BACKUP_FILE_ID, CHAPTER_NINE_FINAL_FILE_ID].includes(tab.openVirtualFileId ?? '') ? null : tab.openVirtualFileId,
     })),
     clues,
     triggeredEvents: state.triggeredEvents.filter((id) => !events.includes(id)),
-    unlockedFileIds: state.unlockedFileIds.filter((id) => ![CHAPTER_EIGHT_BACKUP_FILE_ID, CHAPTER_EIGHT_FINAL_FILE_ID].includes(id)),
-    revealedFileSections: state.revealedFileSections.filter((key) => !key.startsWith('chapter-eight-') && !key.startsWith('chapter_eight_')),
+    unlockedFileIds: state.unlockedFileIds.filter((id) => ![CHAPTER_EIGHT_BACKUP_FILE_ID, CHAPTER_EIGHT_FINAL_FILE_ID, CHAPTER_NINE_BACKUP_FILE_ID, CHAPTER_NINE_FINAL_FILE_ID].includes(id)),
+    revealedFileSections: state.revealedFileSections.filter((key) => !key.startsWith('chapter-eight-') && !key.startsWith('chapter_eight_') && !key.startsWith('chapter-nine-') && !key.startsWith('chapter_nine_')),
     chapterEightEndingVisible: false,
+    chapterNineEndingVisible: false,
+  })
+}
+
+export function resetChapterNineProgress(state: GameState): GameState {
+  const clues = { ...state.clues }
+  for (const id of chapterNineClueIds) clues[id] = { ...clues[id], discovered: false, discoveredAt: null, sourceUrl: null }
+  const events: StoryEventId[] = [
+    'chapter_nine_started', 'chapter_nine_session_unlocked', 'chapter_nine_source_classification_unlocked',
+    'chapter_nine_admin_trace_unlocked', 'chapter_nine_witness_unlocked', 'chapter_nine_alive_check_unlocked',
+    'chapter_nine_certificate_chain_unlocked', 'chapter_nine_final_unlocked',
+    'chapter_nine_final_opened', 'chapter_nine_completed',
+  ]
+  return evaluateStoryEvents({
+    ...state,
+    tabs: state.tabs.map((tab) => {
+      const history = tab.history.filter((url) => !url.endsWith('/certificate-chain'))
+      return {
+        ...tab, history: history.length ? history : [tab.currentUrl],
+        historyIndex: Math.min(tab.historyIndex, Math.max(history.length - 1, 0)),
+        openVirtualFileId: [CHAPTER_NINE_BACKUP_FILE_ID, CHAPTER_NINE_FINAL_FILE_ID].includes(tab.openVirtualFileId ?? '') ? null : tab.openVirtualFileId,
+      }
+    }),
+    clues,
+    triggeredEvents: state.triggeredEvents.filter((id) => !events.includes(id)),
+    unlockedFileIds: state.unlockedFileIds.filter((id) => ![CHAPTER_NINE_BACKUP_FILE_ID, CHAPTER_NINE_FINAL_FILE_ID].includes(id)),
+    revealedFileSections: state.revealedFileSections.filter((key) => !key.startsWith('chapter-nine-') && !key.startsWith('chapter_nine_')),
+    chapterNineEndingVisible: false,
   })
 }

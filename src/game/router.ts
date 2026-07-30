@@ -68,6 +68,7 @@ const studentRoutes: RouteDefinition[] = [
   { pattern: /^\/investigation\/class-archive$/, componentKey: 'student-class-archive', pageTitle: '原始班级名单恢复 - 学生信息系统' },
   { pattern: /^\/investigation\/monitor-records$/, componentKey: 'student-monitor-records', pageTitle: '班长缓存记录 - 学生信息系统' },
   { pattern: /^\/investigation\/data-transfer$/, componentKey: 'student-transfer-records', pageTitle: '数据传输记录 - 学生信息系统' },
+  { pattern: /^\/status-change\/2024010312\/certificate-chain$/, componentKey: 'student-certificate-chain', pageTitle: '退学证明签发链 - 学生信息系统' },
   { pattern: /^\/student\/2024010318$/, componentKey: 'student-missing', pageTitle: '沈栀' },
 ]
 
@@ -76,7 +77,7 @@ const archiveRoutes: RouteDefinition[] = [
   { pattern: /^\/EXT-BACKUP-QM-0616\/manifest$/, componentKey: 'archive-manifest', pageTitle: '外部备份清单' },
   { pattern: /^\/EXT-BACKUP-QM-0616\/plan$/, componentKey: 'archive-plan', pageTitle: '计划目录' },
   { pattern: /^\/EXT-BACKUP-QM-0616\/incident\/0616(?:\/(timeline|access|emergency|medical|internal|cleanup))?$/, componentKey: 'archive-incident', pageTitle: '0616事件记录' },
-  { pattern: /^\/EXT-BACKUP-QM-0616\/session\/0914$/, componentKey: 'archive-session', pageTitle: '0914本地会话' },
+  { pattern: /^\/EXT-BACKUP-QM-0616\/session\/0914(?:\/(timeline|source|tasks|proxy|exit|alive))?$/, componentKey: 'archive-session', pageTitle: '0914本地会话' },
 ]
 
 function cleanInput(input: string): { hostname: string; pathname: string } {

@@ -20,6 +20,7 @@ export type ComponentKey =
   | 'school-legacy-archive' | 'school-legacy-index'
   | 'student-class-archive' | 'student-monitor-records' | 'student-transfer-records'
   | 'archive-home' | 'archive-manifest' | 'archive-plan' | 'archive-incident' | 'archive-session'
+  | 'student-certificate-chain'
 
 export interface GameRoute { hostname: string; pathname: string; url: string; pageTitle: string; siteType: SiteType; componentKey: ComponentKey; params?: { id?: string } }
 export interface StudentTabSession { accountId: StudentAccountId | null }
@@ -66,7 +67,12 @@ export type ChapterEightClueId =
   | 'external_rescue_delayed' | 'cam_tmp_recovered' | 'medical_identity_matched'
   | 'shenzhi_death_confirmed' | 'incident_report_falsified'
   | 'post_incident_cleanup_order' | 'june_sixteenth_summary'
-export type ClueId = ChapterOneClueId | ChapterTwoClueId | ChapterThreeClueId | ChapterFourClueId | ChapterFiveClueId | ChapterSixClueId | ChapterSevenClueId | ChapterEightClueId
+export type ChapterNineClueId =
+  | 'zhou_local_session_verified' | 'zhou_export_completed' | 'delayed_verification_tasks'
+  | 'admin_proxy_session' | 'admin03_operator_identified' | 'monitoring_target_linmo'
+  | 'monitor_last_sighting' | 'external_alive_signature' | 'zhou_alive_and_departed'
+  | 'last_account_summary'
+export type ClueId = ChapterOneClueId | ChapterTwoClueId | ChapterThreeClueId | ChapterFourClueId | ChapterFiveClueId | ChapterSixClueId | ChapterSevenClueId | ChapterEightClueId | ChapterNineClueId
 
 export type ChapterOneEventId = 'old_building_contradiction' | 'zhou_draft_revealed' | 'investigation_backup_unlocked' | 'chapter_one_completed'
 export type ChapterTwoEventId = 'chapter_two_started' | 'shenzhi_cache_unlocked' | 'old_building_access_unlocked' | 'chapter_two_final_file_unlocked' | 'chapter_two_completed'
@@ -87,7 +93,13 @@ export type ChapterEightEventId =
   | 'chapter_eight_emergency_records_unlocked' | 'chapter_eight_medical_records_unlocked'
   | 'chapter_eight_cleanup_records_unlocked' | 'chapter_eight_final_unlocked'
   | 'chapter_eight_final_opened' | 'chapter_eight_completed'
-export type StoryEventId = ChapterOneEventId | ChapterTwoEventId | ChapterThreeEventId | ChapterFourEventId | ChapterFiveEventId | ChapterSixEventId | ChapterSevenEventId | ChapterEightEventId
+export type ChapterNineEventId =
+  | 'chapter_nine_started' | 'chapter_nine_session_unlocked'
+  | 'chapter_nine_source_classification_unlocked' | 'chapter_nine_admin_trace_unlocked'
+  | 'chapter_nine_witness_unlocked' | 'chapter_nine_alive_check_unlocked'
+  | 'chapter_nine_certificate_chain_unlocked' | 'chapter_nine_final_unlocked'
+  | 'chapter_nine_final_opened' | 'chapter_nine_completed'
+export type StoryEventId = ChapterOneEventId | ChapterTwoEventId | ChapterThreeEventId | ChapterFourEventId | ChapterFiveEventId | ChapterSixEventId | ChapterSevenEventId | ChapterEightEventId | ChapterNineEventId
 
 export type ChapterThreeEvidenceAction =
   | 'duty-record' | 'access-log' | 'admin-trace' | 'system-upgrade'
@@ -110,6 +122,10 @@ export type ChapterEightEvidenceAction =
   | 'last-route' | 'equipment-override' | 'cam-tmp' | 'emergency-signal'
   | 'rescue-delay' | 'medical-identity' | 'death-confirmation'
   | 'report-falsification' | 'cleanup-order'
+export type ChapterNineEvidenceAction =
+  | 'local-session' | 'export-completed' | 'verification-tasks' | 'admin-proxy'
+  | 'operator-identified' | 'linmo-monitoring' | 'last-sighting'
+  | 'alive-signature' | 'alive-departed'
 
 export type ClueCategory =
   | '公开资料' | '学生档案' | '系统记录' | '私人信息' | '身份痕迹' | '班级资料'
@@ -148,4 +164,5 @@ export interface GameState extends Omit<GameSaveV5, 'schemaVersion' | 'prototype
   chapterSixSyncGlitchActive?: boolean
   chapterSevenEndingVisible?: boolean
   chapterEightEndingVisible?: boolean
+  chapterNineEndingVisible?: boolean
 }
